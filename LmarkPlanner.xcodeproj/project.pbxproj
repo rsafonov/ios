@@ -1,0 +1,788 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		00097B671C80FE2300407812 /* LandmarkTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00097B661C80FE2300407812 /* LandmarkTableViewCell.swift */; };
+		00097B6F1C8116F400407812 /* LandmarksTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00097B6E1C8116F400407812 /* LandmarksTableViewController.swift */; };
+		00097B751C850F3000407812 /* Landmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00097B741C850F3000407812 /* Landmark.swift */; };
+		001D2FC91C7E81E000D64169 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001D2FC81C7E81E000D64169 /* AppDelegate.swift */; };
+		001D2FCB1C7E81E000D64169 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001D2FCA1C7E81E000D64169 /* ViewController.swift */; };
+		001D2FCE1C7E81E000D64169 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 001D2FCC1C7E81E000D64169 /* Main.storyboard */; };
+		001D2FD01C7E81E000D64169 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 001D2FCF1C7E81E000D64169 /* Assets.xcassets */; };
+		001D2FD31C7E81E000D64169 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 001D2FD11C7E81E000D64169 /* LaunchScreen.storyboard */; };
+		001D2FDE1C7E81E000D64169 /* LmarkPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001D2FDD1C7E81E000D64169 /* LmarkPlannerTests.swift */; };
+		001D2FE91C7E81F800D64169 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 001D2FE81C7E81F800D64169 /* MapKit.framework */; };
+		00403A721C864BF300A715BE /* PlanStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A711C864BF300A715BE /* PlanStep.swift */; };
+		00403A741C87932E00A715BE /* Intersection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A731C87932E00A715BE /* Intersection.swift */; };
+		00403A761C8A420100A715BE /* Lmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A751C8A420100A715BE /* Lmark.swift */; };
+		00403A771C8A420100A715BE /* Lmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A751C8A420100A715BE /* Lmark.swift */; };
+		00403A791C8A6F2600A715BE /* StepTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A781C8A6F2600A715BE /* StepTableViewCell.swift */; };
+		00403A7B1C8E2FE200A715BE /* FalseStepTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A7A1C8E2FE200A715BE /* FalseStepTableViewCell.swift */; };
+		00403A7D1C8F5BE300A715BE /* OsmNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A7C1C8F5BE300A715BE /* OsmNode.swift */; };
+		00403A7F1C8F5DE100A715BE /* OsmWay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A7E1C8F5DE100A715BE /* OsmWay.swift */; };
+		004F78BC1CCEC2C10045801F /* libsbpl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 004F78BB1CCEC2C10045801F /* libsbpl.a */; };
+		004F78BF1CCEC2F00045801F /* sbpltest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 004F78BE1CCEC2F00045801F /* sbpltest.cpp */; };
+		004F78C41CCEE6670045801F /* CPP-Wrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 004F78C31CCEE6670045801F /* CPP-Wrapper.mm */; };
+		00B0F2B11C85324300C75449 /* images in Resources */ = {isa = PBXBuildFile; fileRef = 00B0F2B01C85324300C75449 /* images */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		001D2FDA1C7E81E000D64169 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 001D2FBD1C7E81E000D64169 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 001D2FC41C7E81E000D64169;
+			remoteInfo = LmarkPlanner;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		00097B661C80FE2300407812 /* LandmarkTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LandmarkTableViewCell.swift; sourceTree = "<group>"; };
+		00097B6E1C8116F400407812 /* LandmarksTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LandmarksTableViewController.swift; sourceTree = "<group>"; };
+		00097B741C850F3000407812 /* Landmark.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Landmark.swift; sourceTree = "<group>"; };
+		001D2FC51C7E81E000D64169 /* LmarkPlanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LmarkPlanner.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		001D2FC81C7E81E000D64169 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		001D2FCA1C7E81E000D64169 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		001D2FCD1C7E81E000D64169 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		001D2FCF1C7E81E000D64169 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		001D2FD21C7E81E000D64169 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		001D2FD41C7E81E000D64169 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		001D2FD91C7E81E000D64169 /* LmarkPlannerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LmarkPlannerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		001D2FDD1C7E81E000D64169 /* LmarkPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LmarkPlannerTests.swift; sourceTree = "<group>"; };
+		001D2FDF1C7E81E000D64169 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		001D2FE81C7E81F800D64169 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
+		00403A711C864BF300A715BE /* PlanStep.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlanStep.swift; sourceTree = "<group>"; };
+		00403A731C87932E00A715BE /* Intersection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Intersection.swift; sourceTree = "<group>"; };
+		00403A751C8A420100A715BE /* Lmark.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Lmark.swift; sourceTree = "<group>"; };
+		00403A781C8A6F2600A715BE /* StepTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StepTableViewCell.swift; sourceTree = "<group>"; };
+		00403A7A1C8E2FE200A715BE /* FalseStepTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FalseStepTableViewCell.swift; sourceTree = "<group>"; };
+		00403A7C1C8F5BE300A715BE /* OsmNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OsmNode.swift; sourceTree = "<group>"; };
+		00403A7E1C8F5DE100A715BE /* OsmWay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OsmWay.swift; sourceTree = "<group>"; };
+		004F78BB1CCEC2C10045801F /* libsbpl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsbpl.a; path = "../SbplPlannerWS/Build/Products/Debug-iphonesimulator/libsbpl.a"; sourceTree = "<group>"; };
+		004F78BD1CCEC2EF0045801F /* LmarkPlanner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LmarkPlanner-Bridging-Header.h"; sourceTree = "<group>"; };
+		004F78BE1CCEC2F00045801F /* sbpltest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sbpltest.cpp; path = LmarkPlanner/sbpltest.cpp; sourceTree = "<group>"; };
+		004F78C21CCEDC7F0045801F /* sbpltets.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = sbpltets.hpp; path = LmarkPlanner/sbpltets.hpp; sourceTree = "<group>"; };
+		004F78C31CCEE6670045801F /* CPP-Wrapper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = "CPP-Wrapper.mm"; path = "LmarkPlanner/CPP-Wrapper.mm"; sourceTree = "<group>"; };
+		004F78C51CCEE8090045801F /* CPP-Wrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "CPP-Wrapper.h"; path = "LmarkPlanner/CPP-Wrapper.h"; sourceTree = "<group>"; };
+		00B0F2B01C85324300C75449 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		001D2FC21C7E81E000D64169 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				004F78BC1CCEC2C10045801F /* libsbpl.a in Frameworks */,
+				001D2FE91C7E81F800D64169 /* MapKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		001D2FD61C7E81E000D64169 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		001D2FBC1C7E81E000D64169 = {
+			isa = PBXGroup;
+			children = (
+				004F78BE1CCEC2F00045801F /* sbpltest.cpp */,
+				004F78C21CCEDC7F0045801F /* sbpltets.hpp */,
+				004F78C51CCEE8090045801F /* CPP-Wrapper.h */,
+				004F78C31CCEE6670045801F /* CPP-Wrapper.mm */,
+				004F78BB1CCEC2C10045801F /* libsbpl.a */,
+				001D2FE81C7E81F800D64169 /* MapKit.framework */,
+				001D2FC71C7E81E000D64169 /* LmarkPlanner */,
+				001D2FDC1C7E81E000D64169 /* LmarkPlannerTests */,
+				001D2FC61C7E81E000D64169 /* Products */,
+				004F78BD1CCEC2EF0045801F /* LmarkPlanner-Bridging-Header.h */,
+			);
+			sourceTree = "<group>";
+		};
+		001D2FC61C7E81E000D64169 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				001D2FC51C7E81E000D64169 /* LmarkPlanner.app */,
+				001D2FD91C7E81E000D64169 /* LmarkPlannerTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		001D2FC71C7E81E000D64169 /* LmarkPlanner */ = {
+			isa = PBXGroup;
+			children = (
+				001D2FC81C7E81E000D64169 /* AppDelegate.swift */,
+				001D2FCA1C7E81E000D64169 /* ViewController.swift */,
+				00403A7C1C8F5BE300A715BE /* OsmNode.swift */,
+				00403A7E1C8F5DE100A715BE /* OsmWay.swift */,
+				00097B6E1C8116F400407812 /* LandmarksTableViewController.swift */,
+				00403A7A1C8E2FE200A715BE /* FalseStepTableViewCell.swift */,
+				001D2FCC1C7E81E000D64169 /* Main.storyboard */,
+				00097B661C80FE2300407812 /* LandmarkTableViewCell.swift */,
+				00403A781C8A6F2600A715BE /* StepTableViewCell.swift */,
+				00097B741C850F3000407812 /* Landmark.swift */,
+				00403A751C8A420100A715BE /* Lmark.swift */,
+				00403A711C864BF300A715BE /* PlanStep.swift */,
+				00403A731C87932E00A715BE /* Intersection.swift */,
+				001D2FCF1C7E81E000D64169 /* Assets.xcassets */,
+				00B0F2B01C85324300C75449 /* images */,
+				001D2FD11C7E81E000D64169 /* LaunchScreen.storyboard */,
+				001D2FD41C7E81E000D64169 /* Info.plist */,
+			);
+			path = LmarkPlanner;
+			sourceTree = "<group>";
+		};
+		001D2FDC1C7E81E000D64169 /* LmarkPlannerTests */ = {
+			isa = PBXGroup;
+			children = (
+				001D2FDD1C7E81E000D64169 /* LmarkPlannerTests.swift */,
+				001D2FDF1C7E81E000D64169 /* Info.plist */,
+			);
+			path = LmarkPlannerTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		001D2FC41C7E81E000D64169 /* LmarkPlanner */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 001D2FE21C7E81E000D64169 /* Build configuration list for PBXNativeTarget "LmarkPlanner" */;
+			buildPhases = (
+				001D2FC11C7E81E000D64169 /* Sources */,
+				001D2FC21C7E81E000D64169 /* Frameworks */,
+				001D2FC31C7E81E000D64169 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LmarkPlanner;
+			productName = LmarkPlanner;
+			productReference = 001D2FC51C7E81E000D64169 /* LmarkPlanner.app */;
+			productType = "com.apple.product-type.application";
+		};
+		001D2FD81C7E81E000D64169 /* LmarkPlannerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 001D2FE51C7E81E000D64169 /* Build configuration list for PBXNativeTarget "LmarkPlannerTests" */;
+			buildPhases = (
+				001D2FD51C7E81E000D64169 /* Sources */,
+				001D2FD61C7E81E000D64169 /* Frameworks */,
+				001D2FD71C7E81E000D64169 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				001D2FDB1C7E81E000D64169 /* PBXTargetDependency */,
+			);
+			name = LmarkPlannerTests;
+			productName = LmarkPlannerTests;
+			productReference = 001D2FD91C7E81E000D64169 /* LmarkPlannerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		001D2FBD1C7E81E000D64169 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0720;
+				LastUpgradeCheck = 0720;
+				ORGANIZATIONNAME = "Margarita Safonova";
+				TargetAttributes = {
+					001D2FC41C7E81E000D64169 = {
+						CreatedOnToolsVersion = 7.2.1;
+						DevelopmentTeam = L73UP22BQQ;
+						SystemCapabilities = {
+							com.apple.Maps.iOS = {
+								enabled = 1;
+							};
+						};
+					};
+					001D2FD81C7E81E000D64169 = {
+						CreatedOnToolsVersion = 7.2.1;
+						TestTargetID = 001D2FC41C7E81E000D64169;
+					};
+				};
+			};
+			buildConfigurationList = 001D2FC01C7E81E000D64169 /* Build configuration list for PBXProject "LmarkPlanner" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 001D2FBC1C7E81E000D64169;
+			productRefGroup = 001D2FC61C7E81E000D64169 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				001D2FC41C7E81E000D64169 /* LmarkPlanner */,
+				001D2FD81C7E81E000D64169 /* LmarkPlannerTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		001D2FC31C7E81E000D64169 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				00B0F2B11C85324300C75449 /* images in Resources */,
+				001D2FD31C7E81E000D64169 /* LaunchScreen.storyboard in Resources */,
+				001D2FD01C7E81E000D64169 /* Assets.xcassets in Resources */,
+				001D2FCE1C7E81E000D64169 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		001D2FD71C7E81E000D64169 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		001D2FC11C7E81E000D64169 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				001D2FCB1C7E81E000D64169 /* ViewController.swift in Sources */,
+				00403A7B1C8E2FE200A715BE /* FalseStepTableViewCell.swift in Sources */,
+				00097B6F1C8116F400407812 /* LandmarksTableViewController.swift in Sources */,
+				00097B671C80FE2300407812 /* LandmarkTableViewCell.swift in Sources */,
+				001D2FC91C7E81E000D64169 /* AppDelegate.swift in Sources */,
+				00403A721C864BF300A715BE /* PlanStep.swift in Sources */,
+				00403A761C8A420100A715BE /* Lmark.swift in Sources */,
+				00403A7D1C8F5BE300A715BE /* OsmNode.swift in Sources */,
+				00403A791C8A6F2600A715BE /* StepTableViewCell.swift in Sources */,
+				00403A741C87932E00A715BE /* Intersection.swift in Sources */,
+				00097B751C850F3000407812 /* Landmark.swift in Sources */,
+				004F78BF1CCEC2F00045801F /* sbpltest.cpp in Sources */,
+				00403A7F1C8F5DE100A715BE /* OsmWay.swift in Sources */,
+				004F78C41CCEE6670045801F /* CPP-Wrapper.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		001D2FD51C7E81E000D64169 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				001D2FDE1C7E81E000D64169 /* LmarkPlannerTests.swift in Sources */,
+				00403A771C8A420100A715BE /* Lmark.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		001D2FDB1C7E81E000D64169 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 001D2FC41C7E81E000D64169 /* LmarkPlanner */;
+			targetProxy = 001D2FDA1C7E81E000D64169 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		001D2FCC1C7E81E000D64169 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				001D2FCD1C7E81E000D64169 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		001D2FD11C7E81E000D64169 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				001D2FD21C7E81E000D64169 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		001D2FE01C7E81E000D64169 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				LIBRARY_SEARCH_PATHS = (
+					"/Users/rsafonov/dev/SbplPlannerWS/Build/Products/Debug-iphonesimulator\n#include",
+					"<cmath>\n#include",
+					"<cstring>\n#include",
+					"<iostream>\n#include",
+					"<string>\n#include",
+					"\"/Users/rsafonov/sbpl_maps/src/include/sbpl/headers.h\"\n\nextern",
+					"\"C\"",
+					void,
+					"getPlanFromSbpl()\n{\n",
+					int,
+					"sol_cost;\n",
+					"std::vector<EnvState*>",
+					"solutionstates;\n",
+					"std::vector<int>",
+					"solutionIds;\n",
+					EnvState,
+					"startState,",
+					"goalState;\n",
+					"
+",
+					MapEnv,
+					"env;
+",
+					startState,
+					"=",
+					"env.CreateState(143,",
+					"1,",
+					"0,",
+					"0);
+",
+					goalState,
+					"=",
+					"env.CreateState(183,",
+					"171,",
+					"0,",
+					"0);
+",
+					"
+",
+					"std::string",
+					dir,
+					"=",
+					"\"/Users/rsafonov/dev/LandmarkPlanner/\";\n",
+					"std::string",
+					roads_file,
+					"=",
+					dir,
+					"+",
+					"\"Roads.txt\";\n",
+					"std::string",
+					landmarks_file,
+					"=",
+					dir,
+					"+",
+					"\"Landmarks.txt\";\n",
+					"
+",
+					"env.InitializeEnv(roads_file,",
+					"landmarks_file);\n",
+					"env.setStartState(startState);\n",
+					"env.setGoalState(goalState);\n\n",
+					"env.findOptimalPath(&sol_cost,",
+					"solutionstates,",
+					"solutionIds);\n",
+					"std::cout",
+					"<<",
+					"\"Done! path has been found.\"",
+					"<<",
+					"\"\\n\";\n\n}\nusing",
+					namespace,
+					"std;\n#include",
+					"<stdio.h>\n#include",
+					"<cmath>\n#include",
+					"<cstring>\n#include",
+					"<iostream>\n#include",
+					"<string>\n#include",
+					"\"/Users/rsafonov/sbpl_maps/src/include/sbpl/headers.h\"\n\nextern",
+					"\"C\"",
+					void,
+					"getPlanFromSbpl()\n{\n",
+					int,
+					"sol_cost;\n",
+					"std::vector<EnvState*>",
+					"solutionstates;\n",
+					"std::vector<int>",
+					"solutionIds;\n",
+					EnvState,
+					"startState,",
+					"goalState;\n",
+					"
+",
+					MapEnv,
+					"env;
+",
+					startState,
+					"=",
+					"env.CreateState(143,",
+					"1,",
+					"0,",
+					"0);
+",
+					goalState,
+					"=",
+					"env.CreateState(183,",
+					"171,",
+					"0,",
+					"0);
+",
+					"
+",
+					"std::string",
+					dir,
+					"=",
+					"\"/Users/rsafonov/dev/LandmarkPlanner/\";\n",
+					"std::string",
+					roads_file,
+					"=",
+					dir,
+					"+",
+					"\"Roads.txt\";\n",
+					"std::string",
+					landmarks_file,
+					"=",
+					dir,
+					"+",
+					"\"Landmarks.txt\";\n",
+					"
+",
+					"env.InitializeEnv(roads_file,",
+					"landmarks_file);\n",
+					"env.setStartState(startState);\n",
+					"env.setGoalState(goalState);\n\n",
+					"env.findOptimalPath(&sol_cost,",
+					"solutionstates,",
+					"solutionIds);\n",
+					"std::cout",
+					"<<",
+					"\"Done! path has been found.\"",
+					"<<",
+					"\"\\n\";\n\n}\nusing",
+					namespace,
+					"std;
+",
+				);
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		001D2FE11C7E81E000D64169 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				LIBRARY_SEARCH_PATHS = (
+					"/Users/rsafonov/dev/SbplPlannerWS/Build/Products/Debug-iphonesimulator\n#include",
+					"<cmath>\n#include",
+					"<cstring>\n#include",
+					"<iostream>\n#include",
+					"<string>\n#include",
+					"\"/Users/rsafonov/sbpl_maps/src/include/sbpl/headers.h\"\n\nextern",
+					"\"C\"",
+					void,
+					"getPlanFromSbpl()\n{\n",
+					int,
+					"sol_cost;\n",
+					"std::vector<EnvState*>",
+					"solutionstates;\n",
+					"std::vector<int>",
+					"solutionIds;\n",
+					EnvState,
+					"startState,",
+					"goalState;\n",
+					"
+",
+					MapEnv,
+					"env;
+",
+					startState,
+					"=",
+					"env.CreateState(143,",
+					"1,",
+					"0,",
+					"0);
+",
+					goalState,
+					"=",
+					"env.CreateState(183,",
+					"171,",
+					"0,",
+					"0);
+",
+					"
+",
+					"std::string",
+					dir,
+					"=",
+					"\"/Users/rsafonov/dev/LandmarkPlanner/\";\n",
+					"std::string",
+					roads_file,
+					"=",
+					dir,
+					"+",
+					"\"Roads.txt\";\n",
+					"std::string",
+					landmarks_file,
+					"=",
+					dir,
+					"+",
+					"\"Landmarks.txt\";\n",
+					"
+",
+					"env.InitializeEnv(roads_file,",
+					"landmarks_file);\n",
+					"env.setStartState(startState);\n",
+					"env.setGoalState(goalState);\n\n",
+					"env.findOptimalPath(&sol_cost,",
+					"solutionstates,",
+					"solutionIds);\n",
+					"std::cout",
+					"<<",
+					"\"Done! path has been found.\"",
+					"<<",
+					"\"\\n\";\n\n}\nusing",
+					namespace,
+					"std;\n#include",
+					"<stdio.h>\n#include",
+					"<cmath>\n#include",
+					"<cstring>\n#include",
+					"<iostream>\n#include",
+					"<string>\n#include",
+					"\"/Users/rsafonov/sbpl_maps/src/include/sbpl/headers.h\"\n\nextern",
+					"\"C\"",
+					void,
+					"getPlanFromSbpl()\n{\n",
+					int,
+					"sol_cost;\n",
+					"std::vector<EnvState*>",
+					"solutionstates;\n",
+					"std::vector<int>",
+					"solutionIds;\n",
+					EnvState,
+					"startState,",
+					"goalState;\n",
+					"
+",
+					MapEnv,
+					"env;
+",
+					startState,
+					"=",
+					"env.CreateState(143,",
+					"1,",
+					"0,",
+					"0);
+",
+					goalState,
+					"=",
+					"env.CreateState(183,",
+					"171,",
+					"0,",
+					"0);
+",
+					"
+",
+					"std::string",
+					dir,
+					"=",
+					"\"/Users/rsafonov/dev/LandmarkPlanner/\";\n",
+					"std::string",
+					roads_file,
+					"=",
+					dir,
+					"+",
+					"\"Roads.txt\";\n",
+					"std::string",
+					landmarks_file,
+					"=",
+					dir,
+					"+",
+					"\"Landmarks.txt\";\n",
+					"
+",
+					"env.InitializeEnv(roads_file,",
+					"landmarks_file);\n",
+					"env.setStartState(startState);\n",
+					"env.setGoalState(goalState);\n\n",
+					"env.findOptimalPath(&sol_cost,",
+					"solutionstates,",
+					"solutionIds);\n",
+					"std::cout",
+					"<<",
+					"\"Done! path has been found.\"",
+					"<<",
+					"\"\\n\";\n\n}\nusing",
+					namespace,
+					"std;
+",
+				);
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		001D2FE31C7E81E000D64169 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				HEADER_SEARCH_PATHS = (
+					/Users/rsafonov/dev/sbpl_maps/src/include,
+					/usr/local/include,
+				);
+				INFOPLIST_FILE = LmarkPlanner/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = "/Users/rsafonov/dev/SbplPlannerWS/Build/Products/Debug-iphonesimulator";
+				PRODUCT_BUNDLE_IDENTIFIER = com.rsafonova.LmarkPlanner;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "LmarkPlanner-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		001D2FE41C7E81E000D64169 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				HEADER_SEARCH_PATHS = (
+					/Users/rsafonov/dev/sbpl_maps/src/include,
+					/usr/local/include,
+				);
+				INFOPLIST_FILE = LmarkPlanner/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = "/Users/rsafonov/dev/SbplPlannerWS/Build/Products/Debug-iphonesimulator";
+				PRODUCT_BUNDLE_IDENTIFIER = com.rsafonova.LmarkPlanner;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "LmarkPlanner-Bridging-Header.h";
+			};
+			name = Release;
+		};
+		001D2FE61C7E81E000D64169 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = LmarkPlannerTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.LmarkPlannerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LmarkPlanner.app/LmarkPlanner";
+			};
+			name = Debug;
+		};
+		001D2FE71C7E81E000D64169 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = LmarkPlannerTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.LmarkPlannerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LmarkPlanner.app/LmarkPlanner";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		001D2FC01C7E81E000D64169 /* Build configuration list for PBXProject "LmarkPlanner" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				001D2FE01C7E81E000D64169 /* Debug */,
+				001D2FE11C7E81E000D64169 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		001D2FE21C7E81E000D64169 /* Build configuration list for PBXNativeTarget "LmarkPlanner" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				001D2FE31C7E81E000D64169 /* Debug */,
+				001D2FE41C7E81E000D64169 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		001D2FE51C7E81E000D64169 /* Build configuration list for PBXNativeTarget "LmarkPlannerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				001D2FE61C7E81E000D64169 /* Debug */,
+				001D2FE71C7E81E000D64169 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 001D2FBD1C7E81E000D64169 /* Project object */;
+}
