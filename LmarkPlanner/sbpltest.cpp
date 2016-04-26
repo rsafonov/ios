@@ -102,6 +102,15 @@ void getPlanFromSbplByJson(string str)
     
     printf("sol_cost = %d solutionIds.size = %d solutionstates.size = %d\n", sol_cost, (int)solutionIds.size(), (int)solutionstates.size());
     fflush(stdout);
+    
+    vector<Point*> latLonPath;
+    env.ConvertStatePathToLatLonPath(solutionstates, &latLonPath);
+    
+    for (int i=0; i<(int)latLonPath.size(); i++)
+    {
+        printf("%lld %f %f\n", latLonPath[i]->id, latLonPath[i]->latitude, latLonPath[i]->longitude);
+    }
+    
     std::cout << "Done! path has been found." << "\n";
     
 }
