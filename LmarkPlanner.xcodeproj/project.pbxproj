@@ -66,7 +66,7 @@
 		004F78BB1CCEC2C10045801F /* libsbpl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsbpl.a; path = "../SbplPlannerWS/Build/Products/Debug-iphonesimulator/libsbpl.a"; sourceTree = "<group>"; };
 		004F78BD1CCEC2EF0045801F /* LmarkPlanner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LmarkPlanner-Bridging-Header.h"; sourceTree = "<group>"; };
 		004F78BE1CCEC2F00045801F /* sbpltest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sbpltest.cpp; path = LmarkPlanner/sbpltest.cpp; sourceTree = "<group>"; };
-		004F78C21CCEDC7F0045801F /* sbpltets.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = sbpltets.hpp; path = LmarkPlanner/sbpltets.hpp; sourceTree = "<group>"; };
+		004F78C21CCEDC7F0045801F /* sbpltets.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = sbpltets.h; path = LmarkPlanner/sbpltets.h; sourceTree = "<group>"; };
 		004F78C31CCEE6670045801F /* CPP-Wrapper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = "CPP-Wrapper.mm"; path = "LmarkPlanner/CPP-Wrapper.mm"; sourceTree = "<group>"; };
 		004F78C51CCEE8090045801F /* CPP-Wrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "CPP-Wrapper.h"; path = "LmarkPlanner/CPP-Wrapper.h"; sourceTree = "<group>"; };
 		00B0F2B01C85324300C75449 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
@@ -96,7 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				004F78BE1CCEC2F00045801F /* sbpltest.cpp */,
-				004F78C21CCEDC7F0045801F /* sbpltets.hpp */,
+				004F78C21CCEDC7F0045801F /* sbpltets.h */,
 				004F78C51CCEE8090045801F /* CPP-Wrapper.h */,
 				004F78C31CCEE6670045801F /* CPP-Wrapper.mm */,
 				004F78BB1CCEC2C10045801F /* libsbpl.a */,

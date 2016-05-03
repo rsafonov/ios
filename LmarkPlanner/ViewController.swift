@@ -32,6 +32,8 @@ class ViewController: UIViewController {
     
     var polyline_color = UIColor()
     
+    var snp : MKMapSnapshot?
+    
     @IBOutlet var mapTypeButton: UIBarButtonItem!
     @IBOutlet var lmarksButton: UIBarButtonItem!
     @IBOutlet var zoomInButton: UIBarButtonItem!
@@ -286,6 +288,9 @@ class ViewController: UIViewController {
         LoadSampleLmarks()
         LoadSampleDirections()
         LoadSampleSafetyDirections()
+        
+        //var fname = "myimage"
+        //self.takeSnapshot(mapView, filename: fname)
     
         
         /*
@@ -414,6 +419,95 @@ class ViewController: UIViewController {
             //self.showRoute(response)
         }
 */
+    }
+    
+    /*
+    func takeSnapshot(mapView: MKMapView, withCallback: (UIImage?, NSError?) -> ())
+    {
+        let options = MKMapSnapshotOptions()
+        options.region = mapView.region
+        options.size = mapView.frame.size;
+        options.scale = UIScreen.mainScreen().scale
+        
+        let snapshotter = MKMapSnapshotter(options: options)
+        snapshotter.startWithCompletionHandler()
+            { snapshot, error in
+                guard  snapshot != nil else {
+                withCallback(nil, error)
+                return
+            }
+            withCallback(snapshot!.image, nil)
+        }
+    }
+    */
+    
+    func takeSnapshot(mapView: MKMapView, filename: String)
+    {
+        let snapshotView = UIView(frame: CGRect (x: 0, y: 0, width: 300, height: 300))
+
+        let options = MKMapSnapshotOptions()
+        //options.region = snapshotView.frame.   //mapView.region
+        //options.size = mapView.frame.size;
+        //options.scale = UIScreen.mainScreen().scale
+        
+        
+        options.size = CGSize(width: 300, height: 300)
+        options.mapType = .SatelliteFlyover
+        
+        let camera = MKMapCamera(lookingAtCenterCoordinate: initialLocation.coordinate, fromDistance: 500, pitch: 65, heading: 0)
+        options.camera = camera
+        
+        
+        let semaphore = dispatch_semaphore_create(0)
+        let qualityOfServiceClass = QOS_CLASS_BACKGROUND
+        let backgroundQueue = dispatch_get_global_queue(qualityOfServiceClass, 0)
+        
+        let snapshotter = MKMapSnapshotter(options: options)
+        //snapshotter.startWithCompletionHandler()
+        snapshotter.startWithQueue(backgroundQueue, completionHandler:  { (snapshot: MKMapSnapshot?, error: NSError?) -> Void in
+            
+ 
+                guard (snapshot != nil) else {
+                    print("Snapshot error:\(error)")
+                    dispatch_semaphore_signal(semaphore)
+                    return
+                }
+            
+            //strongSelf.snp = snapshot
+        
+        
+            let data = UIImagePNGRepresentation(snapshot!.image)
+            let filename = self.getDocumentsDirectory().stringByAppendingPathComponent("\(filename).png")
+            data?.writeToFile(filename, atomically: true)
+            dispatch_semaphore_signal(semaphore)
+        })
+        let delayTime = dispatch_time(DISPATCH_TIME_NOW, Int64(3*Double(NSEC_PER_SEC)))
+        dispatch_semaphore_wait(semaphore, delayTime)
+        
+    }
+    
+    
+    /*
+    func takeSnapshot(mapView: MKMapView, filename: String)
+    {
+        takeSnapshot(mapView) { (image, error) ->() in
+            guard image != nil else {
+                print(error)
+                return
+            }
+            
+            if let data = UIImagePNGRepresentation(image!) {
+                let filename = self.getDocumentsDirectory().stringByAppendingPathComponent("\(filename).png")
+                data.writeToFile(filename, atomically: true)
+            }
+        }
+    }
+*/
+    
+    func getDocumentsDirectory() -> NSString {
+        let paths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+        let documentsDirectory = paths[0]
+        return documentsDirectory
     }
     
     func AddLandmark(name: String, description: String, type: String, address: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees, photoName: String, pinName: String) {
@@ -591,6 +685,15 @@ class ViewController: UIViewController {
 
     @IBAction func sendOsmQuery(sender: AnyObject) {
         
+        var locationManager = CLLocationManager()
+        locationManager.requestAlwaysAuthorization()
+        
+        var fname = "myimage"
+        self.takeSnapshot(mapView, filename: fname)
+        
+        
+        
+        
         let rect:MKMapRect = self.mapView.visibleMapRect
         
         print("x=\(rect.origin.x) y=\(rect.origin.y)")
@@ -609,8 +712,8 @@ class ViewController: UIViewController {
         let maxlon:Double = neCoord.longitude
         print("minlat=\(minlat) minlon=\(minlon) maxlat=\(maxlat) maxlon=\(maxlon)")
         
-        overpassQlRequest(minlat, minlon:minlon, maxlat:maxlat, maxlon:maxlon)
-        //overpassQlRequest(40.42, minlon: -79.99, maxlat: 40.43, maxlon: -79.97)
+        //overpassQlRequest(minlat, minlon:minlon, maxlat:maxlat, maxlon:maxlon)
+        ////overpassQlRequest(40.42, minlon: -79.99, maxlat: 40.43, maxlon: -79.97)
     }
     
     @IBAction func zoomInMap(sender: AnyObject) {
@@ -702,7 +805,8 @@ class ViewController: UIViewController {
             let responseString = String(data: data!, encoding: NSUTF8StringEncoding)
             //print("responseString = \(responseString)")
             
-            CPP_Wrapper().getPlanFromSbplByJson_wrapped(responseString);
+            //pl CLLocationCoordinate2D* pl;
+            var pl = CPP_Wrapper().getPlanFromSbplByJson_wrapped(responseString);
             
             
             var json: Payload!
@@ -732,7 +836,7 @@ class ViewController: UIViewController {
                 let type = element!["type"] as? String
                 
                 if type == "node" {
-                    let id = element!["id"] as? Int
+                    var id = element!["id"] as? Int
                     let lat = element!["lat"] as? Double
                     let lon = element!["lon"] as? Double
                     let tags = element!["tags"] as? NSDictionary
@@ -753,6 +857,27 @@ class ViewController: UIViewController {
                     
                 }
             }
+            
+            var count1 = 0
+            for node in self.nodes {
+                if let i = self.nodes.indexOf({$0.id == node.id})
+                {
+                    print("i=\(i) id=\(self.nodes[i].id) lat=\(self.nodes[i].lat) lon=\(self.nodes[i].lon)")
+                    count1++
+                }
+                else
+                {
+                    print("not found");
+            
+                }
+            }
+            print("count1=\(count1)");
+            
+            
+            //for node in self.nodes {
+            //    let filteredNode = filter(self.nodes) {$0.id == node.id};
+            
+            //
 
         }
         task.resume()
@@ -768,6 +893,11 @@ class ViewController: UIViewController {
     
     func searchInMap(search_query: String, lat: CLLocationDegrees, lon: CLLocationDegrees, span: MKCoordinateSpan, mode: Int)
     {
+        let latmin: CLLocationDegrees = lat - span.latitudeDelta
+        let latmax: CLLocationDegrees = lat + span.latitudeDelta
+        let lonmin: CLLocationDegrees = lon - span.longitudeDelta
+        let lonmax: CLLocationDegrees = lon + span.longitudeDelta
+        
         let request = MKLocalSearchRequest()
         request.naturalLanguageQuery = search_query
         
@@ -784,10 +914,6 @@ class ViewController: UIViewController {
             } else {
                 print("\(response?.mapItems.count) matches found")
                 
-                let latmin: CLLocationDegrees = lat - span.latitudeDelta
-                let latmax: CLLocationDegrees = lat + span.latitudeDelta
-                let lonmin: CLLocationDegrees = lon - span.longitudeDelta
-                let lonmax: CLLocationDegrees = lon + span.longitudeDelta
                 
                 if mode == 1 {
                 

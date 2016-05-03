@@ -6,13 +6,15 @@
 //  Copyright © 2016 Margarita Safonova. All rights reserved.
 //
 
-#ifndef CPP_Wrapper_h
-#define CPP_Wrapper_h
+//#ifndef CPP_Wrapper_h
+//#define CPP_Wrapper_h
 
 #import <Foundation/Foundation.h>
+#import <MapKit/Mapkit.h>
 
 @interface CPP_Wrapper : NSObject
-- (void) getPlanFromSbplByJson_wrapped: (NSString*) name;
+- (NSInteger*) getPlanFromSbplByJson_wrapped: (NSString*) name;
+
 @end
 
-#endif /* CPP_Wrapper_h */
+//#endif /* CPP_Wrapper_h */

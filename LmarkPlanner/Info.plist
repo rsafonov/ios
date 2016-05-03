@@ -51,5 +51,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>sbpl planning app aaa</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>sbpl planning always</string>
 </dict>
 </plist>

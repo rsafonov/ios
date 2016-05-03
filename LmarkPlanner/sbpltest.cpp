@@ -6,6 +6,8 @@
 //  Copyright © 2016 Margarita Safonova. All rights reserved.
 //
 
+#include "sbpltets.h"
+
 #include <stdio.h>
 #include <cmath>
 #include <cstring>
@@ -16,9 +18,8 @@
 #include "/Users/rsafonov/dev/sbpl_maps/src/include/sbpl/headers.h"
 
 
-#include "sbpltets.hpp"
+//#include "sbpltets.hpp"
 
-using namespace std;
 
 void getPlanFromSbpl()
 {
@@ -67,7 +68,7 @@ EnvState CreateStateFromOsm(long long int nid, MapEnv* env, vector<Road*>* roads
     return state;
 }
 
-void getPlanFromSbplByJson(string str)
+vector<long long int> getPlanFromSbplByJson(string str)
 {
     int sol_cost;
     std::vector<EnvState*> solutionstates;
@@ -103,15 +104,36 @@ void getPlanFromSbplByJson(string str)
     printf("sol_cost = %d solutionIds.size = %d solutionstates.size = %d\n", sol_cost, (int)solutionIds.size(), (int)solutionstates.size());
     fflush(stdout);
     
-    vector<Point*> latLonPath;
-    env.ConvertStatePathToLatLonPath(solutionstates, &latLonPath);
     
-    for (int i=0; i<(int)latLonPath.size(); i++)
+    //int len = (int)solutionstates.size();
+    vector<long long int> pid;
+    for (int i=0; i<(int)solutionstates.size(); i++)
     {
-        printf("%lld %f %f\n", latLonPath[i]->id, latLonPath[i]->latitude, latLonPath[i]->longitude);
+        printf("i=%d %lld %lld %u\n", i, solutionstates[i]->roadId, solutionstates[i]->pointId, solutionstates[i]->roadDir);
+        pid.push_back(solutionstates[i]->pointId);
     }
     
-    std::cout << "Done! path has been found." << "\n";
+    return pid;
+    
+    //vector<Spoint*> latLonPath;
+    //env.ConvertStatePathToLatLonPath(solutionstates, &latLonPath);
+    
+    //vector< vector<double> > latlon;
+    //int len = (int)latLonPath.size();
+    //latlon.resize(len);
+    
+    //for (int i=0; i<(int)latLonPath.size(); i++)
+    //{
+    //    printf("%lld %f %f\n", latLonPath[i]->id, latLonPath[i]->latitude, latLonPath[i]->longitude);
+    //    latlon[i].resize(2);
+    //    latlon[i][0] = latLonPath[i]->latitude;
+    //    latlon[i][1] = latLonPath[i]->longitude;
+        
+    //}
+    
+    //std::cout << "Done! path has been found." << "\n";
+    
+    //return latLonPath;
     
 }
 

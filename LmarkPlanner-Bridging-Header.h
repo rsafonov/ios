@@ -10,3 +10,6 @@
 
 
 #import "CPP-Wrapper.h"
+//#include "sbpltets.h"
+
+//NSInteger*  getPlanFromSbplByJson(std::string str);

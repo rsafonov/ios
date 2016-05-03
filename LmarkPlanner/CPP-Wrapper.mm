@@ -7,13 +7,28 @@
 //
 
 #import "CPP-Wrapper.h"
-#include "sbpltets.hpp"
+#include "sbpltets.h"
 
 @implementation CPP_Wrapper
 
-- (void)getPlanFromSbplByJson_wrapped : (NSString *) str {
+- (NSInteger*)getPlanFromSbplByJson_wrapped : (NSString *) str {
     
-     getPlanFromSbplByJson([str cStringUsingEncoding:NSUTF8StringEncoding]);
-     
+    vector<long long int> v;
+    v = getPlanFromSbplByJson([str cStringUsingEncoding:NSUTF8StringEncoding]);
+    
+    //int len = (int)v.size();
+    
+    //printf("len = %d\n", (int)v.size());
+    int len = (int)v.size();
+    
+    NSInteger *pid = (NSInteger*)malloc(len* sizeof(NSInteger));
+    
+    for (int i=0; i<len; i++)
+    {
+        //latlonPlan[i] = CLLocationCoordinate2DMake(v[i][0], v[i][1]);
+        printf("i=%d %lld\n", i, v[i]);
+        pid[i] = v[i];
+    }
+    return pid;
 }
 @end

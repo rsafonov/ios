@@ -13,7 +13,7 @@ class OsmNode {
     
     //MARK: Properties
     
-    var id: Int
+    var id: Int;
     var lat: Double
     var lon: Double
     var tags: NSDictionary
