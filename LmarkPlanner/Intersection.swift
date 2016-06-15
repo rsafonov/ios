@@ -10,13 +10,18 @@ import Foundation
 import MapKit
 
 class Intersection {
+    var id : Int64 = 0
+    var index: Int = 0
     var latitude = 0.0
     var longitude = 0.0
-    var location = ""
+    var location : NSString = ""
     
-    init(latutude:CLLocationDegrees, longitude:CLLocationDegrees, location:String) {
+    init(id:Int64, index:Int, latutude:CLLocationDegrees, longitude:CLLocationDegrees, location:NSString) {
+        self.id = id
+        self.index = index
         self.latitude = latutude
         self.longitude = longitude
+        self.location = location
         self.location = location
     }
 }

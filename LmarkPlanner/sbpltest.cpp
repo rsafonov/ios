@@ -6,136 +6,189 @@
 //  Copyright © 2016 Margarita Safonova. All rights reserved.
 //
 
-#include "sbpltets.h"
+#include "sbpltest.h"
 
-#include <stdio.h>
-#include <cmath>
-#include <cstring>
-#include <iostream>
-#include <string>
-
-#include "/Users/rsafonov/dev/sbpl_maps/src/include/sbpl/discrete_space_information/map.h"
-#include "/Users/rsafonov/dev/sbpl_maps/src/include/sbpl/headers.h"
-
-
-//#include "sbpltets.hpp"
-
-
-void getPlanFromSbpl()
+bool MySbpl::CreateStateFromOsm(long long int nid, int type, int dir, MapEnv* env, vector<Road*>* roads, EnvState* state)
 {
-    int sol_cost;
-    std::vector<EnvState*> solutionstates;
-    std::vector<int> solutionIds;
-    EnvState startState, goalState;
-    
-    MapEnv env;
-    startState = env.CreateState(143, 1, 0, 0);
-    goalState = env.CreateState(183, 171, 0, 0);
-    
-    std::string dir = "/Users/rsafonov/dev/LandmarkPlanner/";
-    std::string roads_file = dir + "Roads.txt";
-    std::string landmarks_file = dir + "Landmarks.txt";
-    
-    env.InitializeEnv(roads_file, landmarks_file);
-    env.setStartState(startState);
-    env.setGoalState(goalState);
-    
-    env.findOptimalPath(&sol_cost, solutionstates, solutionIds);
-    std::cout << "Done! path has been found." << "\n";
-    
-}
-
-EnvState CreateStateFromOsm(long long int nid, MapEnv* env, vector<Road*>* roads)
-{
-    EnvState state;
     long long int rid;
+    int real_type = -1, real_dir = dir;
     
     printf("CreateStateFromOsm start: nid = %lld\n", nid);
     fflush(stdout);
     
+    rid = -1;
+    bool found = false;
+    
+    
     for (int i=0; i<roads->size(); i++)
     {
-        if ((*roads)[i]->roadends[0] == nid) // || (*roads)[i]->roadends[1] == nid)
+        if ((*roads)[i]->roadends[0] == nid || (*roads)[i]->roadends[1] == nid)
         {
             rid = (*roads)[i]->id;
+            found = true;
+            real_type = 0;
             break;
         }
     }
-    printf("rid = %lld nid = %lld\n", rid, nid);
+    printf("As intersection: found = %d rid = %lld nid = %lld type = 0\n", found, rid, nid);
     fflush(stdout);
     
-    state = env->CreateState(rid, nid, 0, 1);
-    return state;
+    if (!found)
+    {
+        for (int i=0; i<roads->size(); i++)
+        {
+            for (int j=0; j < (*roads)[i]->landmarkConnections.size(); j++)
+            {
+                if ((*roads)[i]->landmarkConnections[j] == nid)
+                {
+                    rid = (*roads)[i]->id;
+                    found = true;
+                    real_type = 1;
+                    break;
+                }
+            }
+        }
+        printf("As landmark: found = %d rid = %lld nid = %lld type = 1\n", found, rid, nid);
+        fflush(stdout);
+    }
+        
+    if (found)
+    {
+        if (real_type == 1) real_dir = 0;
+        *state = env->CreateState(rid, nid, real_type, real_dir);
+        //*state = env->CreateState(rid, nid, 0, 1);
+        printf("State found: rid = %lld nid = %lld type = %d dir = %d\n", rid, nid, real_type, real_dir);
+    }
+    return found;
 }
 
-vector<long long int> getPlanFromSbplByJson(string str)
+bool MySbpl::initPlannerByOsm(string osmJsonStr, char* lmarks, char* intersections, int buflen)
 {
-    int sol_cost;
-    std::vector<EnvState*> solutionstates;
-    std::vector<int> solutionIds;
-    EnvState startState, goalState;
+    //OsmParams params;
+    env.dbg_params.mode = 0;
+    env.dbg_params.roads_file_name = "out/myroads.txt";
+    env.dbg_params.landmarks_file_name = "out/mylandmarks.txt";
+    env.dbg_params.amenities_file_name = "out/myamenities.txt";
+    env.dbg_params.ways_file_name = "out/myways.txt";
+    env.dbg_params.roadinfo_file_name = "out/myroadinfo.txt";
     
-    MapEnv env;
-    boost::unordered_map<long, int> replaceIds;
-    vector<Road*> roads;
+    env.dbg_params.max_landmark_road_distance = 50.0; //meters
     
-    OsmParams params;
-    params.mode = 0;
-    params.roads_file_name = "out/myroads.txt";
-    params.landmarks_file_name = "out/mylandmarks.txt";
-    params.amenities_file_name = "out/myamenities.txt";
-    params.ways_file_name = "out/myways.txt";
-    params.roadinfo_file_name = "out/myroadinfo.txt";
+    string slmarks = lmarks;
+    string sintersections = intersections;
+    bool res = env.InitializeEnvByJson(osmJsonStr, &roads, &slmarks, buflen,  &sintersections);
     
-    env.InitializeEnvByJson(str, &roads, params);
-    startState = CreateStateFromOsm(105013433, &env, &roads);
-    goalState = CreateStateFromOsm(105097518, &env, &roads);
-    
-    //std::cout << "press any key to continue...";
-    //getchar();
-    
-    env.setStartState(startState);
-    env.setGoalState(goalState);
-    env.ComputeHeuristic();
-    
-    env.findOptimalPath(&sol_cost, solutionstates, solutionIds);
-    //environment.findOptimalPPCPPath(&ppcpSolutionIds);
-    
-    printf("sol_cost = %d solutionIds.size = %d solutionstates.size = %d\n", sol_cost, (int)solutionIds.size(), (int)solutionstates.size());
-    fflush(stdout);
-    
-    
-    //int len = (int)solutionstates.size();
-    vector<long long int> pid;
-    for (int i=0; i<(int)solutionstates.size(); i++)
+    //printf("--- lmarks ---\n");
+    //printf("%s\n", slmarks.c_str());
+    //printf("\n");
+
+    if (res)
     {
-        printf("i=%d %lld %lld %u\n", i, solutionstates[i]->roadId, solutionstates[i]->pointId, solutionstates[i]->roadDir);
-        pid.push_back(solutionstates[i]->pointId);
+        strcpy(lmarks, slmarks.c_str());
+        strcpy(intersections, sintersections.c_str());
+    }
+    else
+        printf("Error: initPlannerByOsm failed!\n");
+    return res;
+}
+
+bool MySbpl::setStartPose(long long int point_id)
+{
+    EnvState state;
+    int type = 1, dir = 1;
+    
+    //bool found = CreateStateFromOsm(105013433, 0, 1, &env, &roads, &state);
+    bool found = CreateStateFromOsm(point_id, type, dir, &env, &roads, &state);
+    
+    if (!found)
+    {
+        printf("Start state can not be created for node %lld\n", point_id);
+        return false;
+    }
+    else
+    {
+        env.setStartState(state);
+        printf("Start state created for node %lld\n", point_id);
+        return true;
+    }
+}
+
+bool MySbpl::setGoalPose(long long int point_id)
+{
+    EnvState state;
+    int type = 1, dir = 1;
+
+    //bool found = CreateStateFromOsm(105097518, 0, 1, &env, &roads, &state);
+    bool found = CreateStateFromOsm(point_id, type, dir, &env, &roads, &state);
+    if (!found)
+    {
+        printf("Goal state can not be created for node %lld\n", point_id);
+        return false;
+    }
+    else
+    {
+        env.setGoalState(state);
+        printf("Goal state created for node %lld\n", point_id);
+        return true;
+    }
+}
+
+bool MySbpl::getCoordsById(long long int point_id, double* lat, double* lon)
+{
+    bool res = env.GetCoordsById(point_id, lat, lon);
+    return res;
+}
+
+bool MySbpl::getIntresectionDetails(long long int point_id, int* ind, double* lat, double* lon, char* location)
+{
+    string slocation = location;
+    bool res = env.GetIntersectionDetails(point_id, ind, lat, lon, &slocation);
+    if (res)
+    {
+        strcpy(location, slocation.c_str());
+    }
+    else
+        printf("Error: getIntersectionDetails failed!\n");
+    return res;
+}
+
+bool MySbpl::generatePlan(int* pathlen, char* path)
+{
+    std::vector<int*> ppcpSolutionIds;
+    string spath = "";  //= path;
+    printf("generatePlan: pathlen = %d", *pathlen);
+    fflush(stdout);
+
+    env.ComputeHeuristic();
+    env.setSafetyNetDegree(0);
+    env.findOptimalPPCPPath(&ppcpSolutionIds);
+    
+    *pathlen = (int)ppcpSolutionIds.size();
+    if (*pathlen <= 0)
+    {
+        printf("Error: path not found!\n");
+        fflush(stdout);
+        return false;
+    }
+    else
+    {
+        printf("pathlen = %d\n", *pathlen);
+        spath = env.ConvertStatePathToLatLonPath(&ppcpSolutionIds);
+        printf("Length of spath string: %lu", spath.length());
+        fflush(stdout);
+        //printf("--- path ---\n");
+        //printf("%s\n", spath.c_str());
+        //printf("\n");
+        strcpy(path, spath.c_str());
     }
     
-    return pid;
-    
-    //vector<Spoint*> latLonPath;
-    //env.ConvertStatePathToLatLonPath(solutionstates, &latLonPath);
-    
-    //vector< vector<double> > latlon;
-    //int len = (int)latLonPath.size();
-    //latlon.resize(len);
-    
-    //for (int i=0; i<(int)latLonPath.size(); i++)
-    //{
-    //    printf("%lld %f %f\n", latLonPath[i]->id, latLonPath[i]->latitude, latLonPath[i]->longitude);
-    //    latlon[i].resize(2);
-    //    latlon[i][0] = latLonPath[i]->latitude;
-    //    latlon[i][1] = latLonPath[i]->longitude;
-        
-    //}
-    
-    //std::cout << "Done! path has been found." << "\n";
-    
-    //return latLonPath;
-    
+    *pathlen = (int)ppcpSolutionIds.size();
+    printf("pathlen = %d\n", *pathlen);
+    return true;
 }
+
+
+
 
 
 

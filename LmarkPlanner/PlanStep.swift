@@ -15,6 +15,7 @@ class PlanStep {
     var instructions = ""
     var image = ""
     var icon = ""
+
     
     init(seq:Int, name:String, instructions:String, image:String, icon:String) {
         self.seq = seq

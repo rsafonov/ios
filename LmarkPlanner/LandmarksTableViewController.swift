@@ -50,7 +50,7 @@ class LandmarksTableViewController: UITableViewController {
         let photo1 = UIImage(named: "CathedralOfLearning")
         let pin1 = UIImage(named: "Gyro")
         
-        let lmark1 = Lmark(name: "Cathedral Of Learning", description: "University of Pittsburgh", type: "building", address: "4301 Fifth Ave", latitude: 40.444378, longitude: -79.952799, photo: photo1!, pin: pin1!)
+        let lmark1 = Lmark(name: "Cathedral Of Learning", description: "University of Pittsburgh", type: "building", address: "4301 Fifth Ave", latitude: 40.444378, longitude: -79.952799, photo: photo1!, pin: pin1!, pointId: 1, roadId: 1)
             lmarks.append(lmark1!)
     }
 

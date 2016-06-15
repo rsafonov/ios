@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "736"
-            endingLineNumber = "736"
+            startingLineNumber = "1025"
+            endingLineNumber = "1025"
             landmarkName = "changeMapType(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -26,11 +26,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "750"
-            endingLineNumber = "750"
+            startingLineNumber = "1039"
+            endingLineNumber = "1039"
             landmarkName = "displayRegion(_:lon:span:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -42,11 +42,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "486168251.746628"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "116"
-            endingLineNumber = "116"
+            startingLineNumber = "127"
+            endingLineNumber = "127"
             landmarkName = "mapView(_:rendererForOverlay:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -58,27 +58,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "295"
-            endingLineNumber = "295"
-            landmarkName = "viewDidLoad()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "917"
-            endingLineNumber = "917"
+            startingLineNumber = "1252"
+            endingLineNumber = "1252"
             landmarkName = "searchInMap(_:lat:lon:span:mode:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -90,11 +74,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487628929.981771"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "146"
-            endingLineNumber = "146"
+            startingLineNumber = "265"
+            endingLineNumber = "265"
             landmarkName = "mapView(_:viewForAnnotation:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -106,27 +90,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "299"
-            endingLineNumber = "299"
-            landmarkName = "viewDidLoad()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "972"
-            endingLineNumber = "972"
+            startingLineNumber = "1317"
+            endingLineNumber = "1317"
             landmarkName = "searchInMap(_:lat:lon:span:mode:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -138,11 +106,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "982"
-            endingLineNumber = "982"
+            startingLineNumber = "1326"
+            endingLineNumber = "1326"
             landmarkName = "searchInMap(_:lat:lon:span:mode:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -154,44 +122,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "316"
-            endingLineNumber = "316"
-            landmarkName = "viewDidLoad()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "910"
-            endingLineNumber = "910"
+            startingLineNumber = "1245"
+            endingLineNumber = "1245"
             landmarkName = "searchInMap(_:lat:lon:span:mode:)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "338"
-            endingLineNumber = "338"
-            landmarkName = "viewDidLoad()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -234,11 +170,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "662"
-            endingLineNumber = "662"
+            startingLineNumber = "923"
+            endingLineNumber = "923"
             landmarkName = "prepareForSegue(_:sender:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -266,11 +202,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "238"
-            endingLineNumber = "238"
+            startingLineNumber = "364"
+            endingLineNumber = "364"
             landmarkName = "textFieldShouldReturn(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -282,11 +218,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "232"
-            endingLineNumber = "232"
+            startingLineNumber = "358"
+            endingLineNumber = "358"
             landmarkName = "configureDetailView(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -298,11 +234,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "224"
-            endingLineNumber = "224"
+            startingLineNumber = "350"
+            endingLineNumber = "350"
             landmarkName = "configureDetailView(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -310,15 +246,15 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "241"
-            endingLineNumber = "241"
+            startingLineNumber = "367"
+            endingLineNumber = "367"
             landmarkName = "textFieldShouldReturn(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -330,27 +266,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "957"
-            endingLineNumber = "957"
-            landmarkName = "searchInMap(_:lat:lon:span:mode:)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "958"
-            endingLineNumber = "958"
+            startingLineNumber = "1287"
+            endingLineNumber = "1287"
             landmarkName = "searchInMap(_:lat:lon:span:mode:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -362,11 +282,27 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "174"
-            endingLineNumber = "174"
+            startingLineNumber = "1305"
+            endingLineNumber = "1305"
+            landmarkName = "searchInMap(_:lat:lon:span:mode:)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "LmarkPlanner/ViewController.swift"
+            timestampString = "487646923.61428"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "299"
+            endingLineNumber = "299"
             landmarkName = "mapView(_:viewForAnnotation:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -378,11 +314,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "228"
-            endingLineNumber = "228"
+            startingLineNumber = "354"
+            endingLineNumber = "354"
             landmarkName = "configureDetailView(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -394,11 +330,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "226"
-            endingLineNumber = "226"
+            startingLineNumber = "352"
+            endingLineNumber = "352"
             landmarkName = "configureDetailView(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -410,27 +346,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "227"
-            endingLineNumber = "227"
-            landmarkName = "configureDetailView(_:)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "191"
-            endingLineNumber = "191"
+            startingLineNumber = "353"
+            endingLineNumber = "353"
             landmarkName = "configureDetailView(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -442,11 +362,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "202"
-            endingLineNumber = "202"
+            startingLineNumber = "317"
+            endingLineNumber = "317"
             landmarkName = "configureDetailView(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -458,12 +378,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "396"
-            endingLineNumber = "396"
-            landmarkName = "viewDidLoad()"
+            startingLineNumber = "328"
+            endingLineNumber = "328"
+            landmarkName = "configureDetailView(_:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -474,11 +394,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "649"
-            endingLineNumber = "649"
+            startingLineNumber = "910"
+            endingLineNumber = "910"
             landmarkName = "prepareForSegue(_:sender:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -490,11 +410,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "486168251.746628"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "85"
-            endingLineNumber = "85"
+            startingLineNumber = "96"
+            endingLineNumber = "96"
             landmarkName = "animateCamera(_:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -502,15 +422,15 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/Intersection.swift"
-            timestampString = "478647316.941452"
+            timestampString = "486953799.496883"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "24"
-            endingLineNumber = "24">
+            startingLineNumber = "29"
+            endingLineNumber = "29">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -520,11 +440,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "486168251.746628"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "70"
-            endingLineNumber = "70"
+            startingLineNumber = "75"
+            endingLineNumber = "75"
             landmarkName = "safety_intersections"
             landmarkType = "19">
          </BreakpointContent>
@@ -536,11 +456,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "674"
-            endingLineNumber = "674"
+            startingLineNumber = "935"
+            endingLineNumber = "935"
             landmarkName = "prepareForSegue(_:sender:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -552,11 +472,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "675"
-            endingLineNumber = "675"
+            startingLineNumber = "936"
+            endingLineNumber = "936"
             landmarkName = "prepareForSegue(_:sender:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -584,11 +504,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "558"
-            endingLineNumber = "558"
+            startingLineNumber = "748"
+            endingLineNumber = "748"
             landmarkName = "LoadSampleLmarks()"
             landmarkType = "5">
          </BreakpointContent>
@@ -600,27 +520,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
+            timestampString = "487628929.981771"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "347"
-            endingLineNumber = "347"
-            landmarkName = "viewDidLoad()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483926333.889604"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "164"
-            endingLineNumber = "164"
+            startingLineNumber = "284"
+            endingLineNumber = "284"
             landmarkName = "mapView(_:viewForAnnotation:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -648,28 +552,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "787"
-            endingLineNumber = "787"
-            landmarkName = "overpassQlRequest(_:minlon:maxlat:maxlon:)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "789"
-            endingLineNumber = "789"
-            landmarkName = "overpassQlRequest(_:minlon:maxlat:maxlon:)"
+            startingLineNumber = "1060"
+            endingLineNumber = "1060"
+            landmarkName = "overpassQlRequest(_:minlon:maxlat:maxlon:completion:)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -680,157 +568,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
+            timestampString = "487646923.61428"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "814"
-            endingLineNumber = "814"
-            landmarkName = "overpassQlRequest(_:minlon:maxlat:maxlon:)"
+            startingLineNumber = "1134"
+            endingLineNumber = "1134"
+            landmarkName = "overpassQlRequest(_:minlon:maxlat:maxlon:completion:)"
             landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "821"
-            endingLineNumber = "821"
-            landmarkName = "overpassQlRequest(_:minlon:maxlat:maxlon:)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "849"
-            endingLineNumber = "849"
-            landmarkName = "overpassQlRequest(_:minlon:maxlat:maxlon:)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "846"
-            endingLineNumber = "846"
-            landmarkName = "overpassQlRequest(_:minlon:maxlat:maxlon:)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "855"
-            endingLineNumber = "855"
-            landmarkName = "overpassQlRequest(_:minlon:maxlat:maxlon:)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "883"
-            endingLineNumber = "883"
-            landmarkName = "overpassQlRequest(_:minlon:maxlat:maxlon:)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "860"
-            endingLineNumber = "860"
-            landmarkName = "overpassQlRequest(_:minlon:maxlat:maxlon:)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "LmarkPlanner/ViewController.swift"
-            timestampString = "483933417.344441"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "882"
-            endingLineNumber = "882"
-            landmarkName = "overpassQlRequest(_:minlon:maxlat:maxlon:)"
-            landmarkType = "5">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "LmarkPlanner.ViewController.overpassQlRequest (LmarkPlanner.ViewController)(Swift.Double, minlon : Swift.Double, maxlat : Swift.Double, maxlon : Swift.Double) -&gt; ()"
-                  moduleName = "LmarkPlanner"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/rsafonov/dev/LmarkPlanner/LmarkPlanner/ViewController.swift"
-                  timestampString = "483315231.984783"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "755"
-                  endingLineNumber = "755"
-                  offsetFromSymbolStart = "3356">
-               </Location>
-               <Location
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "LmarkPlanner.ViewController.(overpassQlRequest (LmarkPlanner.ViewController) -&gt; (Swift.Double, minlon : Swift.Double, maxlat : Swift.Double, maxlon : Swift.Double) -&gt; ()).(closure #1)"
-                  moduleName = "LmarkPlanner"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/rsafonov/dev/LmarkPlanner/LmarkPlanner/ViewController.swift"
-                  timestampString = "483315231.985027"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "755"
-                  endingLineNumber = "755"
-                  offsetFromSymbolStart = "12314">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

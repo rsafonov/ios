@@ -13,7 +13,6 @@
 		001D2FC91C7E81E000D64169 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001D2FC81C7E81E000D64169 /* AppDelegate.swift */; };
 		001D2FCB1C7E81E000D64169 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001D2FCA1C7E81E000D64169 /* ViewController.swift */; };
 		001D2FCE1C7E81E000D64169 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 001D2FCC1C7E81E000D64169 /* Main.storyboard */; };
-		001D2FD01C7E81E000D64169 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 001D2FCF1C7E81E000D64169 /* Assets.xcassets */; };
 		001D2FD31C7E81E000D64169 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 001D2FD11C7E81E000D64169 /* LaunchScreen.storyboard */; };
 		001D2FDE1C7E81E000D64169 /* LmarkPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001D2FDD1C7E81E000D64169 /* LmarkPlannerTests.swift */; };
 		001D2FE91C7E81F800D64169 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 001D2FE81C7E81F800D64169 /* MapKit.framework */; };
@@ -27,8 +26,16 @@
 		00403A7F1C8F5DE100A715BE /* OsmWay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A7E1C8F5DE100A715BE /* OsmWay.swift */; };
 		004F78BC1CCEC2C10045801F /* libsbpl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 004F78BB1CCEC2C10045801F /* libsbpl.a */; };
 		004F78BF1CCEC2F00045801F /* sbpltest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 004F78BE1CCEC2F00045801F /* sbpltest.cpp */; };
-		004F78C41CCEE6670045801F /* CPP-Wrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 004F78C31CCEE6670045801F /* CPP-Wrapper.mm */; };
+		004F78C41CCEE6670045801F /* CPPWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 004F78C31CCEE6670045801F /* CPPWrapper.mm */; };
+		004F78C71CEF9E3A0045801F /* SolutionStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004F78C61CEF9E3A0045801F /* SolutionStep.swift */; };
+		004F78C91CF3B39F0045801F /* CustomPointAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004F78C81CF3B39F0045801F /* CustomPointAnnotation.swift */; };
+		006AF0E11CFE614D00FC04A4 /* SuperButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006AF0E01CFE614D00FC04A4 /* SuperButton.swift */; };
+		006C75061D0772190006C38E /* CalloutView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 006C75051D0772190006C38E /* CalloutView.xib */; };
+		006C75081D07855C0006C38E /* CalloutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006C75071D07855C0006C38E /* CalloutView.swift */; };
+		006C750A1D07A1090006C38E /* CalloutAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006C75091D07A1090006C38E /* CalloutAnnotationView.swift */; };
 		00B0F2B11C85324300C75449 /* images in Resources */ = {isa = PBXBuildFile; fileRef = 00B0F2B01C85324300C75449 /* images */; };
+		00EA1B951D08BA910031B7C7 /* CustomAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00EA1B941D08BA910031B7C7 /* CustomAnnotationView.swift */; };
+		00EA1B971D08E1BE0031B7C7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 00EA1B961D08E1BE0031B7C7 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,7 +56,6 @@
 		001D2FC81C7E81E000D64169 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		001D2FCA1C7E81E000D64169 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		001D2FCD1C7E81E000D64169 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		001D2FCF1C7E81E000D64169 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		001D2FD21C7E81E000D64169 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		001D2FD41C7E81E000D64169 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		001D2FD91C7E81E000D64169 /* LmarkPlannerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LmarkPlannerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -66,10 +72,18 @@
 		004F78BB1CCEC2C10045801F /* libsbpl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsbpl.a; path = "../SbplPlannerWS/Build/Products/Debug-iphonesimulator/libsbpl.a"; sourceTree = "<group>"; };
 		004F78BD1CCEC2EF0045801F /* LmarkPlanner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LmarkPlanner-Bridging-Header.h"; sourceTree = "<group>"; };
 		004F78BE1CCEC2F00045801F /* sbpltest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sbpltest.cpp; path = LmarkPlanner/sbpltest.cpp; sourceTree = "<group>"; };
-		004F78C21CCEDC7F0045801F /* sbpltets.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = sbpltets.h; path = LmarkPlanner/sbpltets.h; sourceTree = "<group>"; };
-		004F78C31CCEE6670045801F /* CPP-Wrapper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = "CPP-Wrapper.mm"; path = "LmarkPlanner/CPP-Wrapper.mm"; sourceTree = "<group>"; };
-		004F78C51CCEE8090045801F /* CPP-Wrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "CPP-Wrapper.h"; path = "LmarkPlanner/CPP-Wrapper.h"; sourceTree = "<group>"; };
+		004F78C21CCEDC7F0045801F /* sbpltest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = sbpltest.h; path = LmarkPlanner/sbpltest.h; sourceTree = "<group>"; };
+		004F78C31CCEE6670045801F /* CPPWrapper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = CPPWrapper.mm; path = LmarkPlanner/CPPWrapper.mm; sourceTree = "<group>"; };
+		004F78C51CCEE8090045801F /* CPPWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CPPWrapper.h; path = LmarkPlanner/CPPWrapper.h; sourceTree = "<group>"; };
+		004F78C61CEF9E3A0045801F /* SolutionStep.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SolutionStep.swift; sourceTree = "<group>"; };
+		004F78C81CF3B39F0045801F /* CustomPointAnnotation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomPointAnnotation.swift; sourceTree = "<group>"; };
+		006AF0E01CFE614D00FC04A4 /* SuperButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuperButton.swift; sourceTree = "<group>"; };
+		006C75051D0772190006C38E /* CalloutView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CalloutView.xib; sourceTree = "<group>"; };
+		006C75071D07855C0006C38E /* CalloutView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CalloutView.swift; sourceTree = "<group>"; };
+		006C75091D07A1090006C38E /* CalloutAnnotationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CalloutAnnotationView.swift; sourceTree = "<group>"; };
 		00B0F2B01C85324300C75449 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
+		00EA1B941D08BA910031B7C7 /* CustomAnnotationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomAnnotationView.swift; sourceTree = "<group>"; };
+		00EA1B961D08E1BE0031B7C7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,15 +110,15 @@
 			isa = PBXGroup;
 			children = (
 				004F78BE1CCEC2F00045801F /* sbpltest.cpp */,
-				004F78C21CCEDC7F0045801F /* sbpltets.h */,
-				004F78C51CCEE8090045801F /* CPP-Wrapper.h */,
-				004F78C31CCEE6670045801F /* CPP-Wrapper.mm */,
+				004F78C21CCEDC7F0045801F /* sbpltest.h */,
+				004F78C51CCEE8090045801F /* CPPWrapper.h */,
+				004F78C31CCEE6670045801F /* CPPWrapper.mm */,
 				004F78BB1CCEC2C10045801F /* libsbpl.a */,
+				004F78BD1CCEC2EF0045801F /* LmarkPlanner-Bridging-Header.h */,
 				001D2FE81C7E81F800D64169 /* MapKit.framework */,
 				001D2FC71C7E81E000D64169 /* LmarkPlanner */,
 				001D2FDC1C7E81E000D64169 /* LmarkPlannerTests */,
 				001D2FC61C7E81E000D64169 /* Products */,
-				004F78BD1CCEC2EF0045801F /* LmarkPlanner-Bridging-Header.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -120,8 +134,10 @@
 		001D2FC71C7E81E000D64169 /* LmarkPlanner */ = {
 			isa = PBXGroup;
 			children = (
+				00EA1B961D08E1BE0031B7C7 /* Assets.xcassets */,
 				001D2FC81C7E81E000D64169 /* AppDelegate.swift */,
 				001D2FCA1C7E81E000D64169 /* ViewController.swift */,
+				006AF0E01CFE614D00FC04A4 /* SuperButton.swift */,
 				00403A7C1C8F5BE300A715BE /* OsmNode.swift */,
 				00403A7E1C8F5DE100A715BE /* OsmWay.swift */,
 				00097B6E1C8116F400407812 /* LandmarksTableViewController.swift */,
@@ -132,11 +148,16 @@
 				00097B741C850F3000407812 /* Landmark.swift */,
 				00403A751C8A420100A715BE /* Lmark.swift */,
 				00403A711C864BF300A715BE /* PlanStep.swift */,
+				004F78C81CF3B39F0045801F /* CustomPointAnnotation.swift */,
+				006C75091D07A1090006C38E /* CalloutAnnotationView.swift */,
+				00EA1B941D08BA910031B7C7 /* CustomAnnotationView.swift */,
+				006C75071D07855C0006C38E /* CalloutView.swift */,
+				006C75051D0772190006C38E /* CalloutView.xib */,
 				00403A731C87932E00A715BE /* Intersection.swift */,
-				001D2FCF1C7E81E000D64169 /* Assets.xcassets */,
-				00B0F2B01C85324300C75449 /* images */,
+				004F78C61CEF9E3A0045801F /* SolutionStep.swift */,
 				001D2FD11C7E81E000D64169 /* LaunchScreen.storyboard */,
 				001D2FD41C7E81E000D64169 /* Info.plist */,
+				00B0F2B01C85324300C75449 /* images */,
 			);
 			path = LmarkPlanner;
 			sourceTree = "<group>";
@@ -239,8 +260,9 @@
 			files = (
 				00B0F2B11C85324300C75449 /* images in Resources */,
 				001D2FD31C7E81E000D64169 /* LaunchScreen.storyboard in Resources */,
-				001D2FD01C7E81E000D64169 /* Assets.xcassets in Resources */,
 				001D2FCE1C7E81E000D64169 /* Main.storyboard in Resources */,
+				006C75061D0772190006C38E /* CalloutView.xib in Resources */,
+				00EA1B971D08E1BE0031B7C7 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -258,20 +280,26 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				004F78C71CEF9E3A0045801F /* SolutionStep.swift in Sources */,
 				001D2FCB1C7E81E000D64169 /* ViewController.swift in Sources */,
 				00403A7B1C8E2FE200A715BE /* FalseStepTableViewCell.swift in Sources */,
 				00097B6F1C8116F400407812 /* LandmarksTableViewController.swift in Sources */,
 				00097B671C80FE2300407812 /* LandmarkTableViewCell.swift in Sources */,
+				006C75081D07855C0006C38E /* CalloutView.swift in Sources */,
+				00EA1B951D08BA910031B7C7 /* CustomAnnotationView.swift in Sources */,
 				001D2FC91C7E81E000D64169 /* AppDelegate.swift in Sources */,
+				004F78C91CF3B39F0045801F /* CustomPointAnnotation.swift in Sources */,
 				00403A721C864BF300A715BE /* PlanStep.swift in Sources */,
 				00403A761C8A420100A715BE /* Lmark.swift in Sources */,
 				00403A7D1C8F5BE300A715BE /* OsmNode.swift in Sources */,
 				00403A791C8A6F2600A715BE /* StepTableViewCell.swift in Sources */,
 				00403A741C87932E00A715BE /* Intersection.swift in Sources */,
 				00097B751C850F3000407812 /* Landmark.swift in Sources */,
+				006AF0E11CFE614D00FC04A4 /* SuperButton.swift in Sources */,
 				004F78BF1CCEC2F00045801F /* sbpltest.cpp in Sources */,
+				006C750A1D07A1090006C38E /* CalloutAnnotationView.swift in Sources */,
 				00403A7F1C8F5DE100A715BE /* OsmWay.swift in Sources */,
-				004F78C41CCEE6670045801F /* CPP-Wrapper.mm in Sources */,
+				004F78C41CCEE6670045801F /* CPPWrapper.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
