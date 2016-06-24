@@ -10,14 +10,14 @@ import Foundation
 import MapKit
 
 class SolutionStep {
-    var seq :Int = 0
-    var name :String = ""
-    var instructions :String = ""
-    var imageName :String = ""
-    var iconName :String = ""
+    var seq: Int = 0
+    var name: String = ""
+    var instructions: String = ""
+    var imageName: String = ""
+    var iconName: String = ""
     var k: Int = 0
-    var id1 :Int64 = 0
-    var id2 :Int64 = 0
+    var id1: Int64 = 0
+    var id2: Int64 = 0
     var lat1: Double = 0.0
     var lon1: Double = 0.0
     var lat2: Double = 0.0

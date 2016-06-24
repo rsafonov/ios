@@ -27,14 +27,18 @@ class MySbpl
 {
     public:
         bool initPlannerByOsm(string osmJsonStr, char* lmarks, char* intersection, int buflen);
-        bool setStartPose(long long int point_id);
-        bool setGoalPose(long long int point_id);
+        bool setStartPose(long long int point_id, long long int* rid, int* type, int dir);
+        bool setGoalPose(long long int point_id, long long int* rid, int* type, int dir);
+        bool resetStartPose(long long int point_id, long long road_id, int type, int dir);
+        bool resetGoalPose(long long int point_id, long long road_id, int type, int dir);
+    
         bool generatePlan(int* pathlen, char* path);
         bool getCoordsById(long long int point_id, double* lat, double* lon);
-        bool getIntresectionDetails(long long int point_id, int* ind, double* lat, double* lon, char* location);
+        bool getIntresectionDetails(long long int point_id, int* ind, double* lat, double* lon, char* location, int* streetsCount);
+        bool getLandmarkDetails(long long int point_id, int* ind, double* lat, double* lon, char* name, char* address, char* info, char* street, char* amenity);
 
     private:
-        bool CreateStateFromOsm(long long int nid, int type, int dir, MapEnv* env, vector<Road*>* roads, EnvState* state);
+        bool CreateStateFromOsm(long long int nid, long long int* rid, int* type, int dir, MapEnv* env, vector<Road*>* roads, EnvState* state);
     
         MapEnv env;
         vector<Road*> roads;

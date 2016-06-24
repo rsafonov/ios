@@ -53,7 +53,19 @@ class CustomAnnotationView: MKAnnotationView {
         if (calloutView == nil) {
             let x = 0.5 * self.frame.size.width
             let y = -3.0 * self.frame.size.height
-            let txt = ann?.title
+            var txt = ann?.title
+            if (ann?.lmark.amenity.characters.count > 0)
+            {
+                txt = txt! + "\n" + ann!.lmark.amenity
+            }
+            if (ann?.lmark.street.characters.count > 0)
+            {
+                txt = txt! + "\n" + ann!.lmark.street
+            }
+            //if (ann?.info?.characters.count > 0)
+            //{
+            //    txt = txt! + "\n" + ann!.info!
+            //}
             calloutView = CalloutView(frame: CGRectMake(0, 0, 150, 80), text: txt!, x: x, y: y)
         }
         
@@ -65,7 +77,7 @@ class CustomAnnotationView: MKAnnotationView {
             }
             addSubview(calloutView!)
             
-            print("Selected annotation: \(ann!.pointId) \(ann!.title!)")
+            print("Selected annotation: \(ann!.lmark.pointId) \(ann!.title!)")
             
             //print("Annotations behind calloutView")
             //listAnnotationsBehindCallout(calloutView!.frame)
@@ -108,7 +120,7 @@ class CustomAnnotationView: MKAnnotationView {
                 {
                     let annView = sview as! CustomAnnotationView
                     let ann2 = annView.annotation as! CustomPointAnnotation
-                    print("\(count) \(ann2.pointId) \(ann2.title!)")
+                    print("\(count) \(ann2.lmark.pointId) \(ann2.title!)")
                 }
             }
         }
@@ -117,8 +129,18 @@ class CustomAnnotationView: MKAnnotationView {
 
     func setGoalPose(sender: AnyObject?)
     {
+        let dir: CInt = 0
+        var type: CInt = 0
+        var roadId: Int64 = 0
+
         print("Set Goal Button Clicked.")
-        parent!.goal_set = parent!.MySbplWrapper.setGoalPose_wrapped(ann!.pointId)
+        parent!.goal_set = parent!.MySbplWrapper.setGoalPose_wrapped(ann!.lmark.pointId, &roadId, &type, dir)
+        if (parent!.goal_set)
+        {
+            parent?.goal_pointId = ann!.lmark.pointId
+            parent?.goal_roadId = roadId
+            parent?.goal_type = Int(type)
+        }
         parent!.generateOptimalPlan()
         setPose("FinishFlag")
    }
@@ -135,7 +157,7 @@ class CustomAnnotationView: MKAnnotationView {
     func closeCallout(sender: AnyObject?)
     {
         self.setSelected(false, animated: false)
-        if (ann?.type == 1)
+        if (ann?.lmark.type == 1)
         {
             image = blueBallImage
         }
@@ -147,8 +169,18 @@ class CustomAnnotationView: MKAnnotationView {
     
     func setStartPose(sender: AnyObject?)
     {
+        let dir: CInt = 0
+        var type: CInt = 0
+        var roadId: Int64 = 0
+
         print("Set Start Button Clicked.")
-        parent!.start_set = parent!.MySbplWrapper.setStartPose_wrapped(ann!.pointId)
+        parent!.start_set = parent!.MySbplWrapper.setStartPose_wrapped(ann!.lmark.pointId, &roadId, &type, dir)
+        if (parent!.start_set)
+        {
+            parent?.start_pointId = ann!.lmark.pointId
+            parent?.start_roadId = roadId
+            parent?.start_type = Int(type)
+        }
         parent!.generateOptimalPlan()
         setPose("RedFlag")
     }

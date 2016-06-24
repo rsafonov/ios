@@ -10,15 +10,6 @@ import UIKit
 
 class CalloutView: UIView
 {
-    //@IBOutlet var Title: UILabel!
-    //@IBOutlet var annCalloutView: UIView!
-    //@IBAction func setStartAction(sender: AnyObject) {
-    //}
-    //@IBAction func setGoalAction(sender: AnyObject) {
-    //}
-    //@IBAction func closeAction(sender: AnyObject) {
-    //}
-    
     var title: String = ""
     
     var calloutLabel: UILabel? = nil

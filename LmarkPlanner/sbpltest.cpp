@@ -8,29 +8,26 @@
 
 #include "sbpltest.h"
 
-bool MySbpl::CreateStateFromOsm(long long int nid, int type, int dir, MapEnv* env, vector<Road*>* roads, EnvState* state)
+bool MySbpl::CreateStateFromOsm(long long int nid, long long int* rid, int* type, int dir, MapEnv* env, vector<Road*>* roads, EnvState* state)
 {
-    long long int rid;
-    int real_type = -1, real_dir = dir;
+    bool found = false;
+    *rid = -1;
+    *type = -1;
     
     printf("CreateStateFromOsm start: nid = %lld\n", nid);
     fflush(stdout);
-    
-    rid = -1;
-    bool found = false;
-    
     
     for (int i=0; i<roads->size(); i++)
     {
         if ((*roads)[i]->roadends[0] == nid || (*roads)[i]->roadends[1] == nid)
         {
-            rid = (*roads)[i]->id;
+            *rid = (*roads)[i]->id;
             found = true;
-            real_type = 0;
+            *type = 0;
             break;
         }
     }
-    printf("As intersection: found = %d rid = %lld nid = %lld type = 0\n", found, rid, nid);
+    printf("As intersection: found = %d rid = %lld nid = %lld type = 0\n", found, *rid, nid);
     fflush(stdout);
     
     if (!found)
@@ -41,23 +38,22 @@ bool MySbpl::CreateStateFromOsm(long long int nid, int type, int dir, MapEnv* en
             {
                 if ((*roads)[i]->landmarkConnections[j] == nid)
                 {
-                    rid = (*roads)[i]->id;
+                    *rid = (*roads)[i]->id;
                     found = true;
-                    real_type = 1;
+                    *type = 1;
                     break;
                 }
             }
         }
-        printf("As landmark: found = %d rid = %lld nid = %lld type = 1\n", found, rid, nid);
+        printf("As landmark: found = %d rid = %lld nid = %lld type = 1\n", found, *rid, nid);
         fflush(stdout);
     }
         
     if (found)
     {
-        if (real_type == 1) real_dir = 0;
-        *state = env->CreateState(rid, nid, real_type, real_dir);
+        *state = env->CreateState(*rid, nid, *type, dir);
         //*state = env->CreateState(rid, nid, 0, 1);
-        printf("State found: rid = %lld nid = %lld type = %d dir = %d\n", rid, nid, real_type, real_dir);
+        printf("State found: rid = %lld nid = %lld type = %d dir = %d\n", *rid, nid, *type, dir);
     }
     return found;
 }
@@ -92,14 +88,13 @@ bool MySbpl::initPlannerByOsm(string osmJsonStr, char* lmarks, char* intersectio
     return res;
 }
 
-bool MySbpl::setStartPose(long long int point_id)
+bool MySbpl::setStartPose(long long int point_id, long long int* road_id, int* type, int dir)
 {
     EnvState state;
-    int type = 1, dir = 1;
     
     //bool found = CreateStateFromOsm(105013433, 0, 1, &env, &roads, &state);
-    bool found = CreateStateFromOsm(point_id, type, dir, &env, &roads, &state);
     
+    bool found = CreateStateFromOsm(point_id, road_id, type, dir, &env, &roads, &state);
     if (!found)
     {
         printf("Start state can not be created for node %lld\n", point_id);
@@ -113,13 +108,12 @@ bool MySbpl::setStartPose(long long int point_id)
     }
 }
 
-bool MySbpl::setGoalPose(long long int point_id)
+bool MySbpl::setGoalPose(long long int point_id, long long int* road_id, int* type, int dir)
 {
     EnvState state;
-    int type = 1, dir = 1;
 
     //bool found = CreateStateFromOsm(105097518, 0, 1, &env, &roads, &state);
-    bool found = CreateStateFromOsm(point_id, type, dir, &env, &roads, &state);
+    bool found = CreateStateFromOsm(point_id, road_id, type, dir, &env, &roads, &state);
     if (!found)
     {
         printf("Goal state can not be created for node %lld\n", point_id);
@@ -133,22 +127,55 @@ bool MySbpl::setGoalPose(long long int point_id)
     }
 }
 
+bool MySbpl::resetStartPose(long long int point_id, long long road_id, int type, int dir)
+{
+    EnvState state = env.CreateState(road_id, point_id, type, dir);
+    env.setStartState(state);
+    printf("Start state created: point_id = %lld road_id = %lld type = %d dir = %d\n", point_id, road_id, type, dir);
+    return true;
+}
+
+bool MySbpl::resetGoalPose(long long int point_id, long long road_id, int type, int dir)
+{
+    EnvState state = env.CreateState(road_id, point_id, type, dir);
+    env.setGoalState(state);
+    printf("Goal state created: point_id = %lld road_id = %lld type = %d dir = %d\n", point_id, road_id, type, dir);
+    return true;
+}
+
 bool MySbpl::getCoordsById(long long int point_id, double* lat, double* lon)
 {
     bool res = env.GetCoordsById(point_id, lat, lon);
     return res;
 }
 
-bool MySbpl::getIntresectionDetails(long long int point_id, int* ind, double* lat, double* lon, char* location)
+bool MySbpl::getIntresectionDetails(long long int point_id, int* ind, double* lat, double* lon, char* location, int* streetsCount)
 {
     string slocation = location;
-    bool res = env.GetIntersectionDetails(point_id, ind, lat, lon, &slocation);
+    bool res = env.GetIntersectionDetails(point_id, ind, lat, lon, &slocation, streetsCount);
     if (res)
     {
         strcpy(location, slocation.c_str());
     }
     else
         printf("Error: getIntersectionDetails failed!\n");
+    return res;
+}
+
+bool MySbpl::getLandmarkDetails(long long int point_id, int* ind, double* lat, double* lon, char* name, char* address, char* info, char* street, char* amenity)
+{
+    string saddress, sname, sinfo, sstreet, samenity;
+    bool res = env.GetLandmarkDetails(point_id, ind, lat, lon, &sname, &saddress, &sinfo, &sstreet, &samenity);
+    if (res)
+    {
+        strcpy(address, saddress.c_str());
+        strcpy(name, sname.c_str());
+        strcpy(info, sinfo.c_str());
+        strcpy(street, sstreet.c_str());
+        strcpy(amenity, samenity.c_str());
+    }
+    else
+        printf("Error: getLandmarkDetails failed!\n");
     return res;
 }
 
@@ -174,7 +201,7 @@ bool MySbpl::generatePlan(int* pathlen, char* path)
     {
         printf("pathlen = %d\n", *pathlen);
         spath = env.ConvertStatePathToLatLonPath(&ppcpSolutionIds);
-        printf("Length of spath string: %lu", spath.length());
+        printf("Length of spath string: %lu\n", spath.length());
         fflush(stdout);
         //printf("--- path ---\n");
         //printf("%s\n", spath.c_str());

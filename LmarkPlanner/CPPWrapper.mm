@@ -30,17 +30,30 @@
     return res;
 }
 
-- (BOOL) setStartPose_wrapped: (long long int) point_id
+- (BOOL) setStartPose_wrapped: (long long int) point_id : (long long int*) road_id : (int*) type : (int) dir
 {
     MySbpl* sb = (MySbpl*)self.ob;
-    bool res = (MySbpl*) sb->setStartPose(point_id);
+    bool res = (MySbpl*) sb->setStartPose(point_id, road_id, type, dir);
     return res;
 }
 
-- (BOOL) setGoalPose_wrapped: (long long int) point_id
+- (BOOL) setGoalPose_wrapped: (long long int) point_id : (long long int*) road_id : (int*) type : (int) dir
 {
     MySbpl* sb = (MySbpl*)self.ob;
-    bool res = (MySbpl*) sb->setGoalPose(point_id);
+    bool res = (MySbpl*) sb->setGoalPose(point_id, road_id, type, dir);
+    return res;
+}
+
+- (BOOL) resetStartPose_wrapped: (long long int) point_id : (long long int) road_id : (int) type : (int) dir
+{
+    MySbpl* sb = (MySbpl*)self.ob;
+    bool res = (MySbpl*) sb->resetStartPose(point_id, road_id, type, dir);
+    return res;
+}
+- (BOOL) resetGoalPose_wrapped: (long long int) point_id : (long long int) road_id : (int) type : (int) dir;
+{
+    MySbpl* sb = (MySbpl*)self.ob;
+    bool res = (MySbpl*) sb->resetGoalPose(point_id, road_id, type, dir);
     return res;
 }
 
@@ -63,14 +76,34 @@
     return res;
 }
 
-- (BOOL) getIntersectionDetails_wrapped: (long long int) point_id : (int *) ind : (double *) lat : (double *) lon : (NSString **) location
+- (BOOL) getIntersectionDetails_wrapped: (long long int) point_id : (int *) ind : (double *) lat : (double *) lon : (NSString **) location : (int *) streetsCount
 {
     char c_loc[self.buflen];
     MySbpl* sb = (MySbpl*)self.ob;
-    bool res = (MySbpl*)sb->getIntresectionDetails(point_id, ind, lat, lon, c_loc);
+    bool res = (MySbpl*)sb->getIntresectionDetails(point_id, ind, lat, lon, c_loc, streetsCount);
     if(res)
     {
         *location = [NSString stringWithFormat:@"%s", c_loc];
+    }
+    return res;
+}
+
+- (BOOL) getLandmarkDetails_wrapped: (long long int) point_id : (int *) ind : (double *) lat : (double *) lon : (NSString **) name : (NSString **) address : (NSString **) info : (NSString **) street : (NSString **) amenity
+{
+    char c_name[self.buflen];
+    char c_address[self.buflen];
+    char c_info[self.buflen];
+    char c_street[self.buflen];
+    char c_amenity[self.buflen];
+    MySbpl* sb = (MySbpl*)self.ob;
+    bool res = (MySbpl*)sb->getLandmarkDetails(point_id, ind, lat, lon, c_name, c_address, c_info, c_street, c_amenity);
+    if(res)
+    {
+        *name = [NSString stringWithFormat:@"%s", c_name];
+        *address = [NSString stringWithFormat:@"%s", c_address];
+        *info = [NSString stringWithFormat:@"%s", c_info];
+        *street = [NSString stringWithFormat:@"%s", c_street];
+        *amenity = [NSString stringWithFormat:@"%s", c_amenity];
     }
     return res;
 }

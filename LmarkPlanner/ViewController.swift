@@ -16,15 +16,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     
     typealias Payload = [String: AnyObject]
     
-    let dirRequest = MKDirectionsRequest()
-    var landmarks = [MKMapItem]()
+    //let dirRequest = MKDirectionsRequest()
     var lmarks = [Lmark]()
     var isections = [Intersection]()
-    var steps = [PlanStep]()
-    var safety_steps = [PlanStep]()
     
-    var sol_steps = [SolutionStep]()
-    var safety_sol_steps = [SolutionStep]()
+    var sol = [SolutionStep]()
+    var safety_sol = [SolutionStep]()
     
     var initialLocation = CLLocation()
     var span = MKCoordinateSpan()
@@ -42,6 +39,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     var start_set: Bool = false
     var goal_set: Bool = false
     
+    var start_pointId: Int64 = 0
+    var start_roadId: Int64 = 0
+    var start_type: Int = 0
+    var goal_pointId: Int64 = 0
+    var goal_roadId: Int64 = 0
+    var goal_type: Int = 0
+    
     //let locationManager = CLLocationManager()
     
     @IBOutlet var mapTypeButton: UIBarButtonItem!
@@ -50,10 +54,66 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     @IBOutlet var osmButton: UIBarButtonItem!
     @IBOutlet var animateButton: UIBarButtonItem!
     @IBOutlet var showPlanButton: UIBarButtonItem!
+    @IBOutlet var isectionsButton: UIBarButtonItem!
+    @IBOutlet var planButton: UIBarButtonItem!
     
     @IBOutlet var mapView: MKMapView!
     @IBOutlet var searchText: UITextField!
+        
+    // MARK: Methods
     
+    @IBAction func showPlanSteps(sender: AnyObject) {
+        self.performSegueWithIdentifier("ShowTable", sender: sender)
+    }
+    
+    @IBAction func showDirections(sender: AnyObject) {
+        self.performSegueWithIdentifier("ShowTable", sender: sender)
+    }
+    
+    @IBAction func showIsections(sender: AnyObject) {
+        self.performSegueWithIdentifier("ShowTable", sender: sender)
+    }
+    
+    @IBAction func showPlan(sender: AnyObject) {
+        self.performSegueWithIdentifier("ShowTable", sender: sender)
+    }
+    
+    @IBAction func animateCamera(sender: AnyObject) {
+        
+        mapView.mapType = .SatelliteFlyover
+        pitch = 65
+        
+        let coordinate = CLLocationCoordinate2D(latitude: 40.444718, longitude: -79.947537)
+        
+        camera = MKMapCamera(lookingAtCenterCoordinate: coordinate,
+            fromDistance: distance,
+            pitch: pitch,
+            heading: heading)
+        
+        UIView.animateWithDuration(20.0, animations: {
+            self.camera!.heading += 180
+            self.camera!.pitch = 25
+            self.mapView.camera = self.camera!
+        })
+    }
+    
+    @IBAction func cancelToLandmarksViewController(seque:UIStoryboardSegue) {
+        
+    }
+    
+    @IBAction func saveLandmarkDetail(segue:UIStoryboardSegue) {
+        
+    }
+    
+    @IBAction func cancelToPlanViewController(seque:UIStoryboardSegue) {
+        
+    }
+    
+    @IBAction func savePlanDetail(segue:UIStoryboardSegue) {
+        
+    }
+    
+    /*
     var intersections:[Intersection] = [
         Intersection(id:1, index:0, latutude: 40.443931, longitude: -79.942222, location: "5032 Forbes Ave"),
         Intersection(id:1, index:1, latutude: 40.444455, longitude: -79.941949, location: "Forbes Ave/Morewood Pl"),
@@ -77,51 +137,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         Intersection(id:1, index:4, latutude: 40.441264, longitude: -79.959172, location: "Fifth Ave/Meyran Ave"),
         Intersection(id:1, index:5, latutude: 40.439773, longitude: -79.961194, location: "3420 Fifth Ave")
     ]
-    
-    // MARK: Methods
-    
-    @IBAction func showPlanSteps(sender: AnyObject) {
-        self.performSegueWithIdentifier("ShowTable", sender: sender)
-    }
-    
-    @IBAction func showDirections(sender: AnyObject) {
-        self.performSegueWithIdentifier("ShowTable", sender: sender)
-    }
-    
-    @IBAction func animateCamera(sender: AnyObject) {
-        
-        mapView.mapType = .SatelliteFlyover
-        pitch = 65
-        
-        let coordinate = CLLocationCoordinate2D(latitude: 40.444718, longitude: -79.947537)
-
-        camera = MKMapCamera(lookingAtCenterCoordinate: coordinate,
-            fromDistance: distance,
-            pitch: pitch,
-            heading: heading)
-
-        UIView.animateWithDuration(20.0, animations: {
-            self.camera!.heading += 180
-            self.camera!.pitch = 25
-            self.mapView.camera = self.camera!
-        })
-    }
-    
-    @IBAction func cancelToLandmarksViewController(seque:UIStoryboardSegue) {
-        
-    }
-    
-    @IBAction func saveLandmarkDetail(segue:UIStoryboardSegue) {
-        
-    }
-    
-    @IBAction func cancelToPlanViewController(seque:UIStoryboardSegue) {
-        
-    }
-    
-    @IBAction func savePlanDetail(segue:UIStoryboardSegue) {
-        
-    }
+    */
     
     func mapView(mapView: MKMapView!, rendererForOverlay overlay: MKOverlay!) ->MKOverlayRenderer! {
         if overlay.isKindOfClass(MKCircle) {
@@ -202,19 +218,24 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         
         return
         
+        /*
         let ann = view.annotation as! CustomPointAnnotation
         let placeName = ann.title
         let placeInfo = ann.subtitle!
         let ac = UIAlertController(title: placeName, message: placeInfo, preferredStyle: .Alert)
         ac.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
-        
+
         func setStartHandler(act:UIAlertAction!) {
-            start_set = self.MySbplWrapper.setStartPose_wrapped(ann.pointId)
+            let dir: CInt = 0
+            var type: CInt = 0
+            start_set = self.MySbplWrapper.setStartPose_wrapped(ann.lmark.pointId, &type, dir)
             generateOptimalPlan()
         }
         
         func setGoalHandler(act:UIAlertAction!) {
-            goal_set = self.MySbplWrapper.setGoalPose_wrapped(ann.pointId)
+            let dir: CInt = 0
+            var type: CInt = 0
+            goal_set = self.MySbplWrapper.setGoalPose_wrapped(ann.lmark.pointId, &type, dir)
             generateOptimalPlan()
         }
         
@@ -222,6 +243,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         ac.addAction(UIAlertAction(title: "Set as Goal", style: .Default, handler: setGoalHandler))
 
         presentViewController(ac, animated:true, completion: nil)
+        */
     }
     
     func generateOptimalPlan()
@@ -231,14 +253,34 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             mapView.removeOverlays(mapView.overlays)
             print("Number of Overlays: \(mapView.overlays.count)")
             
-            //self.sol_steps.removeAll()
-            
             var pathlen: CInt = 0
             var path: NSString? = nil
-            let plan_found = self.MySbplWrapper.generatePlan_wrapped(&pathlen, &path)
+            var plan_found = self.MySbplWrapper.generatePlan_wrapped(&pathlen, &path)
+            if (!plan_found || pathlen <= 0)
+            {
+                start_set = self.MySbplWrapper.resetStartPose_wrapped(start_pointId, start_roadId, CInt(start_type), 1)
+                plan_found = self.MySbplWrapper.generatePlan_wrapped(&pathlen, &path)
+                if (!plan_found || pathlen <= 0)
+                {
+                    goal_set = self.MySbplWrapper.resetGoalPose_wrapped(goal_pointId, goal_roadId, CInt(goal_type), 1)
+                    plan_found = self.MySbplWrapper.generatePlan_wrapped(&pathlen, &path)
+                    if (!plan_found || pathlen <= 0)
+                    {
+                        start_set = self.MySbplWrapper.resetStartPose_wrapped(start_pointId, start_roadId, CInt(start_type), 0)
+                        plan_found = self.MySbplWrapper.generatePlan_wrapped(&pathlen, &path)
+                    }
+                }
+            }
+            start_set = self.MySbplWrapper.resetStartPose_wrapped(start_pointId, start_roadId, CInt(start_type), 0)
+            goal_set = self.MySbplWrapper.resetGoalPose_wrapped(goal_pointId, goal_roadId, CInt(goal_type), 0)
             if (plan_found && pathlen > 0)
             {
                 DisplayPath(path!)
+            }
+            else
+            {
+                print("Plan not found")
+        
             }
         }
         else
@@ -286,7 +328,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             cView.parent = self
             annView?.canShowCallout = false
             ann.view = cView
-            if (ann.type == 0)
+            if (ann.lmark.type == 0)
             {
                 cView.setSelected(true, animated: false)
             }
@@ -401,6 +443,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         mapView.showsScale = false
         mapView.showsTraffic = false
         
+        lmarksButton.tag = 1
+        isectionsButton.tag = 3
+        planButton.tag = 2
+        
         //Gesture recognizer
         let gst = UITapGestureRecognizer(target: self, action: "processGesture:")
         mapView.addGestureRecognizer(gst)
@@ -481,11 +527,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                             return
                         //}
                     }
-                    else if (annView is CalloutView)
-                    {
+                }
+                else if (subView is CalloutView)
+                {
                         print("processGesture: CalloutView tapped. Exiting.")
                         return
-                    }
                 }
             }
             
@@ -503,7 +549,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             var roadId: Int64?
             var index: Int = -1
             
-            for isection in intersections {
+            for isection in isections {
                 let iloc = CLLocation(latitude: isection.latitude, longitude: isection.longitude)
                 let distance = loc.distanceFromLocation(iloc)
                 if smallestDistance == nil || distance < smallestDistance {
@@ -515,11 +561,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                 }
             }
             print("smallestDistance = \(smallestDistance) id = \(pointId)")
-            let location = intersections[index].location
+            let location = isections[index].location
             
             //Create temporary pin annotation with blue flag
             let blueFlagPin = UIImage(named:"BlueFlagLeft")
-            let ann = CustomPointAnnotation(coord: closestLocation!.coordinate, name: String(location), address: "", pinImage: blueFlagPin!, photoImage: nil, pointId: pointId!, roadId: 0, type: 0)
+            //let ann = CustomPointAnnotation(coord: closestLocation!.coordinate, name: String(location), address: "", pinImage: blueFlagPin!, photoImage: nil, pointId: pointId!, roadId: 0, type: 0, street: "", amenity: "")
+            
+            
+            let lmark = Lmark(name: String(location), description: "", type: 0, address: "", latitude: closestLocation!.coordinate.latitude, longitude: closestLocation!.coordinate.longitude, photo: nil, pin: blueFlagPin, pointId: pointId!, roadId: roadId!, street: "", amenity: "")
+            
+            let ann = CustomPointAnnotation(lmark: lmark!, pinImage: blueFlagPin!, photoImage: nil)
+
             self.mapView.addAnnotation(ann)
         }
     }
@@ -546,7 +598,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         {
             if let custom_ann = ann as? CustomPointAnnotation
             {
-                if (custom_ann.pointId == pointId)
+                if (custom_ann.lmark.pointId == pointId)
                 {
                     mapView.removeAnnotation(ann)
                 }
@@ -684,7 +736,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         return documentsDirectory
     }
     
-    func AddLandmark(name: String, description: String, type: String, address: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees, photoName: String, pinName: String, pointId: Int64, roadId: Int64) {
+    func AddLandmark(name: String, description: String, type: Int, address: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees, photoName: String, pinName: String, pointId: Int64, roadId: Int64, street: String, amenity: String) {
         
         var photo: UIImage
         if !photoName.isEmpty
@@ -697,16 +749,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         }
         let pin = UIImage(named:pinName)
         
-        let lmark = Lmark(name: name, description: description, type: type, address: address, latitude: latitude, longitude: longitude, photo: photo, pin: pin!, pointId: pointId, roadId: roadId)!
+        let lmark = Lmark(name: name, description: description, type: type, address: address, latitude: latitude, longitude: longitude, photo: photo, pin: pin!, pointId: pointId, roadId: roadId, street: street, amenity: amenity)!
         lmarks.append(lmark)
     }
     
-    func AddLandmark(name: String, description: String, type: String, address: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees, photo: UIImage, pinName: String, pointId: Int64, roadId: Int64) {
+    func AddLandmark(name: String, description: String, type: Int, address: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees, photo: UIImage, pinName: String, pointId: Int64, roadId: Int64, street: String, amenity: String) {
         
         //let photo = UIImage(named:photoName)
         let pin = UIImage(named:pinName)
         
-        let lmark = Lmark(name: name, description: description, type: type, address: address, latitude: latitude, longitude: longitude, photo: photo, pin: pin!, pointId: pointId, roadId: roadId)!
+        let lmark = Lmark(name: name, description: description, type: type, address: address, latitude: latitude, longitude: longitude, photo: photo, pin: pin!, pointId: pointId, roadId: roadId, street: street, amenity: amenity)!
         lmarks.append(lmark)
     }
     
@@ -714,37 +766,38 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
 
     func LoadSampleLmarks()
     {
-        AddLandmark("University Center", description: "Carnegie Mellon University", type: "building", address: "5032 Forbes Ave", latitude: 40.443931, longitude: -79.942222, photoName: "UniversityCenter", pinName: "BlueFlagLeft", pointId: 1, roadId: 1)
+        AddLandmark("University Center", description: "Carnegie Mellon University", type: 1, address: "5032 Forbes Ave", latitude: 40.443931, longitude: -79.942222, photoName: "UniversityCenter", pinName: "BlueFlagLeft", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Hamburg Hall", description:"Carnegie Mellon University", type: "building", address: "4800 Forbes Ave", latitude: 40.444307, longitude: -79.945720, photoName: "HeinzCollege", pinName: "BlueBall", pointId: 1, roadId: 1)
+        AddLandmark("Hamburg Hall", description:"Carnegie Mellon University", type: 1, address: "4800 Forbes Ave", latitude: 40.444307, longitude: -79.945720, photoName: "HeinzCollege", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Starbucks", description: "Coffee Shop", type: "restaurant", address: "417 Craig St", latitude: 40.444658, longitude: -79.948492, photoName: "Starbucks", pinName: "BlueBall", pointId: 1, roadId: 1)
+        AddLandmark("Starbucks", description: "Coffee Shop", type: 1, address: "417 Craig St", latitude: 40.444658, longitude: -79.948492, photoName: "Starbucks", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Carnegie Museum of Natural History", description: "", type: "museum", address: "4400 Forbes Ave", latitude: 40.443466, longitude: -79.950154, photoName: "MuseumOfNaturalHistory", pinName: "BlueBall", pointId: 1, roadId: 1)
+        /*
+        AddLandmark("Carnegie Museum of Natural History", description: "", type: "museum", address: "4400 Forbes Ave", latitude: 40.443466, longitude: -79.950154, photoName: "MuseumOfNaturalHistory", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Opa Gyro", description: "Cafe", type: "restaurant", address: "4208 Forbes Ave", latitude: 40.443147, longitude: -79.953155, photoName: "Gyro", pinName: "BlueBall", pointId: 1, roadId: 1)
+        AddLandmark("Opa Gyro", description: "Cafe", type: "restaurant", address: "4208 Forbes Ave", latitude: 40.443147, longitude: -79.953155, photoName: "Gyro", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Cathedral of Learning", description: "University of Pittsburgh", type: "building", address: "4301 Fifth Ave", latitude: 40.444378, longitude: -79.952799, photoName: "CathedralOfLearning", pinName: "BlueBall", pointId: 1, roadId: 1)
+        AddLandmark("Cathedral of Learning", description: "University of Pittsburgh", type: "building", address: "4301 Fifth Ave", latitude: 40.444378, longitude: -79.952799, photoName: "CathedralOfLearning", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Hilman Library", description: "University of Pittsburgh", type: "building", address: "3960 Forbes Ave", latitude: 40.442553, longitude: -79.954137, photoName: "HilmanLibrary", pinName: "PinkBall", pointId: 1, roadId: 1)
+        AddLandmark("Hilman Library", description: "University of Pittsburgh", type: "building", address: "3960 Forbes Ave", latitude: 40.442553, longitude: -79.954137, photoName: "HilmanLibrary", pinName: "PinkBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Soldiers and Sailors Lawn", description: "Gen Matthew B Ridgway", type: "Memorial", address: "Fifth, Ave", latitude: 40.444279, longitude: -79.955271, photoName: "SoldiersAndSailorsLawn", pinName: "BlueBall", pointId: 1, roadId: 1)
+        AddLandmark("Soldiers and Sailors Lawn", description: "Gen Matthew B Ridgway", type: "Memorial", address: "Fifth, Ave", latitude: 40.444279, longitude: -79.955271, photoName: "SoldiersAndSailorsLawn", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Litchfield Towers", description: "Student Dormitory. University of Pittsburgh", type: "building", address: "3990 Fifth Ave", latitude: 40.442563, longitude: -79.957175, photoName: "LitchfieldTowers", pinName: "BlueBall", pointId: 1, roadId: 1)
+        AddLandmark("Litchfield Towers", description: "Student Dormitory. University of Pittsburgh", type: "building", address: "3990 Fifth Ave", latitude: 40.442563, longitude: -79.957175, photoName: "LitchfieldTowers", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Campus Bookstore", description: "campusbookstore.com", type: "store", address: "3610 Fifth Ave", latitude: 40.441429, longitude: -79.958662, photoName: "CampusBookstore", pinName: "BlueBall", pointId: 1, roadId: 1)
+        AddLandmark("Campus Bookstore", description: "campusbookstore.com", type: "store", address: "3610 Fifth Ave", latitude: 40.441429, longitude: -79.958662, photoName: "CampusBookstore", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Nellie's Sandwiches", description: "Middle Estern Sandwich Joint", type: "restaurant", address: "3524 Fifth Ave", latitude: 40.441081, longitude: -79.959120, photoName: "NelliesSandwiches", pinName: "BlueBall", pointId: 1, roadId: 1)
+        AddLandmark("Nellie's Sandwiches", description: "Middle Estern Sandwich Joint", type: "restaurant", address: "3524 Fifth Ave", latitude: 40.441081, longitude: -79.959120, photoName: "NelliesSandwiches", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Five Guys Burgers and Fries", description: "Fast-food burger and fries chain", type: "restaurant", address: "117 S Bouquet St", latitude: 40.442245, longitude: -79.956725, photoName: "FiveGuys", pinName: "BlueBall", pointId: 1, roadId: 1)
+        AddLandmark("Five Guys Burgers and Fries", description: "Fast-food burger and fries chain", type: "restaurant", address: "117 S Bouquet St", latitude: 40.442245, longitude: -79.956725, photoName: "FiveGuys", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("The Pitt Shop", description: "Bruce Hall", type: "store", address: "3939 Forbes Ave", latitude: 40.442764, longitude: -79.955601, photoName: "ThePittShop", pinName: "BlueBall", pointId: 1, roadId: 1)
+        AddLandmark("The Pitt Shop", description: "Bruce Hall", type: "store", address: "3939 Forbes Ave", latitude: 40.442764, longitude: -79.955601, photoName: "ThePittShop", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("The Original Hot Dog Shop", description: "Retro spot for hot dogs since 1960", type: "restaurant", address: "3901 Forbes Ave", latitude: 40.442145, longitude: -79.956509, photoName: "TheOriginalHotDog", pinName: "BlueBall", pointId: 1, roadId: 1)
+        AddLandmark("The Original Hot Dog Shop", description: "Retro spot for hot dogs since 1960", type: "restaurant", address: "3901 Forbes Ave", latitude: 40.442145, longitude: -79.956509, photoName: "TheOriginalHotDog", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Children's Hospital", description: "UPMC", type: "Hospital", address: "3420 Fifth Ave", latitude: 40.439657, longitude: -79.961088, photoName: "ChildrensHospital", pinName: "PinkFlagLeft", pointId: 1, roadId: 1)
+        AddLandmark("Children's Hospital", description: "UPMC", type: "Hospital", address: "3420 Fifth Ave", latitude: 40.439657, longitude: -79.961088, photoName: "ChildrensHospital", pinName: "PinkFlagLeft", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        
+        */
 /*
         //Landmark(name: "Gates Center for Computer Science", description: "Carnegie Mellon University", type: "building", latitude: 40.443293, longitude: -79.945045, address: "", image: "GatesHillmanCenter.png", pin: "BlueBall.png"),
         //Landmark(name: "Starbucks", description: "Cafe", type: "restaurant", latitude: 40.443666, longitude: 79.955674, address: "4022 Fifth Ave", image: "StarbacksOnFifth.png", pin: "BluePushPin24.png"),
@@ -755,6 +808,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
 */
     }
     
+    /*
     func LoadSampleDirections() {
         steps.append(PlanStep(seq: 0, name: "", instructions: "Start at the Carnegie Mellon University Center and go straight toward Forbes Ave. Turn left onto Forbes Ave.", image: "UniversityCenter", icon: "ArrowLeftTurn"))
         
@@ -796,7 +850,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         
         steps.append(PlanStep(seq: 19, name: "", instructions: "Continue west on Fifth Ave until you see the Children's Hospital of Pittsburgh of UPMC on your right. You have reached you destination.", image: "ChildrensHospital", icon: "ArrowUp"))
     }
-    
+
     func LoadSampleSafetyDirections() {
 
         //PlanStep(seq: 6, name: "", instructions: "If you see Hilman Library on your left, you missed your turn. Press the button to see new directions.", image: "HilmanLibrary.png", icon: "Counterclockwise-arrow-icon.png"),
@@ -823,11 +877,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         
         safety_steps.append(PlanStep(seq: 19, name: "", instructions: "Continue west on Fifth Ave until you see the Children's Hospital of Pittsburgh of UPMC on your right. You have reached you destination.", image: "ChildrensHospital", icon: "ArrowUp"))
     }
+    */
     
-    
-    func runSampleSearches() {
-    
-    
+    func runSampleSearches()
+    {
     var squery:String = "landmark"
     searchInMap(squery, lat: initialLocation.coordinate.latitude, lon: initialLocation.coordinate.longitude, span: span, mode: 0)
     
@@ -857,6 +910,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
 
     }
     
+    /*
     func displaySampleData()
     {
     
@@ -894,7 +948,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
        polyline_color = UIColor.brownColor()
         self.mapView.addOverlay(polyline2)
     }
-
+    */
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -907,41 +962,47 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         //    print("Show Plan pressed")
         //}
         
-        var btn  = UIBarButtonItem()
-        btn = sender as! UIBarButtonItem;
-        print("btn: \(btn.title)")
+        //var btn  = UIBarButtonItem()
+        let btn = sender as! UIBarButtonItem;
+        print("btn: \(btn.title) tag=\(btn.tag)")
         
-        print("segue.identifier = \(segue.identifier)")
+        print("segue.identifier = \(segue.identifier!)")
         
         let destNavController = segue.destinationViewController as! UINavigationController
         let targetController = destNavController.topViewController as! LandmarksTableViewController
-
         
         //if (segue.identifier == "") {
         
-        if (btn.title == "Landmarks") {
-            
-            //for i in 0...landmarks.count-1 {
-            //    targetController.landmarkList.append(landmarks[i])
-            //}
+        targetController.tableView.bounces = true
+        targetController.tableView.scrollEnabled = true
+        targetController.mode = btn.tag
+
         
+        if (btn.tag == 1)  //lmarksButton
+        {
             for i in 0...lmarks.count-1 {
-                //targetController.lmarkList.append(lmarks[i])
                 targetController.lmarks.append(lmarks[i])
             }
-            targetController.mode = 0
-        
-        } else {
-            
-            for i in 0...steps.count-1 {
-                targetController.planStepsList.append(steps[i])
-            }
-            for i in 0...safety_steps.count-1 {
-                targetController.safetyPlanStepsList.append(safety_steps[i])
-            }
-            targetController.mode = 1            
         }
-        
+        else if (btn.tag == 2)  //isectionsButton
+        {
+            for i in 0...sol.count-1 {
+                targetController.sol.append(sol[i])
+            }
+            
+            if safety_sol.count > 0
+            {
+                for i in 0...safety_sol.count-1 {
+                    targetController.safety_sol.append(safety_sol[i])
+                }
+            }
+        }
+        else if (btn.tag == 3)  //planButton
+        {
+            for i in 0...isections.count-1 {
+                targetController.isections.append(isections[i])
+            }
+        }
     }
 
     @IBAction func sendOsmQuery(sender: AnyObject) {
@@ -976,13 +1037,20 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         let maxlon:Double = neCoord.longitude
         print("minlat=\(minlat) minlon=\(minlon) maxlat=\(maxlat) maxlon=\(maxlon)")
 
-        overpassQlRequest(minlat, minlon:minlon, maxlat:maxlat, maxlon:maxlon, completion: {(result: Bool)->Void in
+        overpassQlRequest(minlat, minlon:minlon, maxlat:maxlat, maxlon:maxlon, completion:
+        {(result: Bool)->Void in
         
             var anns = [CustomPointAnnotation]()
             for lmark in self.lmarks
             {
-                let ann = CustomPointAnnotation(lat: lmark.latitude, lon: lmark.longitude, name: lmark.name, address: lmark.address, pinImage: lmark.pin!, photoImage: lmark.photo!, pointId: lmark.pointId, roadId: lmark.roadId, type: 1)
-                anns.append(ann)
+                if (lmark.latitude >= minlat && lmark.latitude <= maxlat && lmark.longitude >= minlon && lmark.longitude <= maxlon)
+                {
+                    //let ann = CustomPointAnnotation(lat: lmark.latitude, lon: lmark.longitude, name: lmark.name, address: lmark.address, pinImage: lmark.pin!, photoImage: lmark.photo!, pointId: lmark.pointId, roadId: lmark.roadId, type: 1, street: lmark.street, amenity: lmark.amenity)
+                    
+                    let ann = CustomPointAnnotation(lmark: lmark, pinImage: lmark.pin!, photoImage: lmark.photo!)
+                    
+                    anns.append(ann)
+                }
             }
             
             for ann in anns {
@@ -1109,19 +1177,19 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                 print("Error saving json string to file!")
             }
             
-            var lmarks: NSString? = nil
-            var isections: NSString? = nil
-            let res = self.MySbplWrapper.initPlannerByOsm_wrapped(responseString, &lmarks, &isections)
+            var s_lmarks: NSString? = nil
+            var s_isections: NSString? = nil
+            let res = self.MySbplWrapper.initPlannerByOsm_wrapped(responseString, &s_lmarks, &s_isections)
             
             if (res)
             {
                 print("Planner initialized succesfully.")
                 
-                self.processLandmarks(lmarks!, minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
+                self.processLandmarks(s_lmarks!, minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
                 
-                print("Length of intersections string = \(isections!.length)")
+                print("Length of intersections string = \(s_isections!.length)")
                 
-                self.processIntersections(isections!, minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
+                self.processIntersections(s_isections!, minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
                 
             }
             else
@@ -1182,7 +1250,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                 var anns = [CustomPointAnnotation]()
                 for lmark in self.lmarks
                 {
-                    let ann = CustomPointAnnotation(lat:lmark.latitude, lon: lmark.longitude, name: lmark.name, address: lmark.address, pinImage: lmark.pin!, photoImage: lmark.photo!, pointId: lmark.pointId, roadId: lmark.roadId, type: 1)
+                    //let ann = CustomPointAnnotation(lat:lmark.latitude, lon: lmark.longitude, name: lmark.name, address: lmark.address, pinImage: lmark.pin!, photoImage: lmark.photo!, pointId: lmark.pointId, roadId: lmark.roadId, type: 1, street: lmark.street, amenity: lmark.amenity)
+                    
+                    let ann = CustomPointAnnotation(lmark: lmark, pinImage: lmark.pin!, photoImage: lmark.photo!)
                     
                     //self.createCustomPointAnnotation(lmark.latitude, lon: lmark.longitude, name: lmark.name, address: lmark.address, pin: lmark.pin!, photo: lmark.photo!, pointId: lmark.pointId, roadId: lmark.roadId, type: 1)
                     anns.append(ann)
@@ -1262,13 +1332,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                     info1.subtitle = "subtitle"
                     self.mapView.addAnnotation(info1)
                 
-                    self.dirRequest.source = item1
+                    //self.dirRequest.source = item1
                 
                     let n = response?.mapItems.count
                     let item2:MKMapItem = (response?.mapItems[n!-1])!
                 
                     self.addPinToMapView(item2.name!, latitude: item2.placemark.location!.coordinate.latitude, longitude:item2.placemark.location!.coordinate.longitude)
                 
+                    /*
                     self.dirRequest.destination = item2
                 
                     self.dirRequest.requestsAlternateRoutes = false
@@ -1282,6 +1353,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                     
                         self.showRoute(response)
                     }
+                    */
                 } else if mode == 2 {
                   
                     for item in (response?.mapItems)! {
@@ -1325,7 +1397,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                                 //print("Lon = \(ilon)")
                     
                                 self.addPinToMapView(item.name!, latitude: ilat, longitude:ilon)
-                                self.landmarks.append(item)
+                                //self.landmarks.append(item)
                                 //print("landmarks count: \(self.landmarks.count)")
                         }
                     }
@@ -1359,104 +1431,326 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     {
         let pathArr: Array = path.componentsSeparatedByString("\n")
     
-        var sol = [SolutionStep]()
+        self.sol.removeAll()
+        
         var i=0
+        let n = pathArr.count
+        print("pathArr.count = \(pathArr.count)")
+        
         for step in pathArr
         {
             var stepdata: Array = step.componentsSeparatedByString(";")
     
-            i++
-            if (stepdata.count < 11) {continue}
+            if (stepdata.count < 13)
+            {
+                print("i=\(i) count=\(stepdata.count)")
+                continue
+            }
     
             let k = Int(stepdata[0])
-            let act1 = Int(stepdata[4])
-            let type1 = Int(stepdata[5])
-            let act2 = Int(stepdata[9])
-            let type2 = Int(stepdata[10])
+            let id1 = Int64(stepdata[1])
             let lat1 = Double(stepdata[2])
             let lon1 = Double(stepdata[3])
-            let lat2 = Double(stepdata[7])
-            let lon2 = Double(stepdata[8])
-            let id1 = Int64(stepdata[1])
-            let id2 = Int64(stepdata[6])
+            let act1 = Int(stepdata[4])
+            let type1 = Int(stepdata[5])
+            let dir1 = Int(stepdata[6])
+            
+            let id2 = Int64(stepdata[7])
+            let lat2 = Double(stepdata[8])
+            let lon2 = Double(stepdata[9])
+            let act2 = Int(stepdata[10])
+            let type2 = Int(stepdata[11])
+            let dir2 = Int(stepdata[12])
+
     
-            print("i=\(i) count=\(stepdata.count) k=\(k!) id1=\(id1!) lat1=\(lat1!) lon1=\(lon1!) act1=\(act1!) type1=\(type1!) id2=\(id2!) lat2=\(lat2!) lon2=\(lon2!) act2=\(act2!) type2=\(type2!)")
+            print("i=\(i) k=\(k!) | id \(id1!) coord \(lat1!) \(lon1!) act \(act1!) type \(type1!) dir \(dir1!) | id \(id2!) coord \(lat2!) \(lon2!) act \(act2!) type \(type2!) dir \(dir2!)")
     
-            let step = SolutionStep(seq: i, name: "", instructions: "", imageName: "", iconName: "", k: k!, id1: id1!, lat1: lat1!, lon1: lon1!, act1: act1!, type1: type1!, id2: id2!, lat2: lat2!, lon2: lon2!, act2: act2!, type2: type2!)
-    
-            if k == 0
+            var iconName: String = ""
+            var instr: String = ""
+            var descr: String = ""
+            var imageName: String = "defaultPhoto"
+            
+            var ind: Int
+            var count: Int = 0
+            
+            if (i == 0)
             {
-                //self.sol_steps.append(step)
+                instr = startPoseDescription(id1!, type: type1!)
+                
+                iconName = "StartButton"
+                
+                let step0 = SolutionStep(seq: i, name: "", instructions: instr, imageName: imageName, iconName: iconName, k: k!, id1: id1!, lat1: lat1!, lon1: lon1!, act1: act1!, type1: type1!, id2: id2!, lat2: lat2!, lon2: lon2!, act2: act2!, type2: type2!)
+                sol.append(step0)
+            }
+            
+            instr = interimPoseDescription(i, id: id2!, act: act1!, type: type2!, iconName: &iconName, streetCount: &count)
+            
+            if (i == n-2)
+            {
+                instr = instr + ". You have reached your destination."
+                iconName = "FinishLine"
+            }
+            
+            if ((id1 == id2 && act1 == act2 && type1 == type2 && dir1 == dir2 && i < n-2) || (type2 == 0 && count < 2))
+            {
+                i++
+                print("Skipping")
+                continue
+            }
+            
+            i++
+            
+            let step = SolutionStep(seq: i, name: "", instructions: instr, imageName: imageName, iconName: iconName, k: k!, id1: id1!, lat1: lat1!, lon1: lon1!, act1: act1!, type1: type1!, id2: id2!, lat2: lat2!, lon2: lon2!, act2: act2!, type2: type2!)
+    
+            if (k == 0)
+            {
                 sol.append(step)
             }
-            else if k == 1
+            else if (k == 1)
             {
-                self.safety_sol_steps.append(step)
+                safety_sol.append(step)
             }
         }
         
-        drawPlan(0, planColor: UIColor.blueColor(), sol: sol)
+        drawPlan(0, planColor: UIColor.blueColor())
         //drawPlan(1, planColor: UIColor.brownColor())
-     }
+    }
     
-    func drawPlan(k: Int, planColor: UIColor, sol: [SolutionStep])
+    func interimPoseDescription(i: Int, id: Int64, act: Int, type: Int, inout iconName: String, inout streetCount: Int) -> String
     {
-        var coords1 = [CLLocationCoordinate2D]()
-        for step in sol //self.sol_steps
+        var ind: Int = -1
+        var descr: String = ""
+        var instr: String = ""
+        iconName = ""
+        streetCount = 0
+        
+        instr = String(i) + ": ";
+        
+        if (act == 0)
+        {
+            iconName = "ArrowUp"
+            instr = instr + "Go straight"
+        }
+        else if (act == -1)
+        {
+            iconName = "ArrowLeft"
+            instr = instr + "Turn left"
+        }
+        else if (act == 1)
+        {
+            iconName = "ArrowRight"
+            instr = instr + "Turn right"
+        }
+        else if (act == 2)
+        {
+            iconName = "ArrowRightTurn"
+            instr = instr + "Sharp turn right"
+        }
+        else if (act == -2)
+        {
+            iconName = "ArrowLeftTurn"
+            instr = instr + "Sharp turn left"
+        }
+        else
+        {
+            print("act=\(act)")
+            iconName = ""
+            instr = ""
+        }
+        
+        if (type == 1)
+        {
+            //landmark
+            ind = findLandmarkByID(id)
+            descr = lmarks[ind].name
+            if !lmarks[ind].address.isEmpty
+            {
+                descr = descr + " at " + lmarks[ind].address
+            }
+        }
+        else if (type == 0)
+        {
+            //intersection
+            ind = findIntersectionByID(id)
+            streetCount = isections[ind].streetsCount
+            //if (streetsCount < 2)
+            //{
+            //    descr = "intersection" + " skipping"
+            //    print("Skipping false intersection")
+                //continue
+            //}
+            //else
+            //{
+                descr = "intersection " + (isections[ind].location as String)
+            //}
+        }
+        descr = descr + " (" + String(id) + ")"
+        
+        if (act == 0)
+        {
+            instr = instr + " until you see " + descr
+        }
+        else
+        {
+            instr = instr + " at " + descr
+        }
+
+        return instr
+    }
+    
+    func startPoseDescription(id: Int64, type: Int) -> String
+    {
+        var ind: Int = -1
+        var instr: String = ""
+        if (type == 1)
+        {
+            //landmark
+            ind = findLandmarkByID(id)
+            instr = "Start from " + lmarks[ind].name
+            if !lmarks[ind].address.isEmpty
+            {
+                instr = instr + " at " + lmarks[ind].address
+            }
+            else if !lmarks[ind].street.isEmpty
+            {
+                instr = instr + " on " + lmarks[ind].street
+            }
+            
+            if !lmarks[ind].amenity.isEmpty
+            {
+                instr = instr + " (" + lmarks[ind].amenity + ")"
+            }
+        }
+        else if (type == 0)
+        {
+            //intersection
+            ind = findIntersectionByID(id)
+            instr = "Start from intersection " + (isections[ind].location as String)
+        }
+        
+        instr = instr + " (" + String(id) + ")"
+        return instr
+    }
+    
+    func findLandmarkByID(id: Int64) -> Int
+    {
+        var ind  = -1
+        var i = 0
+        for lmark in lmarks
+        {
+            if lmark.pointId == id
+            {
+                ind = i
+                break
+            }
+            i++
+        }
+        return ind
+    }
+    
+    func findIntersectionByID(id: Int64) -> Int
+    {
+        var ind  = -1
+        var i = 0
+        for isection in isections
+        {
+            if isection.id == id
+            {
+                ind = i
+                break
+            }
+            i++
+        }
+        return ind
+    }
+    
+    func drawPlan(k: Int, planColor: UIColor)
+    {
+        let n = sol.count
+        var coords = [CLLocationCoordinate2D]()
+        var i = 0
+        for step in sol
         {
             if (step.k == k)
             {
-                coords1.append(CLLocationCoordinate2DMake(step.lat1, step.lon1))
+                coords.append(CLLocationCoordinate2DMake(step.lat1, step.lon1))
+                if (i == n-1)
+                {
+                    coords.append(CLLocationCoordinate2DMake(step.lat2, step.lon2))
+                }
             }
+            i++
         }
-        let polyline1: MKPolyline = MKPolyline(coordinates: &coords1, count: sol.count)
+        
+        let polyline: MKPolyline = MKPolyline(coordinates: &coords, count: n+1)
         self.polyline_color = planColor
-        self.mapView.addOverlay(polyline1)
+        self.mapView.addOverlay(polyline)
     }
     
-    func processLandmarks(lmarks: NSString, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double)
+    func processLandmarks(s_lmarks: NSString, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double)
     {
-        print("--- lmarks ---\n");
-        //print("\(lmarks)");
+        print("\n--- lmarks ---\n");
+        //print("\(s_lmarks)");
         //print("\n");
-    
-        let lmarksArr: Array = lmarks.componentsSeparatedByString("\n")
-        //var nlmarks = lmarksArr.count
+        
+        let lmarksArr: Array = s_lmarks.componentsSeparatedByString("\n")
     
         var i=0
         var j=0
         for lmark in lmarksArr
         {
-            var lmarkdata: Array = lmark.componentsSeparatedByString(";")
-            i++
-            if (lmarkdata.count < 4) {continue}
-            
-            print("i=\(i) \(lmarkdata[0]) \(lmarkdata[1]) \(lmarkdata[2]) \(lmarkdata[3])")
-    
-            let name = lmarkdata[3]
-            let lat = Double(lmarkdata[1])
-            let lon = Double(lmarkdata[2])
-            let pointId = Int64(lmarkdata[0])
-
-            if (lat >= minlat && lat <= maxlat && lon >= minlon && lon <= maxlon)
+            let pointId = Int64(lmark)
+            if (pointId == nil)
             {
-                j++
-                self.AddLandmark(name, description: "", type: "", address: "", latitude: lat!, longitude: lon!, photoName: "", pinName: "BlueBall", pointId: pointId!, roadId: 1)
+                continue
             }
+            
+            i++
+            
+            var ind: CInt = 0
+            var name: NSString? = nil
+            var address: NSString? = nil
+            var info: NSString? = nil
+            var street: NSString? = nil
+            var amenity: NSString? = nil
+            var lat: Double = 0
+            var lon: Double = 0
+            
+            self.MySbplWrapper.getLandmarkDetails_wrapped(pointId!, &ind, &lat, &lon, &name, &address, &info, &street, &amenity)
+
+            //if (lat >= minlat && lat <= maxlat && lon >= minlon && lon <= maxlon)
+            //{
+            let name1 = name?.stringByReplacingOccurrencesOfString("_", withString: " ")
+            let name2 = name1?.capitalizedString
+                
+            let info1 = info?.stringByReplacingOccurrencesOfString("_", withString: " ")
+            let info2 = info1?.capitalizedString
+            
+            let street1 = street?.stringByReplacingOccurrencesOfString("_", withString: " ")
+            let street2 = street1?.capitalizedString
+            
+            let amenity1 = amenity?.stringByReplacingOccurrencesOfString("_", withString: " ")
+            let amenity2 = amenity1?.capitalizedString
+            
+            print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(name2!) | \(address!) | \(info2!) | \(street2!) | \(amenity2!)")
+            
+            j++
+            self.AddLandmark(name2!, description: info2!, type: 1, address: String(address!), latitude: lat, longitude: lon, photoName: "", pinName: "BlueBall", pointId: pointId!, roadId: 1, street: street2!, amenity: amenity2!)
+            //}
         }
         print("Landmarks total: \(i) within bbox \(j)")
     }
-    
-    func processIntersections(isections: NSString, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double)
+
+    func processIntersections(s_isections: NSString, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double)
     {
         //print("--- isectionss ---\n");
-        //print("\(isections)");
+        //print("\(s_isections)");
         //print("\n");
         
         var lat: Double = 0
         var lon: Double = 0
         
-        let isectionsArr: Array = isections.componentsSeparatedByString("\n")
+        let isectionsArr: Array = s_isections.componentsSeparatedByString("\n")
         
         var i=0
         var j=0
@@ -1475,15 +1769,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             
             var ind: CInt = 0
             var location: NSString? = nil
-            self.MySbplWrapper.getIntersectionDetails_wrapped(pointId!, &ind, &lat, &lon, &location)
+            var count: CInt = 0
+            self.MySbplWrapper.getIntersectionDetails_wrapped(pointId!, &ind, &lat, &lon, &location, &count)
             print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(location!)")
             
-            if (lat >= minlat && lat <= maxlat && lon >= minlon && lon <= maxlon)
-            {
-                let isct = Intersection(id: pointId!, index: Int(j), latutude: lat, longitude: lon, location: location!)
-                intersections.append(isct)
+            //if (lat >= minlat && lat <= maxlat && lon >= minlon && lon <= maxlon)
+            //{
+                let isct = Intersection(id: pointId!, index: Int(j), latutude: lat, longitude: lon, location: location!, streetsCount: Int(count))
+                isections.append(isct)
                 j++
-            }
+            //}
         }
         print("Intersections total: \(i) within bbox \(j+1)")
     }

@@ -32,48 +32,32 @@
                                     <outlet property="delegate" destination="BYZ-38-t0r" id="YIG-mn-d0D"/>
                                 </connections>
                             </textField>
-                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2cf-tf-ffa">
-                                <rect key="frame" x="16" y="535" width="343" height="44"/>
-                                <items>
-                                    <barButtonItem title="OSM" id="Xpl-Cw-p1Q">
-                                        <connections>
-                                            <action selector="sendOsmQuery:" destination="BYZ-38-t0r" id="HpF-Ll-H74"/>
-                                        </connections>
-                                    </barButtonItem>
-                                    <barButtonItem enabled="NO" image="Zoom-In64" id="U7l-4c-lIr">
-                                        <connections>
-                                            <action selector="zoomInMap:" destination="BYZ-38-t0r" id="6bf-Er-Rs6"/>
-                                        </connections>
-                                    </barButtonItem>
-                                    <barButtonItem image="Map128" id="glg-7e-exG">
-                                        <connections>
-                                            <action selector="changeMapType:" destination="BYZ-38-t0r" id="Qzq-9e-zld"/>
-                                        </connections>
-                                    </barButtonItem>
-                                    <barButtonItem image="Theatre64" id="uIw-yb-VRh">
-                                        <connections>
-                                            <segue destination="Dgp-Vt-CR9" kind="presentation" identifier="ShowTable" id="eEK-38-sYN"/>
-                                        </connections>
-                                    </barButtonItem>
-                                    <barButtonItem image="Animation64" id="Sch-W0-j4D">
-                                        <color key="tintColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                        <connections>
-                                            <action selector="animateCamera:" destination="BYZ-38-t0r" id="YCp-EO-xq9"/>
-                                        </connections>
-                                    </barButtonItem>
-                                    <barButtonItem image="ArrowRight" id="DcW-zK-ZTf">
-                                        <connections>
-                                            <action selector="showDirections:" destination="BYZ-38-t0r" id="iVo-Oq-YlF"/>
-                                        </connections>
-                                    </barButtonItem>
-                                </items>
-                            </toolbar>
                             <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UXG-Vf-BO2">
                                 <rect key="frame" x="16" y="579" width="343" height="44"/>
                                 <items>
                                     <barButtonItem image="ArrowRight" id="XOT-Ht-jrQ">
                                         <connections>
                                             <action selector="showPlanSteps:" destination="BYZ-38-t0r" id="Ha8-T4-HsK"/>
+                                        </connections>
+                                    </barButtonItem>
+                                </items>
+                            </toolbar>
+                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2cf-tf-ffa">
+                                <rect key="frame" x="16" y="541" width="343" height="44"/>
+                                <items>
+                                    <barButtonItem image="Theatre64" id="uIw-yb-VRh">
+                                        <connections>
+                                            <segue destination="Dgp-Vt-CR9" kind="presentation" identifier="ShowTable" id="eEK-38-sYN"/>
+                                        </connections>
+                                    </barButtonItem>
+                                    <barButtonItem image="road32" id="db5-QF-UCC" userLabel="Isections Button">
+                                        <connections>
+                                            <action selector="showIsections:" destination="BYZ-38-t0r" id="w4y-t1-bhc"/>
+                                        </connections>
+                                    </barButtonItem>
+                                    <barButtonItem image="DirectionsSign64" id="7y6-p2-kMR" userLabel="Plan Button">
+                                        <connections>
+                                            <action selector="showPlan:" destination="BYZ-38-t0r" id="GLv-im-dk3"/>
                                         </connections>
                                     </barButtonItem>
                                 </items>
@@ -96,15 +80,44 @@
                             <constraint firstItem="2cf-tf-ffa" firstAttribute="leading" secondItem="UXG-Vf-BO2" secondAttribute="leading" id="wwc-Ai-ImR"/>
                         </constraints>
                     </view>
-                    <toolbarItems/>
+                    <toolbarItems>
+                        <barButtonItem image="ArrowRight" id="DcW-zK-ZTf">
+                            <connections>
+                                <action selector="showDirections:" destination="BYZ-38-t0r" id="iVo-Oq-YlF"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem title="OSM" id="Xpl-Cw-p1Q">
+                            <connections>
+                                <action selector="sendOsmQuery:" destination="BYZ-38-t0r" id="HpF-Ll-H74"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem image="Animation64" id="Sch-W0-j4D">
+                            <color key="tintColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                            <connections>
+                                <action selector="animateCamera:" destination="BYZ-38-t0r" id="YCp-EO-xq9"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem image="Zoom-In64" id="U7l-4c-lIr">
+                            <connections>
+                                <action selector="zoomInMap:" destination="BYZ-38-t0r" id="6bf-Er-Rs6"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem image="Map128" id="glg-7e-exG">
+                            <connections>
+                                <action selector="changeMapType:" destination="BYZ-38-t0r" id="Qzq-9e-zld"/>
+                            </connections>
+                        </barButtonItem>
+                    </toolbarItems>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina47"/>
                     <connections>
                         <outlet property="animateButton" destination="Sch-W0-j4D" id="BVw-64-TSs"/>
+                        <outlet property="isectionsButton" destination="db5-QF-UCC" id="di6-RK-pIj"/>
                         <outlet property="lmarksButton" destination="uIw-yb-VRh" id="PjR-3O-CwM"/>
                         <outlet property="mapTypeButton" destination="glg-7e-exG" id="5SZ-Mw-Ybe"/>
                         <outlet property="mapView" destination="uUV-Fa-GDl" id="SQO-5v-nCa"/>
                         <outlet property="osmButton" destination="Xpl-Cw-p1Q" id="uVZ-Ww-HyO"/>
+                        <outlet property="planButton" destination="7y6-p2-kMR" id="SRG-IA-cOn"/>
                         <outlet property="searchText" destination="gBU-eF-3xN" id="847-6P-cWE"/>
                         <outlet property="showPlanButton" destination="XOT-Ht-jrQ" id="n8z-cW-b6H"/>
                         <outlet property="zoomInButton" destination="U7l-4c-lIr" id="4Qj-an-HbD"/>
@@ -118,7 +131,7 @@
         <scene sceneID="zt6-8b-851">
             <objects>
                 <tableViewController id="ZK4-B8-Z5J" customClass="LandmarksTableViewController" customModule="LmarkPlanner" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="80" sectionHeaderHeight="28" sectionFooterHeight="28" id="PT8-CG-VVI">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" pagingEnabled="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="80" sectionHeaderHeight="28" sectionFooterHeight="28" id="PT8-CG-VVI">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -136,28 +149,28 @@
                                                 <constraint firstAttribute="width" constant="91" id="jA3-sl-Zqj"/>
                                             </constraints>
                                         </imageView>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Description" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bCk-is-5mW">
-                                            <rect key="frame" x="112" y="34" width="255" height="19"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Description" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bCk-is-5mW">
+                                            <rect key="frame" x="112" y="34" width="240" height="19"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="19" id="ecP-oo-pEO"/>
                                             </constraints>
-                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                            <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WYa-C4-P7a">
-                                            <rect key="frame" x="112" y="53" width="255" height="22"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                            <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CAS-P0-DaM">
-                                            <rect key="frame" x="112" y="8" width="255" height="21"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CAS-P0-DaM">
+                                            <rect key="frame" x="112" y="8" width="240" height="21"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="21" id="vRe-X2-hgd"/>
                                             </constraints>
-                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                            <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
+                                            <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Address" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WYa-C4-P7a">
+                                            <rect key="frame" x="112" y="55" width="240" height="22"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
@@ -313,9 +326,11 @@
         <image name="Animation64" width="32" height="32"/>
         <image name="ArrowRight" width="16" height="16"/>
         <image name="CathedralOfLearning.png" width="191" height="93"/>
+        <image name="DirectionsSign64" width="32" height="32"/>
         <image name="Map128" width="64" height="64"/>
         <image name="Theatre64" width="32" height="32"/>
         <image name="Zoom-In64" width="32" height="31"/>
         <image name="defaultPhoto" width="95" height="46"/>
+        <image name="road32" width="32" height="32"/>
     </resources>
 </document>

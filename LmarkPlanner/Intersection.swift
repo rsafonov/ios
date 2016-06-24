@@ -15,14 +15,15 @@ class Intersection {
     var latitude = 0.0
     var longitude = 0.0
     var location : NSString = ""
+    var streetsCount : Int = 0
     
-    init(id:Int64, index:Int, latutude:CLLocationDegrees, longitude:CLLocationDegrees, location:NSString) {
+    init(id:Int64, index:Int, latutude:CLLocationDegrees, longitude:CLLocationDegrees, location:NSString, streetsCount:Int) {
         self.id = id
         self.index = index
         self.latitude = latutude
         self.longitude = longitude
         self.location = location
-        self.location = location
+        self.streetsCount = streetsCount
     }
 }
 
