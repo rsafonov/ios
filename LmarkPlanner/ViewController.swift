@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 import CoreLocation
 
-class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLocationManagerDelegate {
+class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationManagerDelegate, sendDataBack {
     
     // MARK: Properties
     
@@ -18,13 +18,27 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     
     //let dirRequest = MKDirectionsRequest()
     var lmarks = [Lmark]()
+    var i_lmarks = [Lmark]()
     var isections = [Intersection]()
+    
+    var startViews = [LmarkAnnotationView]()
+    var goalViews = [LmarkAnnotationView]()
+    var greenViews = [LmarkAnnotationView]()
+    
+    var directionImages = [String]()
+    var directionNames = [String]()
     
     var sol = [SolutionStep]()
     var safety_sol = [SolutionStep]()
+    var plan = [SolutionStep]()
+    var safety_plan = [SolutionStep]()
     
     var initialLocation = CLLocation()
+    var currentLocation = CLLocation()
     var span = MKCoordinateSpan()
+    var xRegionSizeMeters: Double = 1000.0
+    var yRegionSizeMeters: Double = 1000.0
+    
     var distance: CLLocationDistance = 650
     var pitch: CGFloat = 0   //65
     var heading = 0.0
@@ -46,7 +60,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     var goal_roadId: Int64 = 0
     var goal_type: Int = 0
     
-    //let locationManager = CLLocationManager()
+    var locationManager = CLLocationManager()
+    var showCurrentLocation: Bool  = false
     
     @IBOutlet var mapTypeButton: UIBarButtonItem!
     @IBOutlet var lmarksButton: UIBarButtonItem!
@@ -56,6 +71,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     @IBOutlet var showPlanButton: UIBarButtonItem!
     @IBOutlet var isectionsButton: UIBarButtonItem!
     @IBOutlet var planButton: UIBarButtonItem!
+    @IBOutlet var settingsButton: UIBarButtonItem!
     
     @IBOutlet var mapView: MKMapView!
     @IBOutlet var searchText: UITextField!
@@ -63,6 +79,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     // MARK: Methods
     
     @IBAction func showPlanSteps(sender: AnyObject) {
+        self.performSegueWithIdentifier("ShowTable", sender: sender)
+    }
+    
+    @IBAction func showSettings(sender: AnyObject) {
         self.performSegueWithIdentifier("ShowTable", sender: sender)
     }
     
@@ -78,6 +98,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         self.performSegueWithIdentifier("ShowTable", sender: sender)
     }
     
+    @IBAction func editSettings(sender: AnyObject) {
+        print("Settings button clicked")
+    }
+        
     @IBAction func animateCamera(sender: AnyObject) {
         
         mapView.mapType = .SatelliteFlyover
@@ -98,11 +122,19 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     }
     
     @IBAction func cancelToLandmarksViewController(seque:UIStoryboardSegue) {
+    }
         
+    @IBAction func searchOsm(sender: AnyObject) {
+        self.initEnv(currentLocation.coordinate)
     }
     
     @IBAction func saveLandmarkDetail(segue:UIStoryboardSegue) {
         
+        print("Done clicked")
+        viewDidLoad()
+        
+        //let destNavController = segue.destinationViewController as! UINavigationController
+        //let targetController = destNavController.topViewController as! LandmarksTableViewController
     }
     
     @IBAction func cancelToPlanViewController(seque:UIStoryboardSegue) {
@@ -111,6 +143,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     
     @IBAction func savePlanDetail(segue:UIStoryboardSegue) {
         
+    }
+    
+    func sendBoolValToPreviousVC(bval: Bool) {
+        showCurrentLocation = bval
+    }
+    
+    func sendDoubleValsToPreviousVC(xval: Double, yval: Double) {
+        xRegionSizeMeters = xval
+        yRegionSizeMeters = yval
     }
     
     /*
@@ -164,7 +205,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     
     /*
     func mapView(mapView: MKMapView!, didDeselectAnnotationView view: MKAnnotationView!) {
-        //if let view1 = view as? CustomAnnotationView {
+        //if let view1 = view as? LmarkAnnotationView {
             //if view1.preventDeselection {
             //    mapView.selectAnnotation(view.annotation!, animated: false)
             //}
@@ -172,7 +213,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     }
     */
     
-    func updatePinPosition(pin:CustomAnnotationView) {
+    func updatePinPosition(pin:LmarkAnnotationView) {
         let defaultShift:CGFloat = 80 //50
         let pinPosition = CGPointMake(pin.frame.midX, pin.frame.maxY)
         let y = pinPosition.y - defaultShift
@@ -183,14 +224,21 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView)
     {
-        print("didSelectAnnotationView: Selected annotation")
+        //print("didSelectAnnotationView")
         
-        //if let view1 = view as? CustomAnnotationView {
+        if let lmarkview = view as? LmarkAnnotationView
+        {
+            let lmarkann = lmarkview.annotation as? LmarkAnnotation
+            
+            //print("\(lmarkann?.lmark.pointId)  \(lmarkann!.title)")
+        }
+        
+        //if let view1 = view as? LmarkAnnotationView {
         //    updatePinPosition(view1)
         //}
         
         /*
-        if let ann = view.annotation as? CustomPointAnnotation
+        if let ann = view.annotation as? LmarkAnnotation
         {
             let lat = 40.4431911837908 //ann.coordinate.latitude
             let lon = -79.9508464336395 //ann.coordinate.longitude
@@ -214,12 +262,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         */
     }
     
+    /*
     func mapView(mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
         
         return
         
-        /*
-        let ann = view.annotation as! CustomPointAnnotation
+        
+        let ann = view.annotation as! LmarkAnnotation
         let placeName = ann.title
         let placeInfo = ann.subtitle!
         let ac = UIAlertController(title: placeName, message: placeInfo, preferredStyle: .Alert)
@@ -243,49 +292,83 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         ac.addAction(UIAlertAction(title: "Set as Goal", style: .Default, handler: setGoalHandler))
 
         presentViewController(ac, animated:true, completion: nil)
-        */
+ 
     }
+ */
     
     func generateOptimalPlan()
     {
         if (start_set && goal_set)
         {
             mapView.removeOverlays(mapView.overlays)
-            print("Number of Overlays: \(mapView.overlays.count)")
+            //print("Number of Overlays: \(mapView.overlays.count)")
             
             var pathlen: CInt = 0
             var path: NSString? = nil
-            var plan_found = self.MySbplWrapper.generatePlan_wrapped(&pathlen, &path)
-            if (!plan_found || pathlen <= 0)
+            var pathmin: NSString = ""
+            
+            var minlen: Int = 100000
+            var iter: Int = 0
+            var itermin: Int = 0
+            var kmax = 1
+            
+            //print("start_pointId=\(start_pointId) start_roadId=\(start_roadId) start_type=\(start_type)")
+            //print("goal_pointId=\(goal_pointId) goal_roadId=\(goal_roadId) goal_type=\(goal_type)")
+            iter = 1
+            //var plan_coords = [CLLocationCoordinate2D]()
+            var plan_found = self.MySbplWrapper.generatePlan_wrapped(CInt(kmax), &pathlen, &path)
+            if (plan_found)
             {
-                start_set = self.MySbplWrapper.resetStartPose_wrapped(start_pointId, start_roadId, CInt(start_type), 1)
-                plan_found = self.MySbplWrapper.generatePlan_wrapped(&pathlen, &path)
-                if (!plan_found || pathlen <= 0)
+                if (minlen > Int(pathlen))
                 {
-                    goal_set = self.MySbplWrapper.resetGoalPose_wrapped(goal_pointId, goal_roadId, CInt(goal_type), 1)
-                    plan_found = self.MySbplWrapper.generatePlan_wrapped(&pathlen, &path)
-                    if (!plan_found || pathlen <= 0)
-                    {
-                        start_set = self.MySbplWrapper.resetStartPose_wrapped(start_pointId, start_roadId, CInt(start_type), 0)
-                        plan_found = self.MySbplWrapper.generatePlan_wrapped(&pathlen, &path)
-                    }
+                    itermin = 1
+                    minlen = Int(pathlen)
+                    pathmin = path!
                 }
-            }
-            start_set = self.MySbplWrapper.resetStartPose_wrapped(start_pointId, start_roadId, CInt(start_type), 0)
-            goal_set = self.MySbplWrapper.resetGoalPose_wrapped(goal_pointId, goal_roadId, CInt(goal_type), 0)
-            if (plan_found && pathlen > 0)
-            {
-                DisplayPath(path!)
+                //DisplayTempPath(path!, coords: &plan_coords, planColor: UIColor.blueColor())
+                print("iter = \(iter) minlen = \(minlen) plan found")
             }
             else
             {
-                print("Plan not found")
-        
+                print("iter = \(iter) plan not found")
+            }
+
+            //print("start_pointId=\(start_pointId) start_roadId=\(start_roadId) start_type=\(start_type)")
+            //print("goal_pointId=\(goal_pointId) goal_roadId=\(goal_roadId) goal_type=\(goal_type)")
+            
+            plan_found = generateOnePlan(2, kmax: kmax, start_dir: 1, goal_dir: 0, minlen: &minlen, itermin: &itermin, pathmin: &pathmin)
+
+            //print("start_pointId=\(start_pointId) start_roadId=\(start_roadId) start_type=\(start_type)")
+            //print("goal_pointId=\(goal_pointId) goal_roadId=\(goal_roadId) goal_type=\(goal_type)")
+            
+            plan_found = generateOnePlan(3, kmax: kmax, start_dir: 0, goal_dir: 1, minlen: &minlen, itermin: &itermin, pathmin: &pathmin)
+
+
+            //print("start_pointId=\(start_pointId) start_roadId=\(start_roadId) start_type=\(start_type)")
+            //print("goal_pointId=\(goal_pointId) goal_roadId=\(goal_roadId) goal_type=\(goal_type)")
+            
+            plan_found = generateOnePlan(4, kmax: kmax, start_dir: 1, goal_dir: 1, minlen: &minlen, itermin: &itermin, pathmin: &pathmin)
+            
+            if (!plan_found)
+            {
+                kmax = 0
+                plan_found = generateOnePlan(5, kmax: kmax, start_dir: 0, goal_dir: 0, minlen: &minlen, itermin: &itermin, pathmin: &pathmin)
+                plan_found = generateOnePlan(6, kmax: kmax, start_dir: 0, goal_dir: 1, minlen: &minlen, itermin: &itermin, pathmin: &pathmin)
+                plan_found = generateOnePlan(7, kmax: kmax, start_dir: 1, goal_dir: 0, minlen: &minlen, itermin: &itermin, pathmin: &pathmin)
+                plan_found = generateOnePlan(8, kmax: kmax, start_dir: 1, goal_dir: 1, minlen: &minlen, itermin: &itermin, pathmin: &pathmin)
+            }
+            
+            start_set = self.MySbplWrapper.resetStartPose_wrapped(start_pointId, start_roadId, CInt(start_type), 0)
+            goal_set = self.MySbplWrapper.resetGoalPose_wrapped(goal_pointId, goal_roadId, CInt(goal_type), 0)
+            
+            if (itermin > 0)
+            {
+                DisplayPath(pathmin)
             }
         }
         else
         {
-            //dispatch_async(dispatch_get_main_queue()) {
+                //dispatch_async(dispatch_get_main_queue()) {
 
                 let ac = UIAlertController(title: "Error", message: "msg", preferredStyle: .Alert)
                 if (!self.start_set)
@@ -303,57 +386,107 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         }
     }
     
-    func mapView(mapView: MKMapView!, viewForAnnotation annotation: MKAnnotation!) ->MKAnnotationView! {
-        //print("delegate viewForAnnotation called")
-        
+    func generateOnePlan(iter: Int, kmax: Int, start_dir: Int, goal_dir: Int, inout minlen: Int, inout itermin: Int, inout pathmin: NSString) -> Bool
+    {
+        var pathlen: CInt = 0
+        var path: NSString? = nil
+
+        self.start_set = self.MySbplWrapper.resetStartPose_wrapped(start_pointId, start_roadId, CInt(start_type), CInt(start_dir))
+        self.goal_set = self.MySbplWrapper.resetGoalPose_wrapped(goal_pointId, goal_roadId, CInt(goal_type), CInt(goal_dir))
+    
+        let plan_found = self.MySbplWrapper.generatePlan_wrapped(CInt(kmax), &pathlen, &path)
+        if (plan_found)
+        {
+            var len0 = 0
+            let pathArr: Array = path!.componentsSeparatedByString("\n")
+            for step in pathArr
+            {
+                var stepdata: Array = step.componentsSeparatedByString(";")
+                if (stepdata.count < 3)
+                {
+                    continue
+                }
+                let k = Int(stepdata[0])
+                if (k == 0)
+                {
+                    len0 += 1
+                }
+            }
+            
+            if (minlen > Int(pathlen))
+            //if (minlen > len0)
+            {
+                itermin = iter
+                minlen = Int(pathlen)
+                pathmin = path!
+            }
+    
+            print("iter = \(iter) minlen = \(minlen) plan found")
+            //plan_coords.removeAll()
+            //DisplayTempPath(path!, coords: &plan_coords, planColor: UIColor.brownColor())
+        }
+        else
+        {
+            print("iter = \(iter) plan not found")
+        }
+        return plan_found
+    }
+    
+    func mapView(mapView: MKMapView!, viewForAnnotation annotation: MKAnnotation!) ->MKAnnotationView!
+    {
         //if annotation is MKUserLocation {
-        if !(annotation is CustomPointAnnotation) && !(annotation is SnapshotImageAnnotation) {
+        if !(annotation is LmarkAnnotation) && !(annotation is MKPointAnnotation)
+        {
             return nil
         }
         
-        if annotation is CustomPointAnnotation {
-            //print("ViewForAnnotation: CustomPointAnnotation clicked.")
+        if annotation is LmarkAnnotation {
+            //print("ViewForAnnotation: LmarkAnnotation clicked.")
             
-            let reuseId = "test"
-            var annView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId)
-            if annView == nil {
-                annView = CustomAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-            } else {
+            var annView: LmarkAnnotationView? = nil
+            let reuseId = "lmark"
+            
+            if let reuseView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId) as? LmarkAnnotationView {
+                annView = reuseView
                 annView?.annotation = annotation
+                annView?.selected = false
+            }
+            else {
+                annView = LmarkAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
             }
             
-            let ann = annotation as! CustomPointAnnotation
+            let ann = annotation as! LmarkAnnotation
             annView?.image = ann.pinImage
-            let cView = annView as! CustomAnnotationView
-            cView.parent = self
+            annView!.parent = self
             annView?.canShowCallout = false
-            ann.view = cView
-            if (ann.lmark.type == 0)
-            {
-                cView.setSelected(true, animated: false)
-            }
-            else
-            {
-                cView.setSelected(false, animated: false)
-            }
+            ann.view = annView
+            //if (ann.lmark.type == 0)
+            //{
+                //cView.setSelected(true, animated: false)
+            //}
+            //else
+            //{
+            //    annView!.setSelected(false, animated: false)
+            //}
             return annView
+        }
+        else  if annotation is MKPointAnnotation
+        {
+            let reuseId = "point"
+            var annView: MKAnnotationView? = nil
 
-        } else if annotation is SnapshotImageAnnotation {
-            let reuseId = "snap"
-            var annView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId)
-            if annView == nil {
-                annView = MKAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-                annView?.canShowCallout = true
-            } else {
-                annView?.annotation = annotation
+            if let reuseView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId) {
+                annView = reuseView
+                annView!.annotation = annotation
             }
-            configureDetailView(annView!)
-            
+            else  {
+                annView = MKAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
+            }
+            annView?.image = UIImage(named: "Target")
             return annView
         }
         return nil
     }
-
 
     func configureDetailView(annotationView: MKAnnotationView) {
         let snapshotView = UIView(frame: CGRect (x: 0, y: 0, width: 300, height: 300))
@@ -375,8 +508,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             }
         }
         annotationView.detailCalloutAccessoryView = snapshotView
-    
-        
         
         /*
         let width = 300
@@ -409,7 +540,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         
         searchInMap(searchText.text!, lat: initialLocation.coordinate.latitude, lon: initialLocation.coordinate.longitude, span: span, mode: 2)
         
-        _ = initEnv()
+        //_ = initEnv()
         return true
     }
   
@@ -425,30 +556,63 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         showPlanButton.setTitleTextAttributes([NSFontAttributeName: UIFont(name: "Helvetica", size: 14)!, NSForegroundColorAttributeName: UIColor.blackColor()], forState: UIControlState.Normal)
         */
         
+        directionImages.append("ArrowCounterclockwise")
+        directionImages.append("ArrowLeftTurn")
+        directionImages.append("ArrowLeft")
+        directionImages.append("ArrowUp")
+        directionImages.append("ArrowRight")
+        directionImages.append("ArrowRightTurn")
+        directionImages.append("ArrowCounterclockwise")
+        
+        directionNames.append("Uuturn left")
+        directionNames.append("sharp turn left")
+        directionNames.append("turn left")
+        directionNames.append("go straight")
+        directionNames.append("turn right")
+        directionNames.append("sharp turn right")
+        directionNames.append("uturn right")
+        
+        let coordinateRegion: MKCoordinateRegion?
+
+        //self.locationManager = CLLocationManager()
+        self.locationManager.delegate = self
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        self.locationManager.requestWhenInUseAuthorization()
+        
         //Show current location
-        //self.locationManager.delegate = self
-        //self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        //self.locationManager.requestWhenInUseAuthorization()
-        //self.locationManager.startUpdatingLocation()
-        //self.mapView.showsUserLocation = true
-        
-        initialLocation = CLLocation(latitude: 40.443660, longitude: -79.951712)
-        span = MKCoordinateSpanMake(0.022, 0.022)
-        //span = MKCoordinateSpanMake(0.011, 0.011)
-        
-        let coordinateRegion = MKCoordinateRegionMake(initialLocation.coordinate, span)
-        mapView.setRegion(coordinateRegion, animated: true)
-        mapView.showsCompass = false
-        mapView.showsPointsOfInterest = false
-        mapView.showsScale = false
-        mapView.showsTraffic = false
+        if (showCurrentLocation)
+        {
+            self.locationManager.startUpdatingLocation()
+            self.mapView.showsUserLocation = true
+        }
+        else
+        {
+            self.locationManager.stopUpdatingLocation()
+            self.mapView.showsUserLocation = false
+            
+            initialLocation = CLLocation(latitude: 40.443660, longitude: -79.951712)
+            //span = MKCoordinateSpanMake(0.022, 0.022)
+            span = MKCoordinateSpanMake(0.011, 0.011)
+            //let coordinateRegion = MKCoordinateRegionMake(initialLocation.coordinate, span)
+            coordinateRegion = MKCoordinateRegionMakeWithDistance(initialLocation.coordinate, xRegionSizeMeters, yRegionSizeMeters);
+            mapView.setRegion(coordinateRegion!, animated: false)
+            mapView.showsCompass = false
+            mapView.showsPointsOfInterest = false
+            mapView.showsScale = false
+            mapView.showsTraffic = false
+            span = coordinateRegion!.span
+            print("span: latitudeDelta = \(span.latitudeDelta)  longitudeDelta = \(span.longitudeDelta)")
+        }
         
         lmarksButton.tag = 1
         isectionsButton.tag = 3
         planButton.tag = 2
+        settingsButton.tag = 4
         
         //Gesture recognizer
-        let gst = UITapGestureRecognizer(target: self, action: "processGesture:")
+        //let gst = UITapGestureRecognizer(target: self, action: #selector(ViewController.processGesture(_:)))
+        let gst = UITapGestureRecognizer(target: self, action:#selector(ViewController.processGesture(_:)))
+        gst.delegate = self
         mapView.addGestureRecognizer(gst)
         gst.numberOfTapsRequired = 1
 
@@ -490,53 +654,47 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     
     // MARK: Location Delegate Methods
     
-    /*
     func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        let location = locations.last
-        let center = CLLocationCoordinate2D(latitude: location!.coordinate.latitude, longitude: location!.coordinate.longitude)
-        let region = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 1, longitudeDelta: 1))
+        currentLocation = locations.last!
+        //let center = CLLocationCoordinate2D(latitude: location!.coordinate.latitude, longitude: location!.coordinate.longitude)
+        //let region = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 1, longitudeDelta: 1))
+        let region = MKCoordinateRegionMakeWithDistance(currentLocation.coordinate, xRegionSizeMeters, yRegionSizeMeters);
         self.mapView.setRegion(region, animated: true)
         self.locationManager.stopUpdatingLocation()
+        mapView.showsCompass = false
+        mapView.showsPointsOfInterest = false
+        mapView.showsScale = false
+        mapView.showsTraffic = false
+        span = region.span
+        print("span: latitudeDelta = \(span.latitudeDelta)  longitudeDelta = \(span.longitudeDelta)")
     }
     
     func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
         print("Errors: " + error.localizedDescription)
     }
-    */
     
-    func processGesture(gestureRecognizer: AnyObject?) //gestureRecognizer:UIGestureRecognizer)
+    func processGesture(gestureRecognizer: UITapGestureRecognizer)
     {
-        if (gestureRecognizer is UIGestureRecognizer)
-        //if gestureRecognizer.state == UIGestureRecognizerState.Began
+        if gestureRecognizer.state == UIGestureRecognizerState.Ended
         {
-            let touchPoint = gestureRecognizer!.locationInView(mapView)
+            let touchPoint = gestureRecognizer.locationInView(mapView)
+            
             if let subView = mapView.hitTest(touchPoint, withEvent: nil)
             {
-                if subView is MKAnnotationView
+                if subView is LmarkAnnotationView
                 {
-                    print("processGesture: Annotation tapped")
-                    let annView  = subView as! MKAnnotationView
-                    //let ann = annView.annotation
-                    //if ann is CustomPointAnnotation
-                    if (annView is CustomAnnotationView)
-                    {
-                        //let cpa = ann as! CustomPointAnnotation
-                        //if cpa.pinImage == UIImage(named: "BlueBall")
-                        //{
-                            print("processGesture: CustomAnnotationView tapped. Exiting.")
-                            return
-                        //}
-                    }
+                    //print("processGesture: LmarkAnnotationView tapped. Exiting.")
+                    return
                 }
                 else if (subView is CalloutView)
                 {
-                        print("processGesture: CalloutView tapped. Exiting.")
-                        return
+                    //print("processGesture: CalloutView tapped. Exiting.")
+                    return
                 }
             }
             
             let coord = mapView.convertPoint(touchPoint, toCoordinateFromView: mapView)
-            print("touchPoint coord: \(coord.latitude) \(coord.longitude)")
+            //print("touchPoint coord: \(coord.latitude) \(coord.longitude)")
             
             //Find closest intersection
             let getLat: CLLocationDegrees = coord.latitude
@@ -545,8 +703,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             
             var closestLocation: CLLocation?
             var smallestDistance: CLLocationDistance?
-            var pointId: Int64?
-            var roadId: Int64?
+            var pointId: Int64? = -1
+            var roadId: Int64? = -1
             var index: Int = -1
             
             for isection in isections {
@@ -560,19 +718,21 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                     index = isection.index
                 }
             }
-            print("smallestDistance = \(smallestDistance) id = \(pointId)")
-            let location = isections[index].location
             
-            //Create temporary pin annotation with blue flag
-            let blueFlagPin = UIImage(named:"BlueFlagLeft")
-            //let ann = CustomPointAnnotation(coord: closestLocation!.coordinate, name: String(location), address: "", pinImage: blueFlagPin!, photoImage: nil, pointId: pointId!, roadId: 0, type: 0, street: "", amenity: "")
+            if (index >= 0)
+            {
+                //print("smallestDistance = \(smallestDistance!) id = \(pointId!)")
+                let location = isections[index].location
             
+                //Create temporary pin annotation with blue flag
+                let blueFlagPin = UIImage(named:"BlueFlagLeft")
             
-            let lmark = Lmark(name: String(location), description: "", type: 0, address: "", latitude: closestLocation!.coordinate.latitude, longitude: closestLocation!.coordinate.longitude, photo: nil, pin: blueFlagPin, pointId: pointId!, roadId: roadId!, street: "", amenity: "")
-            
-            let ann = CustomPointAnnotation(lmark: lmark!, pinImage: blueFlagPin!, photoImage: nil)
+                let lmark = Lmark(name: String(location), description: "", type: 0, address: "", latitude: closestLocation!.coordinate.latitude, longitude: closestLocation!.coordinate.longitude, photo: nil, pin: blueFlagPin, pointId: pointId!, roadId: 0, street: "", amenity: "", roadLatitude: 0.0, roadLongitude: 0.0)
 
-            self.mapView.addAnnotation(ann)
+                let ann = LmarkAnnotation(lmark: lmark!, pinImage: blueFlagPin!, photoImage: nil)
+
+                self.mapView.addAnnotation(ann)
+            }
         }
     }
 
@@ -581,7 +741,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         let pin = UIImage(named: pinImage)
         for ann : MKAnnotation in mapView.annotations
         {
-            if let custom_ann = ann as? CustomPointAnnotation
+            if let custom_ann = ann as? LmarkAnnotation
             {
                 let pinImage = custom_ann.pinImage
                 if (pinImage == pin)
@@ -596,7 +756,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     {
         for ann : MKAnnotation in mapView.annotations
         {
-            if let custom_ann = ann as? CustomPointAnnotation
+            if let custom_ann = ann as? LmarkAnnotation
             {
                 if (custom_ann.lmark.pointId == pointId)
                 {
@@ -607,9 +767,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     }
     
     /*
-    func createCustomPointAnnotation(lat: Double, lon: Double, name: String, address: String, pin: UIImage, photo: UIImage, pointId: Int64, roadId: Int64, type: Int) -> CustomPointAnnotation
+    func createLmarkAnnotation(lat: Double, lon: Double, name: String, address: String, pin: UIImage, photo: UIImage, pointId: Int64, roadId: Int64, type: Int) -> LmarkAnnotation
     {
-        let ann = CustomPointAnnotation()
+        let ann = LmarkAnnotation()
         ann.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
         ann.title = name
         ann.subtitle = address
@@ -621,9 +781,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         return ann
     }
     
-    func createCustomPointAnnotation(lat: Double, lon: Double, name: String, address: String, pin: UIImage, pointId: Int64, roadId: Int64, type: Int) -> CustomPointAnnotation
+    func createLmarkAnnotation(lat: Double, lon: Double, name: String, address: String, pin: UIImage, pointId: Int64, roadId: Int64, type: Int) -> LmarkAnnotation
     {
-        let ann = CustomPointAnnotation()
+        let ann = LmarkAnnotation()
         ann.coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
         ann.title = name
         ann.subtitle = address
@@ -634,77 +794,47 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         return ann
     }
     */
-
     
-    /*
-    func takeSnapshot(mapView: MKMapView, filename: String, completion: ((result:UIImage?) -> Void)!)
+    func getURLImage(step: SolutionStep) -> UIImage?
     {
-        //let snapshotView = UIView(frame: CGRect (x: 0, y: 0, width: 300, height: 300))
-
-        let options = MKMapSnapshotOptions()
-        //options.region = snapshotView.frame.   //mapView.region
-        //options.size = mapView.frame.size;
-        //options.scale = UIScreen.mainScreen().scale
+        //dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
+        //{
+            let strlat = String(step.lat2)
+            let strlon = String(step.lon2)
+            let fov = String(90)
         
+            //let imageurl = "http://maps.googleapis.com/maps/api/streetview?size=400x400&location=" + strlat + "," + strlon + "&heading=90&sensor=false"
         
-        options.size = CGSize(width: 300, height: 300)
-        options.mapType = .SatelliteFlyover
-        
-        let camera = MKMapCamera(lookingAtCenterCoordinate: self.initialLocation.coordinate, fromDistance: 500, pitch: 65, heading: 0)
-        options.camera = camera
-        
-        let semaphore = dispatch_semaphore_create(0)
-        let qualityOfServiceClass = QOS_CLASS_BACKGROUND
-        let backgroundQueue = dispatch_get_global_queue(qualityOfServiceClass, 0)
-        
-        let snapshotter = MKMapSnapshotter(options: options)
-        //snapshotter.startWithCompletionHandler()
-
-        snapshotter.startWithQueue(backgroundQueue, completionHandler:  { (snapshot: MKMapSnapshot?, error: NSError?) -> Void in
- 
-            guard (snapshot != nil) else {
-                    print("Snapshot error:\(error)")
-                    dispatch_semaphore_signal(semaphore)
-                    return
-                    //completion(result:nil)
-            }
-            //return snapshot!.image
-            completion(result: snapshot!.image)
-        
-            //let data = UIImagePNGRepresentation(snapshot!.image)
-            //let filename = self.getDocumentsDirectory().stringByAppendingPathComponent("\(filename).png")
-            //data?.writeToFile(filename, atomically: true)
-            dispatch_semaphore_signal(semaphore)
-        })
-        let delayTime = dispatch_time(DISPATCH_TIME_NOW, Int64(3*Double(NSEC_PER_SEC)))
-        dispatch_semaphore_wait(semaphore, delayTime)
-        
+            let imageurl = "http://maps.googleapis.com/maps/api/streetview?size=400x400&location=" + strlat + "," + strlon + "&fov=" + fov + "&sensor=false"
+            let image =  UIImage(data: NSData(contentsOfURL: NSURL(string: imageurl)!)!)
+            //self.sol[ind].photoImage = image
+        //})
+        return image;
     }
-    */
     
-    func takeSnapshot(mapView: MKMapView, coord: CLLocationCoordinate2D, completion: ((result:UIImage?) -> Void)!)
+    func takeSnapshot(mapView: MKMapView, coord: CLLocationCoordinate2D, eyeCoord: CLLocationCoordinate2D, filename: String, completion: ((result:UIImage?) -> Void)!)
     {
         //let coordSpan = MKCoordinateSpan(latitudeDelta: 0.0000000001, longitudeDelta: 0.0000000001)
         let options = MKMapSnapshotOptions()
         //let region = MKCoordinateRegion(center: coord, span: coordSpan)
-        let region = MKCoordinateRegionMakeWithDistance(coord, 20.0, 20.0)
+        let region = MKCoordinateRegionMakeWithDistance(coord, 0.5, 0.5)
         options.region = region
         //options.size = mapView.frame.size;
         options.scale = UIScreen.mainScreen().scale
-        options.size = CGSize(width: 200, height: 200)
-        options.mapType = .HybridFlyover //.SatelliteFlyover
+        //options.size = CGSize(width: 50, height: 50)
+        options.mapType = .SatelliteFlyover
         options.showsPointsOfInterest = true
         options.showsBuildings = true
         
-        let eyeCoord = CLLocationCoordinate2D(latitude: coord.latitude+0.00050, longitude: coord.longitude)
-        let eyeAlt = CLLocationDistance(0.0)
-        let BellefiedHallCoord = CLLocationCoordinate2D(latitude: 40.4453588019383, longitude: -79.950951061835)
-        let IntersCoord = CLLocationCoordinate2D(latitude: 40.443922, longitude: -79.950749)
+        let eyeCoord1 = CLLocationCoordinate2D(latitude: coord.latitude+0.0000002, longitude: coord.longitude+0.0000001)
+        let eyeAlt = CLLocationDistance(3.0)
+        //let BellefiedHallCoord = CLLocationCoordinate2D(latitude: 40.4453588019383, longitude: -79.950951061835)
+        //let IntersCoord = CLLocationCoordinate2D(latitude: 40.443922, longitude: -79.950749)
         
-        let camera = MKMapCamera(lookingAtCenterCoordinate: IntersCoord, fromDistance: 20, pitch: 45, heading: 180)
-        //let camera = MKMapCamera(lookingAtCenterCoordinate: coord, fromEyeCoordinate: eyeCoord, eyeAltitude: eyeAlt)
+        //let camera = MKMapCamera(lookingAtCenterCoordinate: IntersCoord, fromDistance: 20, pitch: 45, heading: 180)
+        let camera = MKMapCamera(lookingAtCenterCoordinate: coord, fromEyeCoordinate: eyeCoord1, eyeAltitude: eyeAlt)
         
-        camera.altitude = 20.0
+        camera.altitude = 10.0
         //camera.centerCoordinate = coord
         options.camera = camera
         
@@ -724,6 +854,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                 //completion(result:nil)
             }
             completion(result: snapshot!.image)
+            
+            let data = UIImagePNGRepresentation(snapshot!.image)
+            let filename = self.getDocumentsDirectory().stringByAppendingPathComponent("\(filename).png")
+            data?.writeToFile(filename, atomically: true)
+            
             dispatch_semaphore_signal(semaphore)
         })
         let delayTime = dispatch_time(DISPATCH_TIME_NOW, Int64(3*Double(NSEC_PER_SEC)))
@@ -736,8 +871,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         return documentsDirectory
     }
     
-    func AddLandmark(name: String, description: String, type: Int, address: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees, photoName: String, pinName: String, pointId: Int64, roadId: Int64, street: String, amenity: String) {
-        
+    func AddLandmark(name: String, description: String, type: Int, address: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees, photoName: String, pinName: String, pointId: Int64, roadId: Int64, street: String, amenity: String, roadLatitude: Double, roadLongitude: Double)
+    {
         var photo: UIImage
         if !photoName.isEmpty
         {
@@ -749,16 +884,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         }
         let pin = UIImage(named:pinName)
         
-        let lmark = Lmark(name: name, description: description, type: type, address: address, latitude: latitude, longitude: longitude, photo: photo, pin: pin!, pointId: pointId, roadId: roadId, street: street, amenity: amenity)!
+        let lmark = Lmark(name: name, description: description, type: type, address: address, latitude: latitude, longitude: longitude, photo: photo, pin: pin!, pointId: pointId, roadId: roadId, street: street, amenity: amenity, roadLatitude: roadLatitude, roadLongitude: roadLongitude)!
         lmarks.append(lmark)
     }
     
-    func AddLandmark(name: String, description: String, type: Int, address: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees, photo: UIImage, pinName: String, pointId: Int64, roadId: Int64, street: String, amenity: String) {
+    func AddLandmark(name: String, description: String, type: Int, address: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees, photo: UIImage, pinName: String, pointId: Int64, roadId: Int64, street: String, amenity: String, roadLatitude: Double, roadLongitude: Double) {
         
         //let photo = UIImage(named:photoName)
         let pin = UIImage(named:pinName)
         
-        let lmark = Lmark(name: name, description: description, type: type, address: address, latitude: latitude, longitude: longitude, photo: photo, pin: pin!, pointId: pointId, roadId: roadId, street: street, amenity: amenity)!
+        let lmark = Lmark(name: name, description: description, type: type, address: address, latitude: latitude, longitude: longitude, photo: photo, pin: pin!, pointId: pointId, roadId: roadId, street: street, amenity: amenity, roadLatitude: roadLatitude, roadLongitude: roadLongitude)!
         lmarks.append(lmark)
     }
     
@@ -766,11 +901,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
 
     func LoadSampleLmarks()
     {
-        AddLandmark("University Center", description: "Carnegie Mellon University", type: 1, address: "5032 Forbes Ave", latitude: 40.443931, longitude: -79.942222, photoName: "UniversityCenter", pinName: "BlueFlagLeft", pointId: 1, roadId: 1, street: "", amenity: "")
+        //AddLandmark("University Center", description: "Carnegie Mellon University", type: 1, address: "5032 Forbes Ave", latitude: 40.443931, longitude: -79.942222, photoName: "UniversityCenter", pinName: "BlueFlagLeft", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Hamburg Hall", description:"Carnegie Mellon University", type: 1, address: "4800 Forbes Ave", latitude: 40.444307, longitude: -79.945720, photoName: "HeinzCollege", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
+        //AddLandmark("Hamburg Hall", description:"Carnegie Mellon University", type: 1, address: "4800 Forbes Ave", latitude: 40.444307, longitude: -79.945720, photoName: "HeinzCollege", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
-        AddLandmark("Starbucks", description: "Coffee Shop", type: 1, address: "417 Craig St", latitude: 40.444658, longitude: -79.948492, photoName: "Starbucks", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
+        //AddLandmark("Starbucks", description: "Coffee Shop", type: 1, address: "417 Craig St", latitude: 40.444658, longitude: -79.948492, photoName: "Starbucks", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
         
         /*
         AddLandmark("Carnegie Museum of Natural History", description: "", type: "museum", address: "4400 Forbes Ave", latitude: 40.443466, longitude: -79.950154, photoName: "MuseumOfNaturalHistory", pinName: "BlueBall", pointId: 1, roadId: 1, street: "", amenity: "")
@@ -881,12 +1016,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     
     func runSampleSearches()
     {
-    var squery:String = "landmark"
-    searchInMap(squery, lat: initialLocation.coordinate.latitude, lon: initialLocation.coordinate.longitude, span: span, mode: 0)
+        var squery:String = "landmark"
+        searchInMap(squery, lat: initialLocation.coordinate.latitude, lon: initialLocation.coordinate.longitude, span: span, mode: 0)
     
         
-    squery = "hall"
-    searchInMap(squery, lat: initialLocation.coordinate.latitude, lon: initialLocation.coordinate.longitude, span: span, mode: 0)
+        squery = "hall"
+        searchInMap(squery, lat: initialLocation.coordinate.latitude, lon: initialLocation.coordinate.longitude, span: span, mode: 0)
 
     /*
     squery = "museum"
@@ -919,7 +1054,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         var i:Int = 0
         for lmark in lmarks {
     
-            let info = CustomPointAnnotation(lat: lmark.latitude, lon: lmark.longitude, name: lmark.name, address: lmark.address, pinImage: lmark.pin!, photoImage: lmark.photo!, pointId: lmark.pointId, roadId: lmark.roadId, type: 1)
+            let info = LmarkAnnotation(lat: lmark.latitude, lon: lmark.longitude, name: lmark.name, address: lmark.address, pinImage: lmark.pin!, photoImage: lmark.photo!, pointId: lmark.pointId, roadId: lmark.roadId, type: 1)
             i = i+1
             self.mapView.addAnnotation(info)
     
@@ -956,57 +1091,91 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     }
     
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        
-        //if (sender is self.showPlanButton) {
-        //    print("Show Plan pressed")
-        //}
-        
-        //var btn  = UIBarButtonItem()
-        let btn = sender as! UIBarButtonItem;
-        print("btn: \(btn.title) tag=\(btn.tag)")
-        
-        print("segue.identifier = \(segue.identifier!)")
-        
-        let destNavController = segue.destinationViewController as! UINavigationController
-        let targetController = destNavController.topViewController as! LandmarksTableViewController
-        
-        //if (segue.identifier == "") {
-        
-        targetController.tableView.bounces = true
-        targetController.tableView.scrollEnabled = true
-        targetController.mode = btn.tag
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?)
+    {
+        //print("segue.identifier = \(segue.identifier!)")
 
+        if (segue.identifier == "ShowTable")
+        {
+            let btn = sender as! UIBarButtonItem;
+            //print("btn: \(btn.title) tag=\(btn.tag)")
         
-        if (btn.tag == 1)  //lmarksButton
-        {
-            for i in 0...lmarks.count-1 {
-                targetController.lmarks.append(lmarks[i])
-            }
-        }
-        else if (btn.tag == 2)  //isectionsButton
-        {
-            for i in 0...sol.count-1 {
-                targetController.sol.append(sol[i])
-            }
-            
-            if safety_sol.count > 0
+            let destNavController = segue.destinationViewController as! UINavigationController
+            let targetController = destNavController.topViewController as! LandmarksTableViewController
+        
+            targetController.delegate = self
+            targetController.parentViewController
+            targetController.tableView.bounces = true
+            targetController.tableView.scrollEnabled = true
+            targetController.mode = btn.tag
+        
+            if (btn.tag == 1)  //lmarksButton
             {
-                for i in 0...safety_sol.count-1 {
-                    targetController.safety_sol.append(safety_sol[i])
+                for i in 0...lmarks.count-1
+                {
+                    targetController.lmarks.append(lmarks[i])
                 }
             }
-        }
-        else if (btn.tag == 3)  //planButton
-        {
-            for i in 0...isections.count-1 {
-                targetController.isections.append(isections[i])
+            else if (btn.tag == 2)  //solButton
+            {
+                for i in 0...sol.count-1
+                {
+                    if (sol[i].photoImage == nil)
+                    {
+                        //var photoImage: UIImage?
+                        //let fname = "myimage" + String(i)
+                        //let coord = CLLocationCoordinate2D(latitude: sol[i].lat2, longitude: sol[i].lon2)
+                        //let eyeCoord = CLLocationCoordinate2D(latitude: sol[i].lat1, longitude: sol[i].lon1)
+
+                        //self.takeSnapshot(self.mapView, coord:coord, eyeCoord: eyeCoord, filename: fname, completion: {(result) -> Void in
+                        //    photoImage = result!
+                        //})
+                
+                        let step = sol[i]
+                        let photoImage = getURLImage(step)
+                        sol[i].photoImage = photoImage
+                    }
+                    targetController.sol.append(sol[i])
+                }
+            
+                if safety_sol.count > 0
+                {
+                    for i in 0...safety_sol.count-1
+                    {
+                        if (safety_sol[i].photoImage == nil)
+                        {
+                            let step = safety_sol[i]
+                            let photoImage = getURLImage(step)
+                            safety_sol[i].photoImage = photoImage
+                        }
+                        targetController.safety_sol.append(safety_sol[i])
+                    }
+                }
             }
+            else if (btn.tag == 3)  //planButton
+            {
+                for i in 0...isections.count-1
+                {
+                    targetController.isections.append(isections[i])
+                }
+            }
+            else if (btn.tag == 4)  //settingsButton
+            {
+                //print("Settings button clicked")
+                let setting1 = Setting(name: "Show Current Location", type: 1, ival: nil, bval: showCurrentLocation, xval: nil, yval: nil)
+                targetController.settings.append(setting1)
+                
+                let setting2 = Setting(name: "Region Size in Meters", type: 2, ival: nil, bval: nil, xval: xRegionSizeMeters, yval: yRegionSizeMeters)
+                targetController.settings.append(setting2)
+                
+                //print("RegionSizeMeters: \(xRegionSizeMeters) \(yRegionSizeMeters)")
+           }
         }
     }
 
-    @IBAction func sendOsmQuery(sender: AnyObject) {
-        
+    /*
+    @IBAction func sendOsmQuery(sender: AnyObject) 
+    {
         //let locationManager = CLLocationManager()
         //locationManager.requestAlwaysAuthorization()
         
@@ -1040,15 +1209,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         overpassQlRequest(minlat, minlon:minlon, maxlat:maxlat, maxlon:maxlon, completion:
         {(result: Bool)->Void in
         
-            var anns = [CustomPointAnnotation]()
+            var anns = [LmarkAnnotation]()
             for lmark in self.lmarks
             {
                 if (lmark.latitude >= minlat && lmark.latitude <= maxlat && lmark.longitude >= minlon && lmark.longitude <= maxlon)
                 {
-                    //let ann = CustomPointAnnotation(lat: lmark.latitude, lon: lmark.longitude, name: lmark.name, address: lmark.address, pinImage: lmark.pin!, photoImage: lmark.photo!, pointId: lmark.pointId, roadId: lmark.roadId, type: 1, street: lmark.street, amenity: lmark.amenity)
-                    
-                    let ann = CustomPointAnnotation(lmark: lmark, pinImage: lmark.pin!, photoImage: lmark.photo!)
-                    
+                    let ann = LmarkAnnotation(lmark: lmark, pinImage: lmark.pin!, photoImage: lmark.photo!)
                     anns.append(ann)
                 }
             }
@@ -1061,19 +1227,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             
             let number_of_subviews = self.mapView.subviews.count
             print("number of annotations: \(anns.count) number of subviews: \(number_of_subviews)")
-            
 
-            
-            /*
-            for intersection in safety_intersections {
-                coords2.append(CLLocationCoordinate2DMake(intersection.latitude, intersection.longitude))
-            }
-            let polyline2: MKPolyline = MKPolyline(coordinates: &coords2, count: safety_intersections.count)
-            polyline_color = UIColor.brownColor()
-            self.mapView.addOverlay(polyline2)
-            */
+            //for intersection in safety_intersections {
+            //    coords2.append(CLLocationCoordinate2DMake(intersection.latitude, intersection.longitude))
+            //}
+            //let polyline2: MKPolyline = MKPolyline(coordinates: &coords2, count: safety_intersections.count)
+            //polyline_color = UIColor.brownColor()
+            //self.mapView.addOverlay(polyline2)
         })
     }
+    */
     
     @IBAction func zoomInMap(sender: AnyObject) {
         displayRegion(27.17, lon: 78.04, span: 0.03)
@@ -1082,7 +1245,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     
         let coord = CLLocationCoordinate2D(latitude: 27.17, longitude: 78.04)
         
-        print("latitude = \(coord.latitude) longitude = \(coord.longitude)")
+        //print("latitude = \(coord.latitude) longitude = \(coord.longitude)")
         
         let circleOverlay: MKCircle = MKCircle(centerCoordinate: coord, radius: 300)
         mapView.addOverlay(circleOverlay, level: MKOverlayLevel.AboveRoads)
@@ -1171,6 +1334,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             //print("responseString = \(responseString)")
             
             let filename = self.getDocumentsDirectory().stringByAppendingPathComponent("test1.txt")
+            print("filename=\(filename)")
             do {
                 try responseString?.writeToFile(filename, atomically: true, encoding: NSUTF8StringEncoding)
             } catch {
@@ -1211,23 +1375,40 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         
     }
     
-    func initEnv() -> Bool
+    func initEnv(coord: CLLocationCoordinate2D) -> Bool
     {
+        self.start_set = false
+        self.goal_set = false
+        self.start_roadId = -1
+        self.goal_roadId = -1
+        self.start_pointId = -1
+        self.goal_pointId = -1
+        
+        lmarks.removeAll()
+        i_lmarks.removeAll()
+        isections.removeAll()
+        
         var res :Bool = true
-        let rect:MKMapRect = self.mapView.visibleMapRect
-        print("x=\(rect.origin.x) y=\(rect.origin.y)")
+        //let rect:MKMapRect = self.mapView.visibleMapRect
+        //print("x=\(rect.origin.x) y=\(rect.origin.y)")
         
-        let neCoord:CLLocationCoordinate2D = MKCoordinateForMapPoint(MKMapPointMake(MKMapRectGetMaxX(rect), rect.origin.y))
-        print("neCoord: lat = \(neCoord.latitude) lon = \(neCoord.longitude)")
+        //let neCoord:CLLocationCoordinate2D = MKCoordinateForMapPoint(MKMapPointMake(MKMapRectGetMaxX(rect), rect.origin.y))
+        //print("neCoord: lat = \(neCoord.latitude) lon = \(neCoord.longitude)")
         
-        let swCoord:CLLocationCoordinate2D = MKCoordinateForMapPoint(MKMapPointMake(rect.origin.x, MKMapRectGetMaxY(rect)))
-        print("swCoord: lat = \(swCoord.latitude) lon = \(swCoord.longitude)")
+        //let swCoord:CLLocationCoordinate2D = MKCoordinateForMapPoint(MKMapPointMake(rect.origin.x, MKMapRectGetMaxY(rect)))
+        //print("swCoord: lat = \(swCoord.latitude) lon = \(swCoord.longitude)")
         
-        let minlat:Double = swCoord.latitude
-        let minlon:Double = swCoord.longitude
-        let maxlat:Double = neCoord.latitude
-        let maxlon:Double = neCoord.longitude
-        print("minlat=\(minlat) minlon=\(minlon) maxlat=\(maxlat) maxlon=\(maxlon)")
+        //let minlat:Double = swCoord.latitude
+        //let minlon:Double = swCoord.longitude
+        //let maxlat:Double = neCoord.latitude
+        //let maxlon:Double = neCoord.longitude
+        
+        let minlat: Double = coord.latitude - span.latitudeDelta
+        let minlon: Double = coord.longitude - span.longitudeDelta
+        let maxlat: Double = coord.latitude + span.latitudeDelta
+        let maxlon: Double = coord.longitude + span.longitudeDelta
+
+        //print("minlat=\(minlat) minlon=\(minlon) maxlat=\(maxlat) maxlon=\(maxlon)")
         
         //var thr: NSThread
         //var b: Bool
@@ -1236,7 +1417,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         //b = thr.isMainThread;
         //print("1: isMainThread = \(b)")
         
-        overpassQlRequest(minlat, minlon:minlon, maxlat:maxlat, maxlon:maxlon, completion: {(result: Bool)->Void in
+        overpassQlRequest(minlat, minlon:minlon, maxlat:maxlat, maxlon:maxlon, completion:
+        {(result: Bool)->Void in
             
             print("result=\(result)")
             
@@ -1247,23 +1429,42 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             res = result
             if (res)
             {
-                var anns = [CustomPointAnnotation]()
+                print("lmarks.count = \(self.lmarks.count)")
+                
+                var anns = [LmarkAnnotation]()
                 for lmark in self.lmarks
                 {
-                    //let ann = CustomPointAnnotation(lat:lmark.latitude, lon: lmark.longitude, name: lmark.name, address: lmark.address, pinImage: lmark.pin!, photoImage: lmark.photo!, pointId: lmark.pointId, roadId: lmark.roadId, type: 1, street: lmark.street, amenity: lmark.amenity)
-                    
-                    let ann = CustomPointAnnotation(lmark: lmark, pinImage: lmark.pin!, photoImage: lmark.photo!)
-                    
-                    //self.createCustomPointAnnotation(lmark.latitude, lon: lmark.longitude, name: lmark.name, address: lmark.address, pin: lmark.pin!, photo: lmark.photo!, pointId: lmark.pointId, roadId: lmark.roadId, type: 1)
-                    anns.append(ann)
+                    if (lmark.latitude >= minlat && lmark.latitude <= maxlat && lmark.longitude >= minlon && lmark.longitude <= maxlon)
+                    {
+
+                        let ann = LmarkAnnotation(lmark: lmark, pinImage: lmark.pin!, photoImage: lmark.photo!)
+                        anns.append(ann)
+                    }
                 }
+                
+                /*
+                for lmark in self.i_lmarks
+                {
+                    if (lmark.latitude >= minlat && lmark.latitude <= maxlat && lmark.longitude >= minlon && lmark.longitude <= maxlon)
+                    {
+                        
+                        let ann = LmarkAnnotation(lmark: lmark, pinImage: lmark.pin!, photoImage: nil)
+                        anns.append(ann)
+                    }
+                }
+                */
+                
+                print("anns.count = \(anns.count)")
             
                 for ann in anns {
                     self.mapView.addAnnotation(ann)
                 }
             
-                self.mapView.showAnnotations(anns, animated: true)
-            
+                dispatch_async(dispatch_get_main_queue()) {
+                    self.mapView.showAnnotations(anns, animated: false)
+                    let coordinateRegion = MKCoordinateRegionMake(coord, self.span)
+                    self.mapView.setRegion(coordinateRegion, animated: false)
+                }
             }
             else
             {
@@ -1299,16 +1500,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     
     func searchInMap(search_query: String, lat: CLLocationDegrees, lon: CLLocationDegrees, span: MKCoordinateSpan, mode: Int)
     {
-        let latmin: CLLocationDegrees = lat - span.latitudeDelta
-        let latmax: CLLocationDegrees = lat + span.latitudeDelta
-        let lonmin: CLLocationDegrees = lon - span.longitudeDelta
-        let lonmax: CLLocationDegrees = lon + span.longitudeDelta
+        //let latmin: CLLocationDegrees = lat - span.latitudeDelta
+        //let latmax: CLLocationDegrees = lat + span.latitudeDelta
+        //let lonmin: CLLocationDegrees = lon - span.longitudeDelta
+        //let lonmax: CLLocationDegrees = lon + span.longitudeDelta
         
         let request = MKLocalSearchRequest()
         request.naturalLanguageQuery = search_query
         
-        let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-        request.region = MKCoordinateRegion(center: coord, span: span)
+        //let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        //request.region = MKCoordinateRegion(center: coord, span: span)
         let search = MKLocalSearch(request: request)
         
         search.startWithCompletionHandler({(response: MKLocalSearchResponse?, error: NSError?) in
@@ -1324,7 +1525,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                 if mode == 1 {
                 
                     let item1:MKMapItem = (response?.mapItems[0])!
-                    let pinImage: UIImage?
+                    //let pinImage: UIImage?
                     //let photoImage: UIImage?
                     let info1 = MKPointAnnotation()
                     info1.coordinate = item1.placemark.location!.coordinate
@@ -1356,7 +1557,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                     */
                 } else if mode == 2 {
                   
+                    var iim = 0;
+                    
                     for item in (response?.mapItems)! {
+                        //item = response?.mapItems[0]
                         
                         /*
                         let lat = item.placemark.location!.coonate.latitude
@@ -1372,12 +1576,22 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                         //}
                         
                         let pinImage = UIImage(named: "BlueBall")
-                        
-                        let ann = self.createCustomPointAnnotation(lat, lon: lon, name: name!, address: addr, pin: pinImage!, photo: photoImage)
+                
+                        let ann = self.createLmarkAnnotation(lat, lon: lon, name: name!, address: addr, pin: pinImage!, photo: photoImage)
 
                         self.mapView.addAnnotation(ann)
                         */
+                        
+                        iim += 1
+                        
+                        print("iim=\(iim) title: \(item.placemark.name)")
+                        
+                        let coordinateRegion = MKCoordinateRegionMake(item.placemark.location!.coordinate, span)
+                        self.mapView.setRegion(coordinateRegion, animated: false)
+
                         self.addPinToMapView(item.name!, latitude: item.placemark.location!.coordinate.latitude, longitude:item.placemark.location!.coordinate.longitude)
+                        
+                        _ = self.initEnv(item.placemark.location!.coordinate)
 
                         break
                     }
@@ -1389,7 +1603,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                         
                         let ilat: CLLocationDegrees = item.placemark.location!.coordinate.latitude
                         let ilon: CLLocationDegrees = item.placemark.location!.coordinate.longitude
-                        if (ilat < latmax && ilat > latmin && ilon < lonmax && ilon > lonmin) {
+                        //if (ilat < latmax && ilat > latmin && ilon < lonmax && ilon > lonmin) {
                                 i = i+1
                                 //print("j=\(j) i=\(i)")
                                 //print("Item name = \(item.name)")
@@ -1399,7 +1613,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                                 self.addPinToMapView(item.name!, latitude: ilat, longitude:ilon)
                                 //self.landmarks.append(item)
                                 //print("landmarks count: \(self.landmarks.count)")
-                        }
+                        //}
                     }
                 }
                 
@@ -1411,9 +1625,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         for route in response.routes {
             mapView.addOverlay(route.polyline, level: MKOverlayLevel.AboveRoads)
             
-            for step in route.steps {
-                print(step.instructions)
-            }
+            //for step in route.steps {
+            //    print(step.instructions)
+            //}
         }
     }
     
@@ -1432,21 +1646,631 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         let pathArr: Array = path.componentsSeparatedByString("\n")
     
         self.sol.removeAll()
+        self.safety_sol.removeAll()
         
-        var i=0
-        let n = pathArr.count
-        print("pathArr.count = \(pathArr.count)")
+        var i: Int = 0
+        var j: Int = 0
+        var l: Int = 0
+        plan.removeAll()
+        safety_plan.removeAll()
         
         for step in pathArr
         {
             var stepdata: Array = step.componentsSeparatedByString(";")
     
-            if (stepdata.count < 13)
+            if (stepdata.count < 3)
             {
-                print("i=\(i) count=\(stepdata.count)")
+                //print("i=\(i) count=\(stepdata.count)")
                 continue
             }
+            
+            let k = Int(stepdata[0])
+            let currInd = CInt(stepdata[1])
+            let succInd = CInt(stepdata[2])
+            
+            var id1: Int64 = 0
+            var id2: Int64 = 0
+            var act1: CInt = 0
+            var act2: CInt = 0
+            var type1: CInt = 0
+            var type2: CInt = 0
+            var dir1: CInt = 0
+            var dir2: CInt = 0
+            var lat1: Double = 0.0
+            var lon1: Double = 0.0
+            var lat2: Double = 0.0
+            var lon2: Double = 0.0
+            
+            let res = self.MySbplWrapper.getSolutionStepDetails_wrapped(currInd!, succInd!, &id1, &id2, &act1, &act2, &type1, &type2, &dir1, &dir2, &lat1, &lon1, &lat2, &lon2)
+
+            //print("i=\(i) k=\(k!) | id \(id1) coord \(lat1) \(lon1) act \(act1) type \(type1) dir \(dir1) | id \(id2) coord \(lat2) \(lon2) act \(act2) type \(type2) dir \(dir2)")
+            
+            let step = SolutionStep(seq: i, name: "", instructions: "", photoImage: nil, iconName: "", k: k!, id1: id1, lat1: lat1, lon1: lon1, act1: Int(act1), type1: Int(type1), id2: id2, lat2: lat2, lon2: lon2, act2: Int(act2), type2: Int(type2), dir1: Int(dir1), dir2: Int(dir2))
+            step.orig_seq = i
+
+            if (k == 0)
+            {
+                step.seq = j
+                plan.append(step)
+                j += 1
+            }
+            else
+            {
+                step.seq = l
+                safety_plan.append(step)
+                l += 1
+            }
+            i += 1
+        }
+        
+        var ind = 0
+        var match = false
+
+        if (safety_plan.count > 0)
+        {
+            for ii in 0...safety_plan.count-1
+            {
+                if (!match)
+                {
+                    for jj in ind...plan.count-1
+                    {
+                        if (safety_plan[ii].id1 == plan[jj].id1)
+                        {
+                            plan[jj].safety_ind_start = ii
+                            //print("ii=\(ii) jj=\(jj)")
+                            ind = jj
+                            match = true
+                            break
+                        }
+                    }
+                }
+         
+                if (match)
+                {
+                    if (safety_plan[ii].act2 == -1000)
+                    {
+                        match = false
+                        plan[ind].safety_ind_end = ii
+                        ind += 1
+                    }
+                }
+            }
+        }
+        
+        //print(" ")
+        //for ii in 0...plan.count-1
+        //{
+        //    if (plan[ii].safety_ind_start >= 0 || plan[ii].safety_ind_end >= 0)
+        //    {
+        //        print("ii=\(ii) id1=\(plan[ii].id1 )start=\(plan[ii].safety_ind_start) end=\(plan[ii].safety_ind_end)")
+        //    }
+        //}
+        //print(" ")
+        
+        populatePlan()
+        //drawPlan(1, planColor: UIColor.brownColor(), path: safety_plan)
+        drawPlan(0, planColor: UIColor.blueColor(), path: plan)
+    }
     
+    func populatePlan()
+    {
+        var isection_count = 1
+        var street: String = ""
+        
+        var n = plan.count
+        //print("plan.count = \(plan.count)")
+    
+        for i in 0...n-1
+        {
+            let step = plan[i]
+    
+            if (i == 0)
+            {
+                let step0 = populateFirstStep(step)
+                sol.append(step0)
+                isection_count = 1
+            }
+            
+            let turn = (step.act1 == 0 && step.act2 != 0 && step.type2 == 0)
+            let three_way = (step.act1 == 0 && step.act2 == 0 && step.type2 == 0 && step.dir1 != step.dir2)
+            let landmark = (step.type2 == 1)
+            let safety = (step.safety_ind_start >= 0 && step.safety_ind_end >= 0)
+            
+            if (turn || three_way || landmark  || safety)
+            {
+                if (turn || three_way || landmark)
+                {
+                    step.isection_count = isection_count
+                    sol.append(step)
+                    isection_count = 1
+                }
+                
+                if (safety)
+                {
+                    let istart = step.safety_ind_start
+                    let iend = step.safety_ind_end
+                    
+                    let step1 = populateFalseStep(safety_plan[istart])
+                    
+                    let i1 = safety_sol.count
+                    populateSafetyPlan(istart+1, iend: iend)
+                    let i2 = safety_sol.count
+                    
+                    step1.safety_ind_start = i1
+                    step1.safety_ind_end = i2-1
+                    sol.append(step1)
+                }
+            }
+            else
+            {
+                let ind = findIntersectionByID(step.id2)
+                let streets = isections[ind].location as String
+                let streetsArr: Array = streets.componentsSeparatedByString(",")
+
+                if (step.id1 != step.id2 && streetsArr.count > 1)
+                {
+                    isection_count += 1;
+                }
+                //print("Skipping intersection i=\(i) isection_count=\(isection_count) \(streets)")
+            }
+        }
+        
+        n = sol.count
+        for i in 1...n-1
+        {
+            var instr: String = ""
+            var iconName: String = ""
+            var type: Int = 0
+            var id: Int64 = 0
+            
+            let step = sol[i]
+            if (step.iconName == "RedMarker")
+            {
+                continue
+            }
+            
+            type = step.type2
+            id = step.id2
+            
+            if (type == 0)
+            {
+                var nextstreet: String = ""
+                var prevstreet: String = ""
+                var nextstep: SolutionStep? = nil
+                var prevstep: SolutionStep? = nil
+                
+                if (i < n-1)
+                {
+                    nextstep = SolutionStep(step: sol[i+1])
+                    if (nextstep?.iconName == "RedMarker")
+                    {
+                        nextstep = SolutionStep(step: sol[i+2])
+                    }
+                }
+                
+                prevstep = SolutionStep(step: sol[i-1])
+                if (prevstep?.iconName == "RedMarker")
+                {
+                    if (i >= 2)
+                    {
+                        prevstep = sol[i-2]
+                    }
+                    else
+                    {
+                        print("First step after start position is false step. This should not really happen!")
+                    }
+                }
+                
+                getIsectionInstructions(i, step: step, nextstep: nextstep, prevstep: prevstep, prevstreet: &prevstreet, nextstreet: &nextstreet, instr: &instr, iconName: &iconName)
+                //print("i=\(i) type=\(step.type2) prevstreet=\(prevstreet) nextstreet=\(nextstreet)")
+            }
+            else if (type == 1)
+            {
+                getLmarkInstructions(step.orig_seq, id: id, act: step.act1, street: &street, instr: &instr, iconName: &iconName)
+                //print("i=\(i) type=\(step.type2) street=\(street)")
+            }
+            
+            if (i == n-1)
+            {
+                instr = instr + ". You have reached your destination."
+                iconName = "FinishLine"
+            }
+            step.iconName = iconName
+            step.instructions = instr
+        }
+    }
+    
+    func populateFalseStep(step: SolutionStep) -> SolutionStep
+    {
+        let step1 = SolutionStep(step: step)
+        step1.iconName = "RedMarker"
+        step1.orig_seq = step.orig_seq
+        step1.safety_ind_start = step.safety_ind_start + 1
+        step1.safety_ind_end = step.safety_ind_end
+        
+        //var instr = String(step1.seq) + "-" + String(step1.orig_seq) + ": If you see "
+        var instr = "If you see "
+    
+        if step1.type2 == 1
+        {
+            let ind = findLandmarkByID(step1.id2)
+            instr = instr + lmarks[ind].name
+    
+            if !lmarks[ind].street.isEmpty
+            {
+                instr = instr + " on " + lmarks[ind].street
+            }
+        }
+        else
+        {
+            let ind = findIntersectionByID(step1.id2)
+            let streets = isections[ind].location as String
+            instr = instr + "intersection " + streets
+        }
+    
+        instr = instr + ", you missed the turn. Press the button on the right to get new directions."
+        step1.instructions = instr
+        return step1
+    }
+    
+    func populateFirstStep(step: SolutionStep) -> SolutionStep
+    {
+        var street: String = ""
+        var instr = ""   //String(step.orig_seq) + ": "
+        instr = instr + startPoseDescription(step.id1, type: Int(step.type1))
+    
+        if (step.type1 == 1)
+        {
+            let ind = findLandmarkByID(step.id1)
+            if !lmarks[ind].street.isEmpty
+            {
+                street = lmarks[ind].street
+            }
+            //print("street = \(street)")
+            //instr = instr + " on " + street
+        }
+        else
+        {
+            if (step.type2 == 1)
+            {
+                let ind = findLandmarkByID(step.id2)
+                if !lmarks[ind].street.isEmpty
+                {
+                    street = lmarks[ind].street
+                }
+                //print("street = \(street)")
+                //instr = instr + " on " + street
+            }
+            else
+            {
+                let ind1 = findIntersectionByID(step.id1)
+                let prevstreets = isections[ind1].location as String
+                //print("prevstreets = \(prevstreets)")
+                let streetsArr1: Array = prevstreets.componentsSeparatedByString(",")
+    
+                let ind2 = findIntersectionByID(step.id2)
+                let nextstreets = isections[ind2].location as String
+                //print("nextstreets = \(nextstreets)")
+                let streetsArr2: Array = nextstreets.componentsSeparatedByString(",")
+    
+                street = ""
+                var found: Bool = false
+                for prevstreet in streetsArr1
+                {
+                    for nextstreet in streetsArr2
+                    {
+                        if (prevstreet == nextstreet)
+                        {
+                            street = prevstreet
+                            found = true
+                            break
+                        }
+                    }
+                    if (found)
+                    {
+                        break
+                    }
+                }
+                //instr = instr + " on " + street
+            }
+        }
+        
+        let step0 = SolutionStep(step: step)
+        step0.instructions = instr
+        step0.iconName = "StartButton"
+        return step0
+    }
+    
+    func populateSafetyPlan(istart: Int, iend: Int)
+    {
+        var isection_count = 1
+        var street: String = ""
+        var i1 = safety_sol.count
+        
+        //var n = iend - istart
+        //print("count = \(n)")
+        
+        for i in istart...iend
+        {
+            let step = safety_plan[i]
+            
+            if (i == istart)
+            {
+                let step0 = populateFirstStep(step)
+                safety_sol.append(step0)
+            }
+            
+            let turn = (step.act1 == 0 && step.act2 != 0 && step.type2 == 0)
+            let three_way = (step.act1 == 0 && step.act2 == 0 && step.type2 == 0 && step.dir1 != step.dir2)
+            let landmark = (step.type2 == 1)
+            
+            if (turn || three_way || landmark)
+            {
+                isection_count = 1
+                
+                if (turn || three_way || landmark)
+                {
+                    step.isection_count = isection_count
+                    safety_sol.append(step)
+                    isection_count = 1
+                }
+            }
+            else
+            {
+                let ind = findIntersectionByID(step.id2)
+                let streets = isections[ind].location as String
+                let streetsArr: Array = streets.componentsSeparatedByString(",")
+                
+                //print("Skipping intersection i=\(i) isection_count=\(isection_count) \(streets)")
+                if (step.id1 != step.id2 && streetsArr.count > 1)
+                {
+                    isection_count += 1;
+                }
+            }
+        }
+        let i2 = safety_sol.count
+        
+        for i in i1+1...i2-1
+        {
+            var instr: String = ""
+            var iconName: String = ""
+            var type: Int = 0
+            var id: Int64 = 0
+            
+            let step = safety_sol[i]
+            
+            type = step.type2
+            id = step.id2
+            
+            if (type == 0)
+            {
+                var nextstreet: String = ""
+                var prevstreet: String = ""
+                var nextstep: SolutionStep? = nil
+                var prevstep: SolutionStep? = nil
+                
+                if (i < i2-1)
+                {
+                    nextstep = SolutionStep(step: safety_sol[i+1])
+                }
+                
+                prevstep = SolutionStep(step: safety_sol[i-1])
+                
+                getIsectionInstructions(i, step: step, nextstep: nextstep, prevstep: prevstep, prevstreet: &prevstreet, nextstreet: &nextstreet, instr: &instr, iconName: &iconName)
+                //print("i=\(i) type=\(step.type2) prevstreet=\(prevstreet) nextstreet=\(nextstreet)")
+            }
+            else if (type == 1)
+            {
+                getLmarkInstructions(step.orig_seq, id: id, act: step.act1, street: &street, instr: &instr, iconName: &iconName)
+                //print("i=\(i) type=\(step.type2) street=\(street)")
+            }
+            
+            if (i == i2-1)
+            {
+                instr = instr + ". You have reached your destination."
+                iconName = "FinishLine"
+            }
+            step.iconName = iconName
+            step.instructions = instr
+        }
+    }
+    
+    func getLmarkInstructions(i: Int, id: Int64, act: Int, inout street: String, inout instr: String, inout iconName: String)
+    {
+        instr = ""
+        let ind = findLandmarkByID(id)
+        if !lmarks[ind].street.isEmpty
+        {
+            street = lmarks[ind].street
+        }
+        //print("street = \(street)")
+    
+        //instr = String(i) + ": " + "Follow " + street + " untill you see "
+        instr = "Follow " + street + " untill you see "
+        instr = instr + lmarks[ind].name   //lmarkDescriptionForDisplay(id2)
+    
+        //instr = instr + " (" + String(id) + ")"
+    
+        iconName = directionImages[Int(act) + 3]
+    }
+    
+    func getIsectionInstructions(i: Int, step: SolutionStep, nextstep: SolutionStep?, prevstep: SolutionStep?, inout prevstreet: String, inout nextstreet: String, inout instr: String, inout iconName: String)
+    {
+        let id: Int64 = step.id2
+        let ind = findIntersectionByID(id)
+        let streets = isections[ind].location as String
+        //print("currstreets = \(streets)")
+        
+        let streetsArr: Array = streets.componentsSeparatedByString(",")
+        
+        if (nextstep == nil)
+        {
+            nextstreet = ""
+        }
+        else if (nextstep!.type2 ==  1)
+        {
+            let ind1 = findLandmarkByID(nextstep!.id2)
+            if !lmarks[ind1].street.isEmpty
+            {
+                nextstreet = lmarks[ind1].street
+            }
+            //print("nextstreet = \(nextstreet)")
+        }
+        else if (nextstep!.type2 == 0)
+        {
+            let ind1 = findIntersectionByID(nextstep!.id2)
+            let nextstreets = isections[ind1].location as String
+            //print("nextstreets = \(nextstreets)")
+            let streetsArr1: Array = nextstreets.componentsSeparatedByString(",")
+            
+            nextstreet = ""
+            var found: Bool = false
+            for currstreet in streetsArr
+            {
+                //print(" \(currstreet)")
+                
+                for street in streetsArr1
+                {
+                    //print(" \(street)")
+                    
+                    if (street == currstreet)
+                    {
+                        nextstreet = currstreet
+                        found = true
+                        break;
+                    }
+                }
+                if (found)
+                {
+                    break
+                }
+            }
+        }
+        //print("nextstreet = \(nextstreet)")
+        
+        var type: Int
+        var idd: Int64
+        if (prevstep != nil && prevstep!.id1 == step.id1 && prevstep!.id2 == step.id2 && prevstep!.type1 == step.type1 && prevstep!.type2 == step.type2)
+        {
+            type = prevstep!.type1
+            idd = prevstep!.id1
+        }
+        else
+        {
+            type = prevstep!.type2
+            idd = prevstep!.id2
+        }
+        
+        if (type ==  1)
+        {
+            let ind1 = findLandmarkByID(idd)
+            if !lmarks[ind1].street.isEmpty
+            {
+                prevstreet = lmarks[ind1].street
+            }
+            //print("prevstep = \(prevstreet)")
+        }
+        else if (type == 0)
+        {
+            let ind1 = findIntersectionByID(idd)
+            let prevstreets = isections[ind1].location as String
+            //print("prevstreets = \(prevstreets)")
+            let streetsArr1: Array = prevstreets.componentsSeparatedByString(",")
+            
+            prevstreet = ""
+            var found: Bool = false
+            for currstreet in streetsArr
+            {
+                //print(" \(currstreet)")
+                
+                for street in streetsArr1
+                {
+                    //print(" \(street)")
+                    
+                    if (street == currstreet)
+                    {
+                        prevstreet = currstreet
+                        found = true
+                        break;
+                    }
+                }
+                if (found)
+                {
+                    break
+                }
+            }
+        }
+        //print("prevstreet = \(prevstreet)")
+        
+        let isection_descr = getIsectionSeq(step.isection_count)
+        
+        //instr = String(step.orig_seq) + ": " + "Follow " + prevstreet + ". When you see " + isection_descr + ", "
+        instr = "Follow " + prevstreet + ". When you see " + isection_descr + ", "
+        
+        let act: Int = step.act2
+        
+        if (act >= -3 && act <= 3)
+        {
+            if (nextstreet != "")
+            {
+                instr = instr + directionNames[Int(act) + 3] + " onto " + nextstreet + "."
+            }
+            iconName = directionImages[Int(act) + 3]
+        }
+        
+        //instr = instr + " (" + String(id) + ")"
+        //instr = instr + " (" + (isections[ind].location as String) + ")"
+    }
+    
+    func getIsectionSeq(isection_count: Int) -> String
+    {
+        var isection_descr: String = ""
+        if (isection_count == 1)
+        {
+            isection_descr = "first intersection"
+        }
+        else if (isection_count == 2)
+        {
+            isection_descr = "second intersection"
+        }
+        else if (isection_count == 3)
+        {
+            isection_descr = "third intersection"
+        }
+        else if (isection_count == 4)
+        {
+            isection_descr = "fourth intersection"
+        }
+        else if (isection_count == 5)
+        {
+        isection_descr = "fifth intersection"
+        }
+        else
+        {
+            isection_descr = "intersection # " + String(isection_count)
+        }
+        return isection_descr
+    }
+    
+    func DisplayTempPath(path: NSString, inout coords: [CLLocationCoordinate2D], planColor: UIColor)
+    {
+        let pathArr: Array = path.componentsSeparatedByString("\n")
+        
+        var i=0
+        let n = pathArr.count
+        //print("pathArr.count = \(pathArr.count)")
+        
+        for step in pathArr
+        {
+            var stepdata: Array = step.componentsSeparatedByString(";")
+            
+            //if (stepdata.count < 13)
+            if (stepdata.count < 3)
+            {
+                //print("i=\(i) count=\(stepdata.count)")
+                continue
+            }
+            
             let k = Int(stepdata[0])
             let id1 = Int64(stepdata[1])
             let lat1 = Double(stepdata[2])
@@ -1461,62 +2285,40 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             let act2 = Int(stepdata[10])
             let type2 = Int(stepdata[11])
             let dir2 = Int(stepdata[12])
-
-    
-            print("i=\(i) k=\(k!) | id \(id1!) coord \(lat1!) \(lon1!) act \(act1!) type \(type1!) dir \(dir1!) | id \(id2!) coord \(lat2!) \(lon2!) act \(act2!) type \(type2!) dir \(dir2!)")
-    
-            var iconName: String = ""
-            var instr: String = ""
-            var descr: String = ""
-            var imageName: String = "defaultPhoto"
             
-            var ind: Int
-            var count: Int = 0
+            //print("i=\(i) k=\(k!) | id \(id1!) coord \(lat1!) \(lon1!) act \(act1!) type \(type1!) dir \(dir1!) | id \(id2!) coord \(lat2!) \(lon2!) act \(act2!) type \(type2!) dir \(dir2!)")
             
+            //var count: Int = 0
             if (i == 0)
             {
-                instr = startPoseDescription(id1!, type: type1!)
-                
-                iconName = "StartButton"
-                
-                let step0 = SolutionStep(seq: i, name: "", instructions: instr, imageName: imageName, iconName: iconName, k: k!, id1: id1!, lat1: lat1!, lon1: lon1!, act1: act1!, type1: type1!, id2: id2!, lat2: lat2!, lon2: lon2!, act2: act2!, type2: type2!)
-                sol.append(step0)
+                coords.append(CLLocationCoordinate2D(latitude: lat1!, longitude: lon1!))
             }
             
-            instr = interimPoseDescription(i, id: id2!, act: act1!, type: type2!, iconName: &iconName, streetCount: &count)
-            
-            if (i == n-2)
+            if ((id1 == id2 && act1 == act2 && type1 == type2 && dir1 == dir2 && i < n-2)) // || (type2 == 0 && count < 2))
             {
-                instr = instr + ". You have reached your destination."
-                iconName = "FinishLine"
-            }
-            
-            if ((id1 == id2 && act1 == act2 && type1 == type2 && dir1 == dir2 && i < n-2) || (type2 == 0 && count < 2))
-            {
-                i++
-                print("Skipping")
+                i += 1
+            //    print("Skipping")
                 continue
             }
             
-            i++
+            i += 1
             
-            let step = SolutionStep(seq: i, name: "", instructions: instr, imageName: imageName, iconName: iconName, k: k!, id1: id1!, lat1: lat1!, lon1: lon1!, act1: act1!, type1: type1!, id2: id2!, lat2: lat2!, lon2: lon2!, act2: act2!, type2: type2!)
-    
             if (k == 0)
             {
-                sol.append(step)
+                coords.append(CLLocationCoordinate2D(latitude: lat2!, longitude: lon2!))
             }
-            else if (k == 1)
-            {
-                safety_sol.append(step)
-            }
+            //else if (k == 1)
+            //{
+            //    safety_sol.append(step)
+            //}
         }
         
-        drawPlan(0, planColor: UIColor.blueColor())
+        drawTempPlan(planColor, coords: coords)
         //drawPlan(1, planColor: UIColor.brownColor())
     }
+
     
-    func interimPoseDescription(i: Int, id: Int64, act: Int, type: Int, inout iconName: String, inout streetCount: Int) -> String
+    func interimPoseDescription(i: Int, id: Int64, act: Int, type: Int, inout iconName: String, inout streetCount: Int, isection_count: Int) -> String
     {
         var ind: Int = -1
         var descr: String = ""
@@ -1524,67 +2326,40 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         iconName = ""
         streetCount = 0
         
-        instr = String(i) + ": ";
+        instr = ""  //String(i) + ": ";
         
-        if (act == 0)
+        if (act >= -3 && act <= 3)
         {
-            iconName = "ArrowUp"
-            instr = instr + "Go straight"
-        }
-        else if (act == -1)
-        {
-            iconName = "ArrowLeft"
-            instr = instr + "Turn left"
-        }
-        else if (act == 1)
-        {
-            iconName = "ArrowRight"
-            instr = instr + "Turn right"
-        }
-        else if (act == 2)
-        {
-            iconName = "ArrowRightTurn"
-            instr = instr + "Sharp turn right"
-        }
-        else if (act == -2)
-        {
-            iconName = "ArrowLeftTurn"
-            instr = instr + "Sharp turn left"
-        }
-        else
-        {
-            print("act=\(act)")
-            iconName = ""
-            instr = ""
+            iconName = directionImages[act + 3]
+            instr = instr + directionNames[act + 3]
         }
         
         if (type == 1)
         {
             //landmark
-            ind = findLandmarkByID(id)
-            descr = lmarks[ind].name
-            if !lmarks[ind].address.isEmpty
-            {
-                descr = descr + " at " + lmarks[ind].address
-            }
+            descr = lmarkDescriptionForDisplay(id)
         }
         else if (type == 0)
         {
             //intersection
             ind = findIntersectionByID(id)
             streetCount = isections[ind].streetsCount
-            //if (streetsCount < 2)
-            //{
-            //    descr = "intersection" + " skipping"
-            //    print("Skipping false intersection")
-                //continue
-            //}
-            //else
-            //{
-                descr = "intersection " + (isections[ind].location as String)
-            //}
+            
+            let streets = isections[ind].location as String
+            let streetsArr: Array = streets.componentsSeparatedByString(",")
+
+            var istr = 0
+            for street in streetsArr
+            {
+                //print("i=\(istr) \(street)")
+                istr += 1
+            }
+            
+            descr = "intersection " + (isections[ind].location as String)
+            descr = descr + " at intersection # " + String(isection_count)
         }
         descr = descr + " (" + String(id) + ")"
+        
         
         if (act == 0)
         {
@@ -1598,6 +2373,26 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         return instr
     }
     
+    func lmarkDescriptionForDisplay(id: Int64) -> String
+    {
+        //landmark
+        let ind = findLandmarkByID(id)
+        var instr = lmarks[ind].name
+        if !lmarks[ind].street.isEmpty
+        {
+            instr = instr + " on " + lmarks[ind].street
+        }
+        else if !lmarks[ind].address.isEmpty
+        {
+            instr = instr + " at " + lmarks[ind].address
+        }
+        //if !lmarks[ind].amenity.isEmpty
+        //{
+        //    instr = instr + " (" + lmarks[ind].amenity + ")"
+        //}
+        return instr
+    }
+    
     func startPoseDescription(id: Int64, type: Int) -> String
     {
         var ind: Int = -1
@@ -1605,8 +2400,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         if (type == 1)
         {
             //landmark
-            ind = findLandmarkByID(id)
-            instr = "Start from " + lmarks[ind].name
+            //ind = findLandmarkByID(id)
+            instr = "Start from " + lmarkDescriptionForDisplay(id)
+            /*
+            lmarks[ind].name
             if !lmarks[ind].address.isEmpty
             {
                 instr = instr + " at " + lmarks[ind].address
@@ -1620,6 +2417,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             {
                 instr = instr + " (" + lmarks[ind].amenity + ")"
             }
+            */
         }
         else if (type == 0)
         {
@@ -1628,7 +2426,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             instr = "Start from intersection " + (isections[ind].location as String)
         }
         
-        instr = instr + " (" + String(id) + ")"
+        //instr = instr + " (" + String(id) + ")"
         return instr
     }
     
@@ -1643,7 +2441,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                 ind = i
                 break
             }
-            i++
+            i += 1
         }
         return ind
     }
@@ -1659,27 +2457,102 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                 ind = i
                 break
             }
-            i++
+            i += 1
         }
         return ind
     }
     
-    func drawPlan(k: Int, planColor: UIColor)
+    func drawTempPlan(planColor: UIColor, coords: [CLLocationCoordinate2D])
     {
-        let n = sol.count
+        let n = coords.count
+        var tcoords = [CLLocationCoordinate2D]()
+        tcoords = coords
+        let polyline: MKPolyline = MKPolyline(coordinates: &tcoords, count: n)
+        self.polyline_color = planColor
+        self.mapView.addOverlay(polyline)
+    }
+    
+    func drawPlan(k: Int, planColor: UIColor, path: [SolutionStep])
+    {
+        let n = path.count
         var coords = [CLLocationCoordinate2D]()
         var i = 0
-        for step in sol
+        for step in path
         {
             if (step.k == k)
             {
-                coords.append(CLLocationCoordinate2DMake(step.lat1, step.lon1))
+                if (step.type1 == 0) //intersection
+                {
+                    coords.append(CLLocationCoordinate2DMake(step.lat1, step.lon1))
+                }
+                else //landmark
+                {
+                    let ind = findLandmarkByID(step.id1)
+                    let rlat = lmarks[ind].roadLatitude
+                    let rlon = lmarks[ind].roadLongitude
+                    coords.append(CLLocationCoordinate2DMake(rlat, rlon))
+                }
+                
                 if (i == n-1)
                 {
-                    coords.append(CLLocationCoordinate2DMake(step.lat2, step.lon2))
+                    if (step.type2 == 0)
+                    {
+                        coords.append(CLLocationCoordinate2DMake(step.lat2, step.lon2))
+                    }
+                    else
+                    {
+                        let ind2 = findLandmarkByID(step.id2)
+                        let rlat2 = lmarks[ind2].roadLatitude
+                        let rlon2 = lmarks[ind2].roadLongitude
+                        coords.append(CLLocationCoordinate2DMake(rlat2, rlon2))
+                    }
                 }
             }
-            i++
+            i += 1
+        }
+        
+        let polyline: MKPolyline = MKPolyline(coordinates: &coords, count: n+1)
+        self.polyline_color = planColor
+        self.mapView.addOverlay(polyline)
+    }
+    
+    func drawPlan1(k: Int, planColor: UIColor)
+    {
+        let n = safety_sol.count
+        var coords = [CLLocationCoordinate2D]()
+        var i = 0
+        for step in safety_sol
+        {
+            if (step.k == k)
+            {
+                if (step.type1 == 0) //intersection
+                {
+                    coords.append(CLLocationCoordinate2DMake(step.lat1, step.lon1))
+                }
+                else //landmark
+                {
+                    let ind = findLandmarkByID(step.id1)
+                    let rlat = lmarks[ind].roadLatitude
+                    let rlon = lmarks[ind].roadLongitude
+                    coords.append(CLLocationCoordinate2DMake(rlat, rlon))
+                }
+                
+                if (i == n-1)
+                {
+                    if (step.type2 == 0)
+                    {
+                        coords.append(CLLocationCoordinate2DMake(step.lat2, step.lon2))
+                    }
+                    else
+                    {
+                        let ind2 = findLandmarkByID(step.id2)
+                        let rlat2 = lmarks[ind2].roadLatitude
+                        let rlon2 = lmarks[ind2].roadLongitude
+                        coords.append(CLLocationCoordinate2DMake(rlat2, rlon2))
+                    }
+                }
+            }
+            i += 1
         }
         
         let polyline: MKPolyline = MKPolyline(coordinates: &coords, count: n+1)
@@ -1689,9 +2562,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     
     func processLandmarks(s_lmarks: NSString, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double)
     {
-        print("\n--- lmarks ---\n");
-        //print("\(s_lmarks)");
-        //print("\n");
+        //print("\n--- lmarks ---\n");
         
         let lmarksArr: Array = s_lmarks.componentsSeparatedByString("\n")
     
@@ -1705,7 +2576,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
                 continue
             }
             
-            i++
+            i += 1
             
             var ind: CInt = 0
             var name: NSString? = nil
@@ -1713,13 +2584,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             var info: NSString? = nil
             var street: NSString? = nil
             var amenity: NSString? = nil
-            var lat: Double = 0
-            var lon: Double = 0
+            var lat: Double = 0.0
+            var lon: Double = 0.0
+            var roadId:Int64 = -1
+            var roadLat: Double = 0.0
+            var roadLon: Double = 0.0
             
-            self.MySbplWrapper.getLandmarkDetails_wrapped(pointId!, &ind, &lat, &lon, &name, &address, &info, &street, &amenity)
+            self.MySbplWrapper.getLandmarkDetails_wrapped(pointId!, &ind, &lat, &lon, &name, &address, &info, &street, &amenity, &roadId, &roadLat, &roadLon)
 
-            //if (lat >= minlat && lat <= maxlat && lon >= minlon && lon <= maxlon)
-            //{
             let name1 = name?.stringByReplacingOccurrencesOfString("_", withString: " ")
             let name2 = name1?.capitalizedString
                 
@@ -1732,11 +2604,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             let amenity1 = amenity?.stringByReplacingOccurrencesOfString("_", withString: " ")
             let amenity2 = amenity1?.capitalizedString
             
-            print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(name2!) | \(address!) | \(info2!) | \(street2!) | \(amenity2!)")
+            //print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(name2!) | \(address!) | \(info2!) | \(street2!) | \(amenity2!)")
             
-            j++
-            self.AddLandmark(name2!, description: info2!, type: 1, address: String(address!), latitude: lat, longitude: lon, photoName: "", pinName: "BlueBall", pointId: pointId!, roadId: 1, street: street2!, amenity: amenity2!)
-            //}
+            j += 1
+            self.AddLandmark(name2!, description: info2!, type: 1, address: String(address!), latitude: lat, longitude: lon, photoName: "", pinName: "BlueBall", pointId: pointId!, roadId: roadId, street: street2!, amenity: amenity2!, roadLatitude: roadLat, roadLongitude: roadLon)
         }
         print("Landmarks total: \(i) within bbox \(j)")
     }
@@ -1747,6 +2618,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         //print("\(s_isections)");
         //print("\n");
         
+        let blueFlagPin = UIImage(named:"BlackDot")
         var lat: Double = 0
         var lon: Double = 0
         
@@ -1756,7 +2628,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         var j=0
         for isection in isectionsArr
         {
-            i++
+            i += 1
             let pointId = Int64(isection)
             if (pointId == nil)
             {
@@ -1764,21 +2636,22 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
             }
             
             //print("i=\(i) pointId=(\(pointId)")
-            
-            //self.MySbplWrapper.getCoordsById_wrapped(pointId!, &lat, &lon)
-            
             var ind: CInt = 0
             var location: NSString? = nil
             var count: CInt = 0
             self.MySbplWrapper.getIntersectionDetails_wrapped(pointId!, &ind, &lat, &lon, &location, &count)
-            print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(location!)")
+            //print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(location!)")
             
-            //if (lat >= minlat && lat <= maxlat && lon >= minlon && lon <= maxlon)
-            //{
-                let isct = Intersection(id: pointId!, index: Int(j), latutude: lat, longitude: lon, location: location!, streetsCount: Int(count))
-                isections.append(isct)
-                j++
-            //}
+            if (lat >= minlat && lat <= maxlat && lon >= minlon && lon <= maxlon)
+            {
+                j += 1
+            }
+            
+            let isct = Intersection(id: pointId!, index: Int(j), latutude: lat, longitude: lon, location: location!, streetsCount: Int(count))
+            isections.append(isct)
+            
+            let lmark = Lmark(name: isct.location as String, description: "", type: 0, address: "", latitude: isct.latitude, longitude: isct.longitude, photo: nil, pin: blueFlagPin, pointId: pointId!, roadId: 0, street: "", amenity: "",  roadLatitude: 0.0, roadLongitude: 0.0);
+            i_lmarks.append(lmark!)
         }
         print("Intersections total: \(i) within bbox \(j+1)")
     }
@@ -1832,12 +2705,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
         }
     
     
-            var count1 = 0
+        var count1 = 0
         for node in self.nodes {
             if let i = self.nodes.indexOf({$0.id == node.id})
             {
-                print("i=\(i) id=\(self.nodes[i].id) lat=\(self.nodes[i].lat) lon=\(self.nodes[i].lon)")
-                count1++
+                //print("i=\(i) id=\(self.nodes[i].id) lat=\(self.nodes[i].lat) lon=\(self.nodes[i].lon)")
+                count1 += 1
             }
             else
             {
@@ -1852,8 +2725,5 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate { //, CLLoca
     
         //
     }
-}
-
-class SnapshotImageAnnotation: MKPointAnnotation {
 }
 

@@ -14,7 +14,7 @@ bool MySbpl::CreateStateFromOsm(long long int nid, long long int* rid, int* type
     *rid = -1;
     *type = -1;
     
-    printf("CreateStateFromOsm start: nid = %lld\n", nid);
+    //printf("CreateStateFromOsm start: nid = %lld\n", nid);
     fflush(stdout);
     
     for (int i=0; i<roads->size(); i++)
@@ -162,10 +162,10 @@ bool MySbpl::getIntresectionDetails(long long int point_id, int* ind, double* la
     return res;
 }
 
-bool MySbpl::getLandmarkDetails(long long int point_id, int* ind, double* lat, double* lon, char* name, char* address, char* info, char* street, char* amenity)
+bool MySbpl::getLandmarkDetails(long long int point_id, int* ind, double* lat, double* lon, char* name, char* address, char* info, char* street, char* amenity, long long int* roadId, double* roadLat, double* roadLon)
 {
     string saddress, sname, sinfo, sstreet, samenity;
-    bool res = env.GetLandmarkDetails(point_id, ind, lat, lon, &sname, &saddress, &sinfo, &sstreet, &samenity);
+    bool res = env.GetLandmarkDetails(point_id, ind, lat, lon, &sname, &saddress, &sinfo, &sstreet, &samenity, roadId, roadLat, roadLon);
     if (res)
     {
         strcpy(address, saddress.c_str());
@@ -179,7 +179,12 @@ bool MySbpl::getLandmarkDetails(long long int point_id, int* ind, double* lat, d
     return res;
 }
 
-bool MySbpl::generatePlan(int* pathlen, char* path)
+bool MySbpl::getSolutionStepDetails(int currInd, int succInd, long long int* pid1, long long int* pid2, int* act1, int* act2, int* type1, int* type2, int* dir1, int* dir2, double* lat1, double* lon1, double* lat2, double* lon2)
+{
+    bool res = env.GetSolutionStepDetails(currInd, succInd, pid1, pid2, act1, act2, type1, type2, dir1, dir2, lat1, lon1, lat2, lon2);
+    return res;
+}
+bool MySbpl::generatePlan(int k, int* pathlen, char* path)
 {
     std::vector<int*> ppcpSolutionIds;
     string spath = "";  //= path;
@@ -187,7 +192,7 @@ bool MySbpl::generatePlan(int* pathlen, char* path)
     fflush(stdout);
 
     env.ComputeHeuristic();
-    env.setSafetyNetDegree(0);
+    env.setSafetyNetDegree(k);
     env.findOptimalPPCPPath(&ppcpSolutionIds);
     
     *pathlen = (int)ppcpSolutionIds.size();
@@ -201,6 +206,7 @@ bool MySbpl::generatePlan(int* pathlen, char* path)
     {
         printf("pathlen = %d\n", *pathlen);
         spath = env.ConvertStatePathToLatLonPath(&ppcpSolutionIds);
+        
         printf("Length of spath string: %lu\n", spath.length());
         fflush(stdout);
         //printf("--- path ---\n");

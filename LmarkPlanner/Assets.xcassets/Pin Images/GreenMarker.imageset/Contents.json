@@ -2,11 +2,11 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "Map-Marker-Marker-Outside-Chartreuse-icon.png",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
+      "filename" : "Map-Marker-Marker-Outside-Chartreuse-icon.png",
       "scale" : "2x"
     },
     {

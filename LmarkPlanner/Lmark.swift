@@ -24,10 +24,13 @@ class Lmark {
     var roadId: Int64
     var street: String
     var amenity: String
+    var roadLatitude: CLLocationDegrees
+    var roadLongitude: CLLocationDegrees
     
     //MARK: Initialization
     
-    init?(name:String, description:String, type:Int, address:String, latitude:CLLocationDegrees, longitude:CLLocationDegrees, photo:UIImage?, pin:UIImage?, pointId:Int64, roadId:Int64, street:String, amenity:String) {
+    init?(name:String, description:String, type:Int, address:String, latitude:CLLocationDegrees, longitude:CLLocationDegrees, photo:UIImage?, pin:UIImage?, pointId:Int64, roadId:Int64, street:String, amenity:String, roadLatitude: CLLocationDegrees, roadLongitude: CLLocationDegrees)
+    {
         self.name = name
         self.description = description
         self.type = type
@@ -40,6 +43,8 @@ class Lmark {
         self.roadId = roadId
         self.street = street
         self.amenity = amenity
+        self.roadLatitude = roadLatitude
+        self.roadLongitude = roadLongitude
         
         //Initialization should fail if there is no name, latitude or longitude.
         

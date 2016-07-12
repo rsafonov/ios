@@ -14,11 +14,8 @@ class LandmarkTableViewCell: UITableViewCell {
     //MARK: Properties
     
     @IBOutlet var nameLabel: UILabel!
-    
     @IBOutlet var photoImageView: UIImageView!
-    
     @IBOutlet var descrLabel: UILabel!
-    
     @IBOutlet var addressLabel: UILabel!
     
     override func awakeFromNib() {

@@ -2,6 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en_US</string>
 	<key>CFBundleDocumentTypes</key>
@@ -12,6 +17,26 @@
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>com.apple.maps.directionsrequest</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeIconFiles</key>
+			<array/>
+			<key>CFBundleTypeName</key>
+			<string>Wikipedia</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>upload.wikimedia.org</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeIconFiles</key>
+			<array/>
+			<key>CFBundleTypeName</key>
+			<string>GoogleAPI</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>maps.googleapis.com/maps/api</string>
 			</array>
 		</dict>
 	</array>
@@ -37,6 +62,10 @@
 	<array>
 		<string>MKDirectionsModeCar</string>
 	</array>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>sbpl planning always</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>sbpl planning app aaa</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -51,9 +80,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>sbpl planning app aaa</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>sbpl planning always</string>
 </dict>
 </plist>

@@ -13,7 +13,7 @@ class SolutionStep {
     var seq: Int = 0
     var name: String = ""
     var instructions: String = ""
-    var imageName: String = ""
+    var photoImage: UIImage?
     var iconName: String = ""
     var k: Int = 0
     var id1: Int64 = 0
@@ -26,12 +26,18 @@ class SolutionStep {
     var type1: Int = 0
     var act2: Int = 0
     var type2: Int = 0
+    var dir1: Int = 0
+    var dir2: Int = 0
+    var safety_ind_start: Int = -1
+    var safety_ind_end: Int = -1
+    var orig_seq: Int = -1
+    var isection_count: Int = 0
     
-    init(seq:Int, name:String, instructions:String, imageName:String, iconName:String, k:Int, id1:Int64, lat1:Double, lon1:Double, act1:Int, type1:Int, id2:Int64, lat2:Double, lon2:Double, act2:Int, type2:Int) {
+    init(seq:Int, name:String, instructions:String, photoImage:UIImage?, iconName:String, k:Int, id1:Int64, lat1:Double, lon1:Double, act1:Int, type1:Int, id2:Int64, lat2:Double, lon2:Double, act2:Int, type2:Int, dir1:Int, dir2:Int) {
         self.seq = seq
         self.name = name
         self.instructions = instructions
-        self.imageName = imageName
+        self.photoImage = photoImage
         self.iconName = iconName
         self.k = k
         self.id1 = id1
@@ -44,6 +50,30 @@ class SolutionStep {
         self.lon2 = lon2
         self.act2 = act2
         self.type2 = type2
+        self.dir1 = dir1
+        self.dir2 = dir2
+    }
+    
+    init(step: SolutionStep) {
+        self.seq = step.seq
+        self.name = step.name
+        self.instructions = step.instructions
+        self.photoImage = step.photoImage
+        self.iconName = step.iconName
+        self.k = step.k
+        self.id1 = step.id1
+        self.lat1 = step.lat1
+        self.lon1 = step.lon1
+        self.act1 = step.act1
+        self.type1 = step.type1
+        self.id2 = step.id2
+        self.lat2 = step.lat2
+        self.lon2 = step.lon2
+        self.act2 = step.act2
+        self.type2 = step.type2
+        self.dir1 = step.dir1
+        self.dir2 = step.dir2
+
     }
 }
 

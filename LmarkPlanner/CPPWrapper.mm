@@ -14,7 +14,7 @@
 
 - (BOOL) initPlannerByOsm_wrapped: (NSString*) osmJsonStr : (NSString **) lmarks :(NSString **) intersections
 {
-    self.buflen = 16384*2;
+    self.buflen = 16384*10;
     char c_lmarks[self.buflen];
     char c_intersections[self.buflen];
     
@@ -57,11 +57,11 @@
     return res;
 }
 
-- (BOOL) generatePlan_wrapped: (int *) pathlen : (NSString **) path
+- (BOOL) generatePlan_wrapped: (int) k : (int *) pathlen : (NSString **) path
 {
     char c_path[self.buflen];
     MySbpl* sb = (MySbpl*)self.ob;
-    bool res =(MySbpl*) sb->generatePlan(pathlen, c_path);
+    bool res =(MySbpl*) sb->generatePlan(k, pathlen, c_path);
     if(res)
     {
         *path = [NSString stringWithFormat:@"%s", c_path];
@@ -88,15 +88,16 @@
     return res;
 }
 
-- (BOOL) getLandmarkDetails_wrapped: (long long int) point_id : (int *) ind : (double *) lat : (double *) lon : (NSString **) name : (NSString **) address : (NSString **) info : (NSString **) street : (NSString **) amenity
+- (BOOL) getLandmarkDetails_wrapped: (long long int) point_id : (int *) ind : (double *) lat : (double *) lon : (NSString **) name : (NSString **) address : (NSString **) info : (NSString **) street : (NSString **) amenity : (long long int*) road_id : (double *) roadLat : (double *) roadLon
 {
-    char c_name[self.buflen];
-    char c_address[self.buflen];
-    char c_info[self.buflen];
-    char c_street[self.buflen];
-    char c_amenity[self.buflen];
+    int len = self.buflen/5;
+    char c_name[len];
+    char c_address[len];
+    char c_info[len];
+    char c_street[len];
+    char c_amenity[len];
     MySbpl* sb = (MySbpl*)self.ob;
-    bool res = (MySbpl*)sb->getLandmarkDetails(point_id, ind, lat, lon, c_name, c_address, c_info, c_street, c_amenity);
+    bool res = (MySbpl*)sb->getLandmarkDetails(point_id, ind, lat, lon, c_name, c_address, c_info, c_street, c_amenity, road_id, roadLat, roadLon);
     if(res)
     {
         *name = [NSString stringWithFormat:@"%s", c_name];
@@ -105,6 +106,13 @@
         *street = [NSString stringWithFormat:@"%s", c_street];
         *amenity = [NSString stringWithFormat:@"%s", c_amenity];
     }
+    return res;
+}
+
+- (BOOL) getSolutionStepDetails_wrapped: (int) currInd : (int) succInd : (long long int*) pid1 : (long long int*) pid2 : (int*) act1 : (int*) act2 : (int*) type1 : (int*) type2 : (int*) dir1 : (int*) dir2 : (double*) lat1 : (double*) lon1 : (double*) lat2 : (double*) lon2;
+{
+    MySbpl* sb = (MySbpl*)self.ob;
+    bool res = (MySbpl*)sb->getSolutionStepDetails(currInd, succInd, pid1, pid2, act1, act2, type1, type2, dir1, dir2, lat1, lon1, lat2, lon2);
     return res;
 }
 @end

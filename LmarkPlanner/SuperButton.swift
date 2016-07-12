@@ -9,11 +9,11 @@
 import Foundation
 
 class SuperButton : UIButton {
-    var pointId : Int64 = 0
-    var roadId : Int64 = 0
-    var lat : Double = 0.0
-    var lon : Double = 0.0
-    var name : String = ""
-    var annType : Int?
+    //var pointId : Int64 = 0
+    //var roadId : Int64 = 0
+    //var lat : Double = 0.0
+    //var lon : Double = 0.0
+    //var name : String = ""
+    //var annType : Int?
 
 }

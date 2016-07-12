@@ -12,6 +12,7 @@ class FalseStepTableViewCell: UITableViewCell {
 
     @IBOutlet var photoImageView: UIImageView!
     @IBOutlet var instructions: UILabel!
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
