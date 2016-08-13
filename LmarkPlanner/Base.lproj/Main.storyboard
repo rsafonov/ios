@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10117" systemVersion="15C50" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10117" systemVersion="15G31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="BYZ-38-t0r">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
@@ -18,32 +18,16 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="uUV-Fa-GDl">
-                                <rect key="frame" x="16" y="50" width="343" height="485"/>
-                                <connections>
-                                    <outlet property="delegate" destination="BYZ-38-t0r" id="pRj-h5-k4n"/>
-                                </connections>
-                            </mapView>
                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="gBU-eF-3xN">
-                                <rect key="frame" x="16" y="20" width="343" height="30"/>
+                                <rect key="frame" x="16" y="17" width="343" height="30"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" returnKeyType="search"/>
                                 <connections>
                                     <outlet property="delegate" destination="BYZ-38-t0r" id="YIG-mn-d0D"/>
                                 </connections>
                             </textField>
-                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UXG-Vf-BO2">
-                                <rect key="frame" x="16" y="579" width="343" height="44"/>
-                                <items>
-                                    <barButtonItem image="ArrowRight" id="XOT-Ht-jrQ">
-                                        <connections>
-                                            <action selector="showPlanSteps:" destination="BYZ-38-t0r" id="Ha8-T4-HsK"/>
-                                        </connections>
-                                    </barButtonItem>
-                                </items>
-                            </toolbar>
                             <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2cf-tf-ffa">
-                                <rect key="frame" x="16" y="541" width="343" height="44"/>
+                                <rect key="frame" x="16" y="579" width="343" height="44"/>
                                 <items>
                                     <barButtonItem image="Theatre64" id="uIw-yb-VRh">
                                         <connections>
@@ -72,22 +56,29 @@
                                     </barButtonItem>
                                 </items>
                             </toolbar>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="uUV-Fa-GDl">
+                                <rect key="frame" x="16" y="50" width="343" height="523"/>
+                                <connections>
+                                    <outlet property="delegate" destination="BYZ-38-t0r" id="pRj-h5-k4n"/>
+                                </connections>
+                            </mapView>
+                            <activityIndicatorView hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="vvA-FY-dLU">
+                                <rect key="frame" x="169" y="293" width="37" height="37"/>
+                                <color key="color" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="uUV-Fa-GDl" firstAttribute="leading" secondItem="2cf-tf-ffa" secondAttribute="leading" id="0xs-aU-CBM"/>
-                            <constraint firstItem="2cf-tf-ffa" firstAttribute="trailing" secondItem="UXG-Vf-BO2" secondAttribute="trailing" id="Bma-gx-KTh"/>
-                            <constraint firstItem="UXG-Vf-BO2" firstAttribute="bottom" secondItem="wfy-db-euE" secondAttribute="top" id="F6J-pP-yOg"/>
-                            <constraint firstItem="gBU-eF-3xN" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="JD1-C4-4dt"/>
-                            <constraint firstItem="gBU-eF-3xN" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="LlZ-cX-4G3"/>
-                            <constraint firstItem="gBU-eF-3xN" firstAttribute="trailing" secondItem="uUV-Fa-GDl" secondAttribute="trailing" id="Mm0-B9-Sl8"/>
-                            <constraint firstItem="gBU-eF-3xN" firstAttribute="leading" secondItem="uUV-Fa-GDl" secondAttribute="leading" id="Poj-lm-dxv"/>
-                            <constraint firstItem="2cf-tf-ffa" firstAttribute="top" secondItem="uUV-Fa-GDl" secondAttribute="bottom" constant="6" id="QVK-eb-1Zd"/>
-                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="2cf-tf-ffa" secondAttribute="bottom" constant="38" id="SfY-oW-2ch"/>
-                            <constraint firstItem="gBU-eF-3xN" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="Zj8-S3-QOn"/>
-                            <constraint firstItem="2cf-tf-ffa" firstAttribute="leading" secondItem="UXG-Vf-BO2" secondAttribute="leading" id="olm-OY-uCj"/>
-                            <constraint firstItem="uUV-Fa-GDl" firstAttribute="trailing" secondItem="2cf-tf-ffa" secondAttribute="trailing" id="pmb-Z7-zVu"/>
-                            <constraint firstItem="uUV-Fa-GDl" firstAttribute="top" secondItem="gBU-eF-3xN" secondAttribute="bottom" id="spa-Ru-cOT"/>
+                            <constraint firstItem="gBU-eF-3xN" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="1ds-KN-tTe"/>
+                            <constraint firstItem="gBU-eF-3xN" firstAttribute="trailing" secondItem="uUV-Fa-GDl" secondAttribute="trailing" id="FMW-lT-dpj"/>
+                            <constraint firstItem="gBU-eF-3xN" firstAttribute="leading" secondItem="uUV-Fa-GDl" secondAttribute="leading" id="Jpq-tb-pNW"/>
+                            <constraint firstItem="uUV-Fa-GDl" firstAttribute="top" secondItem="gBU-eF-3xN" secondAttribute="bottom" constant="3" id="aX1-Kk-flk"/>
+                            <constraint firstItem="gBU-eF-3xN" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="c96-hm-0zE"/>
+                            <constraint firstItem="2cf-tf-ffa" firstAttribute="bottom" secondItem="wfy-db-euE" secondAttribute="top" id="jum-aX-FMy"/>
+                            <constraint firstItem="uUV-Fa-GDl" firstAttribute="leading" secondItem="2cf-tf-ffa" secondAttribute="leading" id="lnM-Jb-KRn"/>
+                            <constraint firstItem="2cf-tf-ffa" firstAttribute="top" secondItem="uUV-Fa-GDl" secondAttribute="bottom" constant="6" id="nMg-MB-12L"/>
+                            <constraint firstItem="uUV-Fa-GDl" firstAttribute="trailing" secondItem="2cf-tf-ffa" secondAttribute="trailing" id="no8-St-Z5d"/>
+                            <constraint firstItem="gBU-eF-3xN" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="topMargin" constant="17" id="oTT-aX-Dpd"/>
                         </constraints>
                     </view>
                     <toolbarItems>
@@ -101,18 +92,18 @@
                                 <action selector="sendOsmQuery:" destination="BYZ-38-t0r" id="HpF-Ll-H74"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem image="Animation64" id="Sch-W0-j4D">
+                        <barButtonItem image="Animation" id="Sch-W0-j4D">
                             <color key="tintColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                             <connections>
                                 <action selector="animateCamera:" destination="BYZ-38-t0r" id="YCp-EO-xq9"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem image="Zoom-In64" id="U7l-4c-lIr">
+                        <barButtonItem image="Zoom-In" id="U7l-4c-lIr">
                             <connections>
                                 <action selector="zoomInMap:" destination="BYZ-38-t0r" id="6bf-Er-Rs6"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem image="Map128" id="glg-7e-exG">
+                        <barButtonItem image="Map" id="glg-7e-exG">
                             <connections>
                                 <action selector="changeMapType:" destination="BYZ-38-t0r" id="Qzq-9e-zld"/>
                             </connections>
@@ -121,6 +112,7 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina47"/>
                     <connections>
+                        <outlet property="activityIndicatorView" destination="vvA-FY-dLU" id="YKs-lz-hy5"/>
                         <outlet property="animateButton" destination="Sch-W0-j4D" id="BVw-64-TSs"/>
                         <outlet property="isectionsButton" destination="db5-QF-UCC" id="di6-RK-pIj"/>
                         <outlet property="lmarksButton" destination="uIw-yb-VRh" id="PjR-3O-CwM"/>
@@ -130,7 +122,6 @@
                         <outlet property="planButton" destination="7y6-p2-kMR" id="SRG-IA-cOn"/>
                         <outlet property="searchText" destination="gBU-eF-3xN" id="847-6P-cWE"/>
                         <outlet property="settingsButton" destination="3TG-V2-pM1" id="EbR-Es-Zhu"/>
-                        <outlet property="showPlanButton" destination="XOT-Ht-jrQ" id="n8z-cW-b6H"/>
                         <outlet property="zoomInButton" destination="U7l-4c-lIr" id="4Qj-an-HbD"/>
                     </connections>
                 </viewController>
@@ -151,7 +142,7 @@
                                 <rect key="frame" x="0.0" y="92" width="375" height="80"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="9Jo-Wt-gYu" id="dJ9-i4-Ezf">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="80"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="79.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="defaultPhoto" translatesAutoresizingMaskIntoConstraints="NO" id="AIx-oY-OXN">
@@ -166,7 +157,7 @@
                                                 <constraint firstAttribute="height" constant="19" id="dRN-Xi-VJN"/>
                                             </constraints>
                                             <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CAS-P0-DaM">
@@ -181,7 +172,7 @@
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WYa-C4-P7a">
                                             <rect key="frame" x="151" y="55" width="211" height="22"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
@@ -212,7 +203,7 @@
                                 <rect key="frame" x="0.0" y="172" width="375" height="138"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Jv6-Ij-f8l" id="bV1-7m-8SO">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="138"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="137.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="CathedralOfLearning.png" translatesAutoresizingMaskIntoConstraints="NO" id="rO4-8w-fLh">
@@ -257,7 +248,7 @@
                                 <rect key="frame" x="0.0" y="310" width="375" height="127"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="gQd-5J-iT3" id="ed4-Dw-65q">
-                                    <rect key="frame" x="0.0" y="0.0" width="328" height="127"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="328" height="126.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="CathedralOfLearning.png" translatesAutoresizingMaskIntoConstraints="NO" id="xbK-2H-Fnd">
@@ -302,7 +293,7 @@
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2la-Ap-eU9">
                                             <rect key="frame" x="19" y="15" width="226" height="40"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
@@ -322,13 +313,13 @@
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="62y-4O-JpE">
                                             <rect key="frame" x="23" y="16" width="224" height="24"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I53-NN-8So">
                                             <rect key="frame" x="23" y="48" width="224" height="23"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="zap-rY-plI">
@@ -398,13 +389,13 @@
         </scene>
     </scenes>
     <resources>
-        <image name="Animation64" width="32" height="32"/>
+        <image name="Animation" width="16" height="16"/>
         <image name="ArrowRight" width="16" height="16"/>
         <image name="CathedralOfLearning.png" width="191" height="93"/>
         <image name="DirectionsSign64" width="32" height="32"/>
-        <image name="Map128" width="64" height="64"/>
+        <image name="Map" width="16" height="16"/>
         <image name="Theatre64" width="32" height="32"/>
-        <image name="Zoom-In64" width="32" height="31"/>
+        <image name="Zoom-In" width="16" height="15"/>
         <image name="defaultPhoto" width="95" height="46"/>
         <image name="road32" width="32" height="32"/>
     </resources>

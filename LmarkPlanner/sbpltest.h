@@ -26,22 +26,18 @@ using namespace std;
 class MySbpl
 {
     public:
+        bool setParams(string docDirectory);
         bool initPlannerByOsm(string osmJsonStr, char* lmarks, char* intersection, int buflen);
-        bool setStartPose(long long int point_id, long long int* rid, int* type, int dir);
-        bool setGoalPose(long long int point_id, long long int* rid, int* type, int dir);
-        bool resetStartPose(long long int point_id, long long road_id, int type, int dir);
-        bool resetGoalPose(long long int point_id, long long road_id, int type, int dir);
-    
-        bool generatePlan(int k, int* pathlen, char* path);
-        bool getCoordsById(long long int point_id, double* lat, double* lon);
+        bool generatePlan(int k, long long int start_pointId, long long int start_roadId, int start_type, int start_dir, long long int goal_pointId, long long int goal_roadId, int goal_type, int goal_dir, int* pathlen, char* path);
         bool getIntresectionDetails(long long int point_id, int* ind, double* lat, double* lon, char* location, int* streetsCount);
         bool getLandmarkDetails(long long int point_id, int* ind, double* lat, double* lon, char* name, char* address, char* info, char* street, char* amenity, long long int* roadId, double* roadLat, double* roadLon);
-        bool getSolutionStepDetails(int currInd, int succInd, long long int* pid1, long long int* pid2, int* act1, int* act2, int* type1, int* type2, int* dir1, int* dir2, double* lat1, double* lon1, double* lat2, double* lon2);
+        bool getSolutionStepDetails(int currInd, int succInd, long long int* pid1, long long int* pid2, int* act1, int* act2, int* type1, int* type2, int* dir1, int* dir2, double* lat1, double* lon1, double* lat2, double* lon2,
+        int* envId1, int* envId2);
 
     private:
-        bool CreateStateFromOsm(long long int nid, long long int* rid, int* type, int dir, MapEnv* env, vector<Road*>* roads, EnvState* state);
     
-        MapEnv env;
+        MapEnv env0;
+        MapEnv *env = NULL;
         vector<Road*> roads;
 };
 

@@ -9,17 +9,13 @@
 import Foundation
 import MapKit
 
-class LmarkAnnotation: MKPointAnnotation {
-    var pinImage: UIImage!
-    var photoImage: UIImage?
-    var view: LmarkAnnotationView?
+class LmarkAnnotation: MKPointAnnotation
+{
     var lmark: Lmark
 
-    init(lmark: Lmark, pinImage: UIImage?, photoImage: UIImage?)
+    init(lmark: Lmark)
     {
         self.lmark = lmark
-        self.pinImage = pinImage
-        self.photoImage = photoImage
         super.init()
         
         let coord = CLLocationCoordinate2D(latitude: lmark.latitude, longitude: lmark.longitude)
@@ -27,11 +23,10 @@ class LmarkAnnotation: MKPointAnnotation {
         self.coordinate = coord
         self.title = lmark.name
         self.subtitle = lmark.address
-
     }
     
-    convenience init(annotation: LmarkAnnotation, pinImage: UIImage?)
+    convenience init(annotation: LmarkAnnotation)
     {
-        self.init(lmark: annotation.lmark, pinImage: pinImage, photoImage: annotation.photoImage)
+        self.init(lmark: annotation.lmark)
     }
 }

@@ -32,6 +32,8 @@ class SolutionStep {
     var safety_ind_end: Int = -1
     var orig_seq: Int = -1
     var isection_count: Int = 0
+    var street: String = ""
+    var skip: Bool = false
     
     init(seq:Int, name:String, instructions:String, photoImage:UIImage?, iconName:String, k:Int, id1:Int64, lat1:Double, lon1:Double, act1:Int, type1:Int, id2:Int64, lat2:Double, lon2:Double, act2:Int, type2:Int, dir1:Int, dir2:Int) {
         self.seq = seq

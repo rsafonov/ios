@@ -252,7 +252,11 @@ class LandmarksTableViewController: UITableViewController {
         
         for i in istart...iend
         {
-            sol.append(safety_sol[i])
+            if (!safety_sol[i].skip && safety_sol[i].photoImage != nil)
+            {
+                sol.append(safety_sol[i])
+            }
+            
             //print("i=\(i) id2 = \(safety_sol[i].id2) type2 = \(safety_sol[i].type2) orig_seq = \(safety_sol[i].orig_seq)")
         }
         tableView.reloadData()

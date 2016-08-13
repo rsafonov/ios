@@ -39,8 +39,17 @@ class DoubleSettingCell: UITableViewCell {
     
     func xValChanged(x_Val: UITextField) {
         //print("x_Val = \(x_Val.text) yVal = \(yVal.text)")
-        let x:Double = Double(x_Val.text!)!
-        let y:Double = Double(yVal.text!)!
+        var x: Double = 1000.0
+        var y: Double = 1000.0
+        
+        if (!(x_Val.text?.isEmpty)!)
+        {
+            x = Double(x_Val.text!)!
+        }
+        if (!(yVal.text?.isEmpty)!)
+        {
+            y = Double(yVal.text!)!
+        }
         
         parentController!.sendXYToPreviousVC(x, yval: y)
     }

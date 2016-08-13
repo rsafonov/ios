@@ -12,13 +12,22 @@
 
 #include "sbpltest.h"
 
-- (BOOL) initPlannerByOsm_wrapped: (NSString*) osmJsonStr : (NSString **) lmarks :(NSString **) intersections
+- (BOOL) setParams_wrapped: (NSString*) docDirectory
 {
     self.buflen = 16384*10;
+    self.ob = new MySbpl();
+    MySbpl* sb = (MySbpl*)self.ob;
+    bool res = (MySbpl*) sb->setParams([docDirectory cStringUsingEncoding:NSUTF8StringEncoding]);
+    return res;
+}
+
+- (BOOL) initPlannerByOsm_wrapped: (NSString*) osmJsonStr : (NSString **) lmarks :(NSString **) intersections
+{
+    //self.buflen = 16384*10;
     char c_lmarks[self.buflen];
     char c_intersections[self.buflen];
     
-    self.ob = new MySbpl();
+    //self.ob = new MySbpl();
     MySbpl* sb = (MySbpl*)self.ob;
     
     bool res =(MySbpl*) sb->initPlannerByOsm([osmJsonStr cStringUsingEncoding:NSUTF8StringEncoding], c_lmarks, c_intersections, self.buflen);
@@ -30,52 +39,18 @@
     return res;
 }
 
-- (BOOL) setStartPose_wrapped: (long long int) point_id : (long long int*) road_id : (int*) type : (int) dir
-{
-    MySbpl* sb = (MySbpl*)self.ob;
-    bool res = (MySbpl*) sb->setStartPose(point_id, road_id, type, dir);
-    return res;
-}
-
-- (BOOL) setGoalPose_wrapped: (long long int) point_id : (long long int*) road_id : (int*) type : (int) dir
-{
-    MySbpl* sb = (MySbpl*)self.ob;
-    bool res = (MySbpl*) sb->setGoalPose(point_id, road_id, type, dir);
-    return res;
-}
-
-- (BOOL) resetStartPose_wrapped: (long long int) point_id : (long long int) road_id : (int) type : (int) dir
-{
-    MySbpl* sb = (MySbpl*)self.ob;
-    bool res = (MySbpl*) sb->resetStartPose(point_id, road_id, type, dir);
-    return res;
-}
-- (BOOL) resetGoalPose_wrapped: (long long int) point_id : (long long int) road_id : (int) type : (int) dir;
-{
-    MySbpl* sb = (MySbpl*)self.ob;
-    bool res = (MySbpl*) sb->resetGoalPose(point_id, road_id, type, dir);
-    return res;
-}
-
-- (BOOL) generatePlan_wrapped: (int) k : (int *) pathlen : (NSString **) path
+- (BOOL) generatePlan_wrapped: (int) k : (long long int) start_pointId : (long long int) start_roadId : (int) start_type : (int) start_dir : (long long int) goal_pointId : (long long int) goal_roadId : (int) goal_type : (int) goal_dir : (int *) pathlen : (NSString **) path
 {
     char c_path[self.buflen];
     MySbpl* sb = (MySbpl*)self.ob;
-    bool res =(MySbpl*) sb->generatePlan(k, pathlen, c_path);
+    bool res =(MySbpl*) sb->generatePlan(k, start_pointId, start_roadId, start_type, start_dir, goal_pointId, goal_roadId, goal_type, goal_dir, pathlen, c_path);
     if(res)
     {
         *path = [NSString stringWithFormat:@"%s", c_path];
     }
     return res;
 }
-
-- (BOOL) getCoordsById_wrapped: (long long int) point_id : (double *) lat : (double *) lon
-{
-    MySbpl* sb = (MySbpl*)self.ob;
-    bool res = (MySbpl*)sb->getCoordsById(point_id, lat, lon);
-    return res;
-}
-
+ 
 - (BOOL) getIntersectionDetails_wrapped: (long long int) point_id : (int *) ind : (double *) lat : (double *) lon : (NSString **) location : (int *) streetsCount
 {
     char c_loc[self.buflen];
@@ -109,10 +84,10 @@
     return res;
 }
 
-- (BOOL) getSolutionStepDetails_wrapped: (int) currInd : (int) succInd : (long long int*) pid1 : (long long int*) pid2 : (int*) act1 : (int*) act2 : (int*) type1 : (int*) type2 : (int*) dir1 : (int*) dir2 : (double*) lat1 : (double*) lon1 : (double*) lat2 : (double*) lon2;
+- (BOOL) getSolutionStepDetails_wrapped: (int) currInd : (int) succInd : (long long int*) pid1 : (long long int*) pid2 : (int*) act1 : (int*) act2 : (int*) type1 : (int*) type2 : (int*) dir1 : (int*) dir2 : (double*) lat1 : (double*) lon1 : (double*) lat2 : (double*) lon2 : (int*) envId1 : (int*) envId2;
 {
     MySbpl* sb = (MySbpl*)self.ob;
-    bool res = (MySbpl*)sb->getSolutionStepDetails(currInd, succInd, pid1, pid2, act1, act2, type1, type2, dir1, dir2, lat1, lon1, lat2, lon2);
+    bool res = (MySbpl*)sb->getSolutionStepDetails(currInd, succInd, pid1, pid2, act1, act2, type1, type2, dir1, dir2, lat1, lon1, lat2, lon2, envId1, envId2);
     return res;
 }
 @end

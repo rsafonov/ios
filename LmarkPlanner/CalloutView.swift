@@ -10,47 +10,34 @@ import UIKit
 
 class CalloutView: UIView
 {
-    var title: String = ""
-    var latitude: Double = 0.0
-    var longitude: Double = 0.0
-    
-    var calloutLabel: UILabel? = nil
-    var imageView: UIImageView?  = nil
+    var lmark: Lmark?
     var setStartButton: SuperButton?
     var setGoalButton: SuperButton?
     var closeButton: SuperButton?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.commonInit()
+        //self.commonInit()
     }
     
-    convenience init(frame: CGRect, text: String, x: CGFloat, y: CGFloat, lat: Double, lon: Double)
+    convenience init(frame: CGRect, x: CGFloat, y: CGFloat, lmark0: Lmark)
     {
         self.init(frame: frame)
-        calloutLabel!.text = text
+        
+        lmark = lmark0
         center.x = x
         center.y = y
-        latitude = lat
-        longitude = lon
         clipsToBounds = true
-        
-        let strlat = String(latitude)
-        let strlon = String(longitude)
-        let fov = String(90)
-        
-        let imageurl = "http://maps.googleapis.com/maps/api/streetview?size=400x400&location=" + strlat + "," + strlon + "&fov=" + fov + "&sensor=false"
-        let image =  UIImage(data: NSData(contentsOfURL: NSURL(string: imageurl)!)!)!
-        imageView!.image = image
+        commonInit()
     }
     
-    convenience init() {
-        self.init(frame : CGRect.zero);
-    }
+    //convenience init() {
+    //    self.init(frame : CGRect.zero);
+    //}
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        self.commonInit()
+        //self.commonInit()
     }
     
     private func commonInit() {
@@ -72,9 +59,21 @@ class CalloutView: UIView
         //{
         let w = frame.width
 
-        imageView = UIImageView.init(frame: CGRect(x: 0, y: 0, width: w, height: 100))
+        let imageView = UIImageView.init(frame: CGRect(x: 0, y: 0, width: w, height: 100))
         
-        addSubview(imageView!)
+        if (lmark!.photo == nil)
+        {
+            let strlat = String(lmark!.latitude)
+            let strlon = String(lmark!.longitude)
+            let fov = String(90)
+        
+            let imageurl = "http://maps.googleapis.com/maps/api/streetview?size=400x400&location=" + strlat + "," + strlon + "&fov=" + fov + "&sensor=false"
+            let image =  UIImage(data: NSData(contentsOfURL: NSURL(string: imageurl)!)!)!
+            lmark!.photo = image
+        }
+        imageView.image = lmark!.photo
+        imageView.userInteractionEnabled = false
+        addSubview(imageView)
         return;
     }
     
@@ -82,41 +81,60 @@ class CalloutView: UIView
     {
         let w = frame.width
         //let h = calloutView.frame.height
-        //calloutLabel = UILabel.init(frame: CGRect(x: 0, y: 0, width: w, height: 50))
-        calloutLabel = UILabel.init(frame: CGRect(x: 0, y: 100, width: w, height: 50))
+        let calloutLabel = UILabel.init(frame: CGRect(x: 0, y: 100, width: w, height: 50))
+        calloutLabel.alpha = 1.0
+        var txt = lmark!.name
+        if (lmark!.amenity.characters.count > 0)
+        {
+            txt = txt + "\n" + lmark!.amenity
+        }
+        if (lmark!.street.characters.count > 0)
+        {
+            txt = txt + "\n" + lmark!.street
+        }
+        calloutLabel.text = txt
 
-        calloutLabel!.text = title
-        calloutLabel!.textAlignment = .Center
-        calloutLabel!.numberOfLines = 4
-        calloutLabel!.font = UIFont(name: "Helvetica", size: 12)
-        //calloutLabel!.backgroundColor = UIColor.whiteColor()
-        calloutLabel?.layer.cornerRadius = 5
+        calloutLabel.textAlignment = .Center
+        calloutLabel.numberOfLines = 4
+        calloutLabel.font = UIFont(name: "Helvetica", size: 12)
+        calloutLabel.backgroundColor = UIColor.whiteColor()
+        calloutLabel.layer.cornerRadius = 5
         //calloutLabel!.layer.borderColor = UIColor.darkGrayColor().CGColor
         //calloutLabel!.layer.borderWidth = 2
         //calloutLabel.center.x = 0.5 * self.frame.size.width
         //calloutLabel.center.y = -0.5 * self.frame.size.height
-        addSubview(calloutLabel!)
+        calloutLabel.userInteractionEnabled = false
+        addSubview(calloutLabel)
     }
     
     func addSuperButton(ox: Double, oy: Double, width: Double, height: Double, imageName: String, txt: String) -> SuperButton
     {
         let btn = SuperButton.init(frame: CGRect(x: ox, y: oy, width: width, height: height))
+        btn.alpha = 1.0
+        
         let titleLabel = UILabel.init(frame: CGRectMake(0, 27, 50, 10))
         titleLabel.text = txt
         titleLabel.textAlignment = .Center
         titleLabel.font = UIFont(name: "Helvetica", size: 10)
         titleLabel.textColor = UIColor.blueColor()
+        titleLabel.alpha = 1.0
+        titleLabel.backgroundColor = UIColor.whiteColor()
+        titleLabel.exclusiveTouch = true
         btn.addSubview(titleLabel)
         
         let imageView = UIImageView.init(frame: CGRectMake(15, 3, 25, 21))
         imageView.image = UIImage(named: imageName)
+        imageView.alpha = 1.0
+        imageView.exclusiveTouch = true
         btn.addSubview(imageView)
         
-        //btn!.backgroundColor = UIColor.lightGrayColor()
+        btn.backgroundColor = UIColor.whiteColor()
         btn.layer.borderWidth = 1
         btn.layer.cornerRadius = 5
         //btn.layer.borderColor = UIColor.blueColor().CGColor
         btn.addTarget(self, action: #selector(CalloutView.buttonTapped(_:)), forControlEvents: .TouchUpInside)
+        btn.userInteractionEnabled = true
+        btn.exclusiveTouch = true
         addSubview(btn)
         return btn
     }
@@ -149,13 +167,18 @@ class CalloutView: UIView
 
     override func hitTest(point: CGPoint, withEvent event: UIEvent?) -> UIView?
     {
+        let view = super.hitTest(point, withEvent: event)
+
+        /*
         let viewPoint = superview?.convertPoint(point, toView: self) ?? point
         //let isInsideView = pointInside(viewPoint, withEvent: event)
         let view = super.hitTest(viewPoint, withEvent: event)
+        */
         return view
     }
 
-    override func pointInside(point: CGPoint, withEvent event: UIEvent?) -> Bool {
+    override func pointInside(point: CGPoint, withEvent event: UIEvent?) -> Bool
+    {
         return CGRectContainsPoint(bounds, point)
     }
 }

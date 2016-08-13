@@ -19,7 +19,6 @@ class Lmark {
     var latitude: CLLocationDegrees
     var longitude: CLLocationDegrees
     var photo: UIImage?
-    var pin: UIImage?
     var pointId: Int64
     var roadId: Int64
     var street: String
@@ -29,7 +28,8 @@ class Lmark {
     
     //MARK: Initialization
     
-    init?(name:String, description:String, type:Int, address:String, latitude:CLLocationDegrees, longitude:CLLocationDegrees, photo:UIImage?, pin:UIImage?, pointId:Int64, roadId:Int64, street:String, amenity:String, roadLatitude: CLLocationDegrees, roadLongitude: CLLocationDegrees)
+    init?(name:String, description:String, type:Int, address:String, latitude:CLLocationDegrees, longitude:CLLocationDegrees, photo:UIImage?, pointId:Int64, roadId:Int64, street:String, amenity:String, roadLatitude: CLLocationDegrees, roadLongitude: CLLocationDegrees)
+
     {
         self.name = name
         self.description = description
@@ -38,7 +38,7 @@ class Lmark {
         self.latitude = latitude
         self.longitude = longitude
         self.photo = photo
-        self.pin = pin
+        //self.pin = pin
         self.pointId = pointId
         self.roadId = roadId
         self.street = street

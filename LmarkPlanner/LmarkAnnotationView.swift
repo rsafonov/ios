@@ -20,15 +20,16 @@ class LmarkAnnotationView: MKAnnotationView {
     }
     
     var parent: ViewController?
+    var count_selected: Int = 0
+    var count_deselected: Int = 0
+    var calloutView: CalloutView?
     
-    private var calloutView: CalloutView?
+    var calloutAdded: Bool = false
+    
     private var hitOutside:Bool = true
     private let blueBallImage = UIImage(named: "BlueBall")
-    private let pinkBallImage = UIImage(named: "PinkBall")
+    //private let pinkBallImage = UIImage(named: "PinkBall")
     private let greenBallImage = UIImage(named: "GreenBall")
-    private let brownBallImage = UIImage(named: "BrownBall")
-    private let orangeBallImage = UIImage(named: "OrangeBall")
-    private let yellowBallImage = UIImage(named: "YellowBall")
     
     convenience init(annotation:MKAnnotation!) {
         self.init(annotation: annotation, reuseIdentifier: LmarkAnnotationView.reuseIdentifier)
@@ -37,16 +38,50 @@ class LmarkAnnotationView: MKAnnotationView {
     
     override func setSelected(let selected: Bool, animated: Bool)
     {
-        //guard let lmark_ann = (sender.view as? MKAnnotationView)?.annotation as? MyAnnotation else { return }
         guard let ann = annotation as? LmarkAnnotation else
-        //if !(annotation  is LmarkAnnotation)
         {
             print("This view can only be used for annotation of type  LmarkAnnotation!")
             return
         }
         
-        //ann = annotation as? LmarkAnnotation
+        if (selected)
+        {
+            count_selected += 1
+            //print("count_selected = \(count_selected)")
+            
+            superview?.bringSubviewToFront(self)
+            
+            super.setSelected(selected, animated: animated)
+            
+            if (calloutView == nil)
+            {
+                let x = 0.5 * self.frame.size.width
+                let y = -3.0 * self.frame.size.height
+                calloutView = CalloutView(frame: CGRectMake(0, 0, 150, 190), x: x, y: y, lmark0: ann.lmark)
+                calloutView!.alpha = 1.0
+                calloutView!.backgroundColor = UIColor.whiteColor()
+                calloutView!.exclusiveTouch = true
+            }
+            
+            if (image == blueBallImage)
+            {
+                self.image = greenBallImage
+                parent?.greenViews.append(self)
+            }
+            addSubview(calloutView!)
+            calloutAdded = true;
+            //self.bringSubviewToFront(calloutView!)
+        }
+        else
+        {
+            count_deselected += 1
+            //print("count_deselected = \(count_deselected)")
+            calloutView!.removeFromSuperview()
+            calloutAdded = false
+        }
         
+        
+        /*
         let calloutViewAdded = calloutView?.superview != nil
         
         if (selected || !selected && hitOutside) {
@@ -59,21 +94,7 @@ class LmarkAnnotationView: MKAnnotationView {
         {
             let x = 0.5 * self.frame.size.width
             let y = -3.0 * self.frame.size.height
-            var txt = ann.title
-            if (ann.lmark.amenity.characters.count > 0)
-            {
-                txt = txt! + "\n" + ann.lmark.amenity
-            }
-            if (ann.lmark.street.characters.count > 0)
-            {
-                txt = txt! + "\n" + ann.lmark.street
-            }
-            //if (ann?.info?.characters.count > 0)
-            //{
-            //    txt = txt! + "\n" + ann!.info!
-            //}
-            //calloutView = CalloutView(frame: CGRectMake(0, 0, 150, 90), text: txt!, x: x, y: y, lat: ann.lmark.latitude, lon: ann.lmark.longitude)
-            calloutView = CalloutView(frame: CGRectMake(0, 0, 150, 190), text: txt!, x: x, y: y, lat: ann.lmark.latitude, lon: ann.lmark.longitude)
+            calloutView = CalloutView(frame: CGRectMake(0, 0, 150, 190), x: x, y: y, lmark0: ann.lmark)
         }
         
         if (selected && !calloutViewAdded)
@@ -100,6 +121,7 @@ class LmarkAnnotationView: MKAnnotationView {
         else if (!selected) {
             calloutView?.removeFromSuperview()
         }
+        */
     }
     
     //override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
@@ -129,58 +151,70 @@ class LmarkAnnotationView: MKAnnotationView {
                 count += 1
                 if sview is LmarkAnnotationView
                 {
-                    let annView = sview as! LmarkAnnotationView
-                    let ann2 = annView.annotation as! LmarkAnnotation
+                    //let annView = sview as! LmarkAnnotationView
+                    //let ann2 = annView.annotation as! LmarkAnnotation
                     //print("\(count) \(ann2.lmark.pointId) \(ann2.title!)")
                 }
             }
         }
         //print("count = \(count)")
     }
+    
+    func setStartPose(ann: LmarkAnnotation)
+    {
+        if (parent?.goal_set == true && parent?.goal_pointId == ann.lmark.pointId)
+        {
+            parent!.goal_set = false
+            parent!.goal_pointId = -1
+            processGoalViews()
+            parent!.mapView.removeOverlays(parent!.mapView.overlays)
+        }
+        
+        parent?.start_pointId = ann.lmark.pointId
+        parent?.start_roadId = ann.lmark.roadId
+        parent?.start_type = ann.lmark.type
+        parent!.start_set = true
+        parent!.generateOptimalPlan()
+        
+        processStartViews()
+        parent!.startViews.append(self)
+        
+        setPose("RedFlag")
+    }
 
     func setGoalPose(ann: LmarkAnnotation)
     {
-        let dir: CInt = 0
-        var type: CInt = 0
-        var roadId: Int64 = 0
-
-        //print("Set Goal Button Clicked.")
-        parent!.goal_set = parent!.MySbplWrapper.setGoalPose_wrapped(ann.lmark.pointId, &roadId, &type, dir)
-        if (parent!.goal_set)
+        if (parent?.start_set == true && parent?.start_pointId == ann.lmark.pointId)
         {
-            parent?.goal_pointId = ann.lmark.pointId
-            parent?.goal_roadId = roadId
-            parent?.goal_type = Int(type)
+            parent?.start_set = false
+            parent?.start_pointId = -1
+            processStartViews()
+            parent!.mapView.removeOverlays(parent!.mapView.overlays)
         }
-        parent!.generateOptimalPlan()
+        
+        parent?.goal_pointId = ann.lmark.pointId
+        parent?.goal_roadId = ann.lmark.roadId
+        parent?.goal_type = ann.lmark.type
+        parent!.goal_set = true
         processGoalViews()
-        processGreenViews()
         parent!.goalViews.append(self)
         setPose("FinishFlag")
-        //setPose("BrownBall")
-   }
+        parent!.generateOptimalPlan()
+    }
 
     func setPose(poseImageName: String)
     {
-        self.setSelected(false, animated: false)
+        processGreenViews()
+        parent!.mapView.deselectAnnotation(self.annotation, animated: false)
         let flagPin = UIImage(named: poseImageName)
-        //replaceFlagsWithBlueBall(flagPin!)
         image = flagPin
-        //replaceFlagsWithBlueBall(greenBallImage!)
-        //if (image == greenBallImage)
-        //{
-        //    image = blueBallImage
-        //}
     }
     
     func closeCallout()
     {
-        self.setSelected(false, animated: false)
-        //if (image == pinkBallImage)
-        if (image == greenBallImage)
-        {
-            image = blueBallImage
-        }
+        print("closeCallout: selectedAnnotations.count = \(parent!.mapView.selectedAnnotations.count)")
+        processGreenViews()
+        parent!.mapView.deselectAnnotation(self.annotation, animated: false)
         
         /*
         if (ann?.lmark.type == 1)
@@ -194,87 +228,11 @@ class LmarkAnnotationView: MKAnnotationView {
         */
     }
     
-    func setStartPose(ann: LmarkAnnotation)
-    {
-        let dir: CInt = 0
-        var type: CInt = 0
-        var roadId: Int64 = 0
-
-        //print("Set Start Button Clicked.")
-        parent!.start_set = parent!.MySbplWrapper.setStartPose_wrapped(ann.lmark.pointId, &roadId, &type, dir)
-        if (parent!.start_set)
-        {
-            parent?.start_pointId = ann.lmark.pointId
-            parent?.start_roadId = roadId
-            parent?.start_type = Int(type)
-        }
-        parent!.generateOptimalPlan()
-        
-        processStartViews()
-        processGreenViews()
-        parent!.startViews.append(self)
-        
-        setPose("RedFlag")
-        
-        //setPose("PinkBall")
-    }
-    
-    /*
-    func hideAnnotationCallout()
-    {
-        for ann1 : MKAnnotation in parent!.mapView.annotations
-        {
-            if let selected_ann = ann1 as? LmarkAnnotation
-            {
-                if (selected_ann.pointId == ann!.pointId)
-                {
-                    parent!.mapView.deselectAnnotation(selected_ann, animated: false)
-                }
-            }
-        }
-    }
-    
-    func restoreAnnotation(ann0: LmarkAnnotation)
-    {
-        if (ann0.type == 1)
-        {
-            let flagPin = UIImage(named: "BlueBall")
-            let ann2 = LmarkAnnotation(annotation: ann0, pinImage: flagPin);
-            self.setSelected(false, animated: false)
-    
-            //dispatch_async(dispatch_get_main_queue())
-            //{
-                self.parent!.mapView.addAnnotation(ann2)
-            //}
-        }
-    }
-    */
-    
-    func replaceFlagsWithBlueBall(flagImage: UIImage)
-    {
-        for ann1 : MKAnnotation in parent!.mapView.annotations
-        {
-            if let ann0 = ann1 as? LmarkAnnotation
-            {
-                //ann0.view?.setSelected(false, animated: false)
-                let pinImage = ann0.view?.image
-                if (pinImage == flagImage)
-                {
-                    ann0.view!.image = blueBallImage
-                }
-            }
-        }
-    }
-    
     func processStartViews()
     {
         for view in parent!.startViews
         {
-            if let lview = view as? LmarkAnnotationView
-            {
-                //ann0.view?.setSelected(false, animated: false)
-                lview.image = blueBallImage
-            }
+            view.image = blueBallImage
         }
         parent?.startViews.removeAll()
     }
@@ -283,11 +241,7 @@ class LmarkAnnotationView: MKAnnotationView {
     {
         for view in parent!.goalViews
         {
-            if let lview = view as? LmarkAnnotationView
-            {
-                //ann0.view?.setSelected(false, animated: false)
-                lview.image = blueBallImage
-            }
+            view.image = blueBallImage
         }
         parent?.goalViews.removeAll()
     }
@@ -296,48 +250,10 @@ class LmarkAnnotationView: MKAnnotationView {
     {
         for view in parent!.greenViews
         {
-            if let lview = view as? LmarkAnnotationView
-            {
-                //ann0.view?.setSelected(false, animated: false)
-                lview.image = blueBallImage
-            }
+            view.image = blueBallImage
         }
         parent?.greenViews.removeAll()
     }
-    
-    /*
-    func deleteAnnotationsByPinImage(pinImage: String)
-    {
-        let pin = UIImage(named: pinImage)
-        for ann1 : MKAnnotation in parent!.mapView.annotations
-        {
-            if let custom_ann = ann1 as? LmarkAnnotation
-            {
-                let pinImage = custom_ann.pinImage
-                if (pinImage == pin)
-                {
-                    let ann0 = ann1 as! LmarkAnnotation
-                    parent!.mapView.removeAnnotation(ann1)
-                    restoreAnnotation(ann0)
-                }
-            }
-        }
-    }
-    
-    func deleteAnnotationsByPointId(pointId: Int64)
-    {
-        for ann : MKAnnotation in parent!.mapView.annotations
-        {
-            if let custom_ann = ann as? LmarkAnnotation
-            {
-                if (custom_ann.pointId == pointId)
-                {
-                    parent!.mapView.removeAnnotation(ann)
-                }
-            }
-        }
-    }
-    */
     
     override func hitTest(point: CGPoint, withEvent event: UIEvent?) -> UIView?
     {
@@ -353,13 +269,36 @@ class LmarkAnnotationView: MKAnnotationView {
         //let ox = self.bounds.origin.x
         //let oy = self.bounds.origin.y
         
-        var hitView = super.hitTest(point, withEvent: event)
+        if (self.hidden)
+        {
+            print("point \(point) is hidden")
+            return nil
+        }
         
+        var hitView = super.hitTest(point, withEvent: event)
+        if (hitView != nil)
+        {
+            print("point: \(point)")
+        }
+        if (hitView != nil && calloutAdded)
+        {
+            print("hitView != nil && calloutAdded")
+            return nil
+        }
+        
+        if (hitView == nil && self.selected)
+        {
+            let pointInCalloutView = self.convertPoint(point, toView: calloutView)
+            hitView = calloutView?.hitTest(pointInCalloutView, withEvent: event)
+        }
+        
+        /*
         if let callout = calloutView {
             if (hitView == nil && selected) {
                 hitView = callout.hitTest(point, withEvent: event)
             }
         }
+        */
         
         hitOutside = (hitView == nil)
         return hitView;

@@ -12,7 +12,6 @@
 		001D2FC91C7E81E000D64169 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001D2FC81C7E81E000D64169 /* AppDelegate.swift */; };
 		001D2FCB1C7E81E000D64169 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001D2FCA1C7E81E000D64169 /* ViewController.swift */; };
 		001D2FCE1C7E81E000D64169 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 001D2FCC1C7E81E000D64169 /* Main.storyboard */; };
-		001D2FD31C7E81E000D64169 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 001D2FD11C7E81E000D64169 /* LaunchScreen.storyboard */; };
 		001D2FDE1C7E81E000D64169 /* LmarkPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001D2FDD1C7E81E000D64169 /* LmarkPlannerTests.swift */; };
 		001D2FE91C7E81F800D64169 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 001D2FE81C7E81F800D64169 /* MapKit.framework */; };
 		00403A741C87932E00A715BE /* Intersection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A731C87932E00A715BE /* Intersection.swift */; };
@@ -20,17 +19,18 @@
 		00403A771C8A420100A715BE /* Lmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A751C8A420100A715BE /* Lmark.swift */; };
 		00403A791C8A6F2600A715BE /* StepTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A781C8A6F2600A715BE /* StepTableViewCell.swift */; };
 		00403A7B1C8E2FE200A715BE /* FalseStepTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A7A1C8E2FE200A715BE /* FalseStepTableViewCell.swift */; };
-		00403A7D1C8F5BE300A715BE /* OsmNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A7C1C8F5BE300A715BE /* OsmNode.swift */; };
-		00403A7F1C8F5DE100A715BE /* OsmWay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A7E1C8F5DE100A715BE /* OsmWay.swift */; };
 		004F78BC1CCEC2C10045801F /* libsbpl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 004F78BB1CCEC2C10045801F /* libsbpl.a */; };
 		004F78BF1CCEC2F00045801F /* sbpltest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 004F78BE1CCEC2F00045801F /* sbpltest.cpp */; };
 		004F78C41CCEE6670045801F /* CPPWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 004F78C31CCEE6670045801F /* CPPWrapper.mm */; };
 		004F78C71CEF9E3A0045801F /* SolutionStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004F78C61CEF9E3A0045801F /* SolutionStep.swift */; };
-		004F78C91CF3B39F0045801F /* CustomPointAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004F78C81CF3B39F0045801F /* CustomPointAnnotation.swift */; };
+		004F78C91CF3B39F0045801F /* LmarkAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004F78C81CF3B39F0045801F /* LmarkAnnotation.swift */; };
+		0056E1421D2D7D5D00BF6FAF /* Setting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0056E1411D2D7D5D00BF6FAF /* Setting.swift */; };
+		0056E1441D2D920F00BF6FAF /* SwitchSettingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0056E1431D2D920F00BF6FAF /* SwitchSettingCell.swift */; };
+		0056E1461D2D9BC100BF6FAF /* DoubleSettingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0056E1451D2D9BC100BF6FAF /* DoubleSettingCell.swift */; };
 		006AF0E11CFE614D00FC04A4 /* SuperButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006AF0E01CFE614D00FC04A4 /* SuperButton.swift */; };
 		006C75081D07855C0006C38E /* CalloutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006C75071D07855C0006C38E /* CalloutView.swift */; };
 		00B0F2B11C85324300C75449 /* images in Resources */ = {isa = PBXBuildFile; fileRef = 00B0F2B01C85324300C75449 /* images */; };
-		00EA1B951D08BA910031B7C7 /* CustomAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00EA1B941D08BA910031B7C7 /* CustomAnnotationView.swift */; };
+		00EA1B951D08BA910031B7C7 /* LmarkAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00EA1B941D08BA910031B7C7 /* LmarkAnnotationView.swift */; };
 		00EA1B971D08E1BE0031B7C7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 00EA1B961D08E1BE0031B7C7 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -51,7 +51,6 @@
 		001D2FC81C7E81E000D64169 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		001D2FCA1C7E81E000D64169 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		001D2FCD1C7E81E000D64169 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		001D2FD21C7E81E000D64169 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		001D2FD41C7E81E000D64169 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		001D2FD91C7E81E000D64169 /* LmarkPlannerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LmarkPlannerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		001D2FDD1C7E81E000D64169 /* LmarkPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LmarkPlannerTests.swift; sourceTree = "<group>"; };
@@ -61,8 +60,6 @@
 		00403A751C8A420100A715BE /* Lmark.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Lmark.swift; sourceTree = "<group>"; };
 		00403A781C8A6F2600A715BE /* StepTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StepTableViewCell.swift; sourceTree = "<group>"; };
 		00403A7A1C8E2FE200A715BE /* FalseStepTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FalseStepTableViewCell.swift; sourceTree = "<group>"; };
-		00403A7C1C8F5BE300A715BE /* OsmNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OsmNode.swift; sourceTree = "<group>"; };
-		00403A7E1C8F5DE100A715BE /* OsmWay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OsmWay.swift; sourceTree = "<group>"; };
 		004F78BB1CCEC2C10045801F /* libsbpl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsbpl.a; path = "../SbplPlannerWS/Build/Products/Debug-iphonesimulator/libsbpl.a"; sourceTree = "<group>"; };
 		004F78BD1CCEC2EF0045801F /* LmarkPlanner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LmarkPlanner-Bridging-Header.h"; sourceTree = "<group>"; };
 		004F78BE1CCEC2F00045801F /* sbpltest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sbpltest.cpp; path = LmarkPlanner/sbpltest.cpp; sourceTree = "<group>"; };
@@ -70,11 +67,14 @@
 		004F78C31CCEE6670045801F /* CPPWrapper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = CPPWrapper.mm; path = LmarkPlanner/CPPWrapper.mm; sourceTree = "<group>"; };
 		004F78C51CCEE8090045801F /* CPPWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CPPWrapper.h; path = LmarkPlanner/CPPWrapper.h; sourceTree = "<group>"; };
 		004F78C61CEF9E3A0045801F /* SolutionStep.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SolutionStep.swift; sourceTree = "<group>"; };
-		004F78C81CF3B39F0045801F /* CustomPointAnnotation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomPointAnnotation.swift; sourceTree = "<group>"; };
+		004F78C81CF3B39F0045801F /* LmarkAnnotation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LmarkAnnotation.swift; sourceTree = "<group>"; };
+		0056E1411D2D7D5D00BF6FAF /* Setting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Setting.swift; sourceTree = "<group>"; };
+		0056E1431D2D920F00BF6FAF /* SwitchSettingCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwitchSettingCell.swift; sourceTree = "<group>"; };
+		0056E1451D2D9BC100BF6FAF /* DoubleSettingCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DoubleSettingCell.swift; sourceTree = "<group>"; };
 		006AF0E01CFE614D00FC04A4 /* SuperButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuperButton.swift; sourceTree = "<group>"; };
 		006C75071D07855C0006C38E /* CalloutView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CalloutView.swift; sourceTree = "<group>"; };
 		00B0F2B01C85324300C75449 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
-		00EA1B941D08BA910031B7C7 /* CustomAnnotationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomAnnotationView.swift; sourceTree = "<group>"; };
+		00EA1B941D08BA910031B7C7 /* LmarkAnnotationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LmarkAnnotationView.swift; sourceTree = "<group>"; };
 		00EA1B961D08E1BE0031B7C7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -127,23 +127,23 @@
 			isa = PBXGroup;
 			children = (
 				00EA1B961D08E1BE0031B7C7 /* Assets.xcassets */,
+				001D2FCC1C7E81E000D64169 /* Main.storyboard */,
 				001D2FC81C7E81E000D64169 /* AppDelegate.swift */,
 				001D2FCA1C7E81E000D64169 /* ViewController.swift */,
-				006AF0E01CFE614D00FC04A4 /* SuperButton.swift */,
-				00403A7C1C8F5BE300A715BE /* OsmNode.swift */,
-				00403A7E1C8F5DE100A715BE /* OsmWay.swift */,
 				00097B6E1C8116F400407812 /* LandmarksTableViewController.swift */,
-				00403A7A1C8E2FE200A715BE /* FalseStepTableViewCell.swift */,
-				001D2FCC1C7E81E000D64169 /* Main.storyboard */,
 				00097B661C80FE2300407812 /* LandmarkTableViewCell.swift */,
+				00403A7A1C8E2FE200A715BE /* FalseStepTableViewCell.swift */,
 				00403A781C8A6F2600A715BE /* StepTableViewCell.swift */,
 				00403A751C8A420100A715BE /* Lmark.swift */,
-				004F78C81CF3B39F0045801F /* CustomPointAnnotation.swift */,
-				00EA1B941D08BA910031B7C7 /* CustomAnnotationView.swift */,
+				004F78C81CF3B39F0045801F /* LmarkAnnotation.swift */,
+				00EA1B941D08BA910031B7C7 /* LmarkAnnotationView.swift */,
 				006C75071D07855C0006C38E /* CalloutView.swift */,
+				0056E1411D2D7D5D00BF6FAF /* Setting.swift */,
+				0056E1451D2D9BC100BF6FAF /* DoubleSettingCell.swift */,
+				0056E1431D2D920F00BF6FAF /* SwitchSettingCell.swift */,
+				006AF0E01CFE614D00FC04A4 /* SuperButton.swift */,
 				00403A731C87932E00A715BE /* Intersection.swift */,
 				004F78C61CEF9E3A0045801F /* SolutionStep.swift */,
-				001D2FD11C7E81E000D64169 /* LaunchScreen.storyboard */,
 				001D2FD41C7E81E000D64169 /* Info.plist */,
 				00B0F2B01C85324300C75449 /* images */,
 			);
@@ -247,7 +247,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				00B0F2B11C85324300C75449 /* images in Resources */,
-				001D2FD31C7E81E000D64169 /* LaunchScreen.storyboard in Resources */,
 				001D2FCE1C7E81E000D64169 /* Main.storyboard in Resources */,
 				00EA1B971D08E1BE0031B7C7 /* Assets.xcassets in Resources */,
 			);
@@ -267,22 +266,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0056E1441D2D920F00BF6FAF /* SwitchSettingCell.swift in Sources */,
 				004F78C71CEF9E3A0045801F /* SolutionStep.swift in Sources */,
 				001D2FCB1C7E81E000D64169 /* ViewController.swift in Sources */,
 				00403A7B1C8E2FE200A715BE /* FalseStepTableViewCell.swift in Sources */,
 				00097B6F1C8116F400407812 /* LandmarksTableViewController.swift in Sources */,
 				00097B671C80FE2300407812 /* LandmarkTableViewCell.swift in Sources */,
 				006C75081D07855C0006C38E /* CalloutView.swift in Sources */,
-				00EA1B951D08BA910031B7C7 /* CustomAnnotationView.swift in Sources */,
+				0056E1461D2D9BC100BF6FAF /* DoubleSettingCell.swift in Sources */,
+				00EA1B951D08BA910031B7C7 /* LmarkAnnotationView.swift in Sources */,
 				001D2FC91C7E81E000D64169 /* AppDelegate.swift in Sources */,
-				004F78C91CF3B39F0045801F /* CustomPointAnnotation.swift in Sources */,
+				004F78C91CF3B39F0045801F /* LmarkAnnotation.swift in Sources */,
 				00403A761C8A420100A715BE /* Lmark.swift in Sources */,
-				00403A7D1C8F5BE300A715BE /* OsmNode.swift in Sources */,
 				00403A791C8A6F2600A715BE /* StepTableViewCell.swift in Sources */,
 				00403A741C87932E00A715BE /* Intersection.swift in Sources */,
 				006AF0E11CFE614D00FC04A4 /* SuperButton.swift in Sources */,
 				004F78BF1CCEC2F00045801F /* sbpltest.cpp in Sources */,
-				00403A7F1C8F5DE100A715BE /* OsmWay.swift in Sources */,
+				0056E1421D2D7D5D00BF6FAF /* Setting.swift in Sources */,
 				004F78C41CCEE6670045801F /* CPPWrapper.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -313,14 +313,6 @@
 				001D2FCD1C7E81E000D64169 /* Base */,
 			);
 			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		001D2FD11C7E81E000D64169 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				001D2FD21C7E81E000D64169 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -362,7 +354,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LIBRARY_SEARCH_PATHS = (
 					"/Users/rsafonov/dev/SbplPlannerWS/Build/Products/Debug-iphonesimulator\n#include",
 					"<cmath>\n#include",
@@ -545,7 +537,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LIBRARY_SEARCH_PATHS = (
 					"/Users/rsafonov/dev/SbplPlannerWS/Build/Products/Debug-iphonesimulator\n#include",
 					"<cmath>\n#include",
