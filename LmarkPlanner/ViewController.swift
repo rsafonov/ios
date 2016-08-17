@@ -14,9 +14,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     
     // MARK: Properties
     
-    //typealias Payload = [String: AnyObject]
-    //let dirRequest = MKDirectionsRequest()
-    
     let circlePathLayer = CAShapeLayer()
     let circleRadius: CGFloat = 20.0
     
@@ -49,8 +46,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     var heading = 0.0
     var camera: MKMapCamera?
     
-    //var nodes = [OsmNode]()
-    //var ways = [OsmWay]()
     var polyline_color = UIColor()
     var snp : MKMapSnapshot?
 
@@ -1275,7 +1270,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     
     func DisplayPath(path: NSString)
     {
-        print("path:\n \(path)")
+        //print("path:\n \(path)")
         
         let pathArr: Array = path.componentsSeparatedByString("\n")
     
@@ -1321,7 +1316,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
 
             //print("i=\(i) k=\(k!) | id \(id1) coord \(lat1) \(lon1) act \(act1) type \(type1) dir \(dir1) | id \(id2) coord \(lat2) \(lon2) act \(act2) type \(type2) dir \(dir2)")
             
-            print("\(k!):\(envId1):\(envId2)")
+            //print("\(k!):\(envId1):\(envId2)")
             
             if (debug)
             {
@@ -1460,12 +1455,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     let step1 = populateFalseStep(&istart, iend: iend) //safety_plan[istart])
                     
                     let i1 = safety_sol.count
-                    populateSafetyPlan(istart+1, iend: iend)
-                    let i2 = safety_sol.count
+                    if (istart + 1 > iend)
+                    {
+                        populateSafetyPlan(istart+1, iend: iend)
+                        let i2 = safety_sol.count
                     
-                    step1.safety_ind_start = i1
-                    step1.safety_ind_end = i2-1
-                    sol.append(step1)
+                        step1.safety_ind_start = i1
+                        step1.safety_ind_end = i2-1
+                        sol.append(step1)
+                    }
                 }
             }
             else
@@ -1552,25 +1550,25 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     
     func populateFalseStep(inout istart: Int, iend: Int) -> SolutionStep
     {
-        //let len = safety_plan.count - 2
         var step = safety_plan[istart]
-        if (step.type2 == 0 && istart < iend)
+        let jend = iend - 2
+        if (step.type2 == 0 && istart < jend)
         {
             istart += 1
             step = safety_plan[istart]
-            if (step.type2 == 0 && istart < iend)
+            if (step.type2 == 0 && istart < jend)
             {
                 istart += 1
                 step = safety_plan[istart]
-                if (step.type2 == 0 && istart < iend)
+                if (step.type2 == 0 && istart < jend)
                 {
                     istart += 1
                     step = safety_plan[istart]
-                    if (step.type2 == 0 && istart < iend)
+                    if (step.type2 == 0 && istart < jend)
                     {
                         istart += 1
                         step = safety_plan[istart]
-                        if (step.type2 == 0 && istart < iend)
+                        if (step.type2 == 0 && istart < jend)
                         {
                             istart += 1
                             step = safety_plan[istart]

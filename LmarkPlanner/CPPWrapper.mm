@@ -23,11 +23,9 @@
 
 - (BOOL) initPlannerByOsm_wrapped: (NSString*) osmJsonStr : (NSString **) lmarks :(NSString **) intersections
 {
-    //self.buflen = 16384*10;
     char c_lmarks[self.buflen];
     char c_intersections[self.buflen];
     
-    //self.ob = new MySbpl();
     MySbpl* sb = (MySbpl*)self.ob;
     
     bool res =(MySbpl*) sb->initPlannerByOsm([osmJsonStr cStringUsingEncoding:NSUTF8StringEncoding], c_lmarks, c_intersections, self.buflen);

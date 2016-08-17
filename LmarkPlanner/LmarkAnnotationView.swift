@@ -276,10 +276,10 @@ class LmarkAnnotationView: MKAnnotationView {
         }
         
         var hitView = super.hitTest(point, withEvent: event)
-        if (hitView != nil)
-        {
-            print("point: \(point)")
-        }
+        //if (hitView != nil)
+        //{
+        //    print("point: \(point)")
+        //}
         if (hitView != nil && calloutAdded)
         {
             print("hitView != nil && calloutAdded")

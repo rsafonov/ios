@@ -16,7 +16,7 @@ bool MySbpl::setParams(string docDirectory)
 
 bool MySbpl::initPlannerByOsm(string osmJsonStr, char* lmarks, char* intersections, int buflen)
 {
-    env0.dbg_params.mode = 2;
+    env0.dbg_params.mode = 1;
     env0.dbg_params.roads_file_name = "myroads.txt";
     env0.dbg_params.landmarks_file_name = "mylandmarks.txt";
     env0.dbg_params.amenities_file_name = "myamenities.txt";
@@ -81,7 +81,7 @@ bool MySbpl::getSolutionStepDetails(int currInd, int succInd, long long int* pid
     return res;
 }
 
-bool MySbpl::generatePlan(int k, long long int start_pointId, long long int start_roadId, int start_type, int start_dir, long long int goal_pointId, long long int goal_roadId, int goal_type, int goal_dir, int*pathlen, char* path)
+bool MySbpl::generatePlan(int k, long long int start_pointId, long long int start_roadId, int start_type, int start_dir, long long int goal_pointId, long long int goal_roadId, int goal_type, int goal_dir, int* pathlen, char* path)
 {
     std::vector<int*> ppcpSolutionIds;
     string spath = "";
@@ -127,6 +127,12 @@ bool MySbpl::generatePlan(int k, long long int start_pointId, long long int star
         spath = env->ConvertStatePathToLatLonPath(&ppcpSolutionIds);
         fflush(stdout);
         strcpy(path, spath.c_str());
+        
+        //Delete Policy and deallocate the memory
+        for (int i = 0; i < *pathlen; i++)
+        {
+            delete ppcpSolutionIds[i];
+        }
     }
     
     *pathlen = (int)ppcpSolutionIds.size();
