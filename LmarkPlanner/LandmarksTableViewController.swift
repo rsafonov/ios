@@ -223,32 +223,6 @@ class LandmarksTableViewController: UITableViewController {
             let cell1 = UITableViewCell()
             return cell1
         }
-
-        
-        /*
-        else
-        {
-            let step = planStepsList[indexPath.row]
-            
-            if step.image != "HilmanLibrary" {
-                let cell = tableView.dequeueReusableCellWithIdentifier("StepTableViewCell", forIndexPath: indexPath) as! StepTableViewCell
-                
-                    cell.photoImageView.image = UIImage(named: step.image)
-                    cell.instructions.text = step.instructions
-                    cell.dirImageView.image = UIImage(named: step.icon)
-                    return cell
-                
-            } else {
-                let cell = tableView.dequeueReusableCellWithIdentifier("FalseStepTableViewCell", forIndexPath: indexPath) as! FalseStepTableViewCell
-
-                //cell = StepTableViewCell(style: UITableViewCellStyle.Subtitle, reuseIdentifier: "StepTableViewCell")
-                
-                cell.photoImageView.image = UIImage(named: step.image)
-                cell.instructions.text = step.instructions
-                return cell
-            }
-        }
-        */
     }
 
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
@@ -283,7 +257,7 @@ class LandmarksTableViewController: UITableViewController {
         
         for i in istart...iend
         {
-            if (!safety_sol[i].skip && safety_sol[i].photoImage != nil)
+            if (!safety_sol[i].skip)
             {
                 sol.append(safety_sol[i])
             }

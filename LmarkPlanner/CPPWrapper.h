@@ -11,7 +11,7 @@
 
 @interface CPPWrapper : NSObject
 
-- (BOOL) setParams_wrapped: (int) debug_mode;
+- (BOOL) setParams_wrapped: (int) debug_mode error: (__autoreleasing NSError **) error;
 
 - (BOOL) initPlannerByOsm_wrapped: (NSString*) osmJsonStr : (long long int **) lmarks : (int*) lmarks_count : (long long int **) intersections : (int*) intersections_count
 ;

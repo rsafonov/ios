@@ -356,8 +356,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 
                     self.DisplayPath(planPtr, count: count)
     
-                    self.MySbplWrapper.freePlan_wrapped(&planPtr)
-                
+                    let res = self.MySbplWrapper.freePlan_wrapped(&planPtr)
+                    if (!res)
+                    {
+                        self.showAlert("SBPL_Exception", alertMessage: "MySbplWrapper.freePlan_wrapped", actionTitle: "Close")
+                    }
                     completion(error:  nil)
                 }
                 else
@@ -503,11 +506,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             if (debug) {
                 debug_mode = 1;
             }
-            //do {
-                self.MySbplWrapper.setParams_wrapped(CInt(debug_mode))
-            //} catch {
-            //    print("Error")
-            //}
+            
+            do {
+                try self.MySbplWrapper.setParams_wrapped(CInt(debug_mode))
+            } catch {
+                print("SBPL Error: Could not create environment")
+                showAlert("SBPL Error", alertMessage: "Could not create environment.", actionTitle: "Close")
+            }
         }
         
         let coordinateRegion: MKCoordinateRegion?
@@ -788,9 +793,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?)
     {
         //print("segue.identifier = \(segue.identifier!)")
-        let progress: UIProgressView = UIProgressView(progressViewStyle: .Default)
-        self.view.addSubview(progress)
-        progress.setProgress(50.0, animated: true)
+        //let progress: UIProgressView = UIProgressView(progressViewStyle: .Default)
+        //self.view.addSubview(progress)
+        //progress.setProgress(50.0, animated: true)
 
         if (segue.identifier == "ShowTable")
         {
@@ -801,7 +806,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             let targetController = destNavController.topViewController as! LandmarksTableViewController
         
             targetController.delegate = self
-            targetController.parentViewController
+            //targetController.parentViewController
             targetController.tableView.bounces = true
             targetController.tableView.scrollEnabled = true
             targetController.mode = btn.tag
@@ -815,36 +820,34 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             }
             else if (btn.tag == 2)  //solButton
             {
-                //dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
-                //{
-                
-                for i in 0...self.sol.count-1
+                if (sol.count > 0)
                 {
-                    //if (self.sol[i].photoImage == nil)
-                    //{
-                        //var photoImage: UIImage?
-                        //let fname = "myimage" + String(i)
-                        //let coord = CLLocationCoordinate2D(latitude: sol[i].lat2, longitude: sol[i].lon2)
-                        //let eyeCoord = CLLocationCoordinate2D(latitude: sol[i].lat1, longitude: sol[i].lon1)
-
-                        //self.takeSnapshot(self.mapView, coord:coord, eyeCoord: eyeCoord, filename: fname, completion: {(result) -> Void in
-                        //    photoImage = result!
-                        //})
-                        
-                        targetController.sol.append(self.sol[i])
-                 }
-            
-                if self.safety_sol.count > 0
-                {
-                    for i in 0...self.safety_sol.count-1
+                    for i in 0...self.sol.count-1
                     {
-                         targetController.safety_sol.append(self.safety_sol[i])
+                        //if (self.sol[i].photoImage == nil)
+                        //{
+                            //var photoImage: UIImage?
+                            //let fname = "myimage" + String(i)
+                            //let coord = CLLocationCoordinate2D(latitude: sol[i].lat2, longitude: sol[i].lon2)
+                            //let eyeCoord = CLLocationCoordinate2D(latitude: sol[i].lat1, longitude: sol[i].lon1)
+
+                            //self.takeSnapshot(self.mapView, coord:coord, eyeCoord: eyeCoord, filename: fname, completion: {(result) -> Void in
+                            //    photoImage = result!
+                            //})
+                        
+                            targetController.sol.append(self.sol[i])
+                    }
+            
+                    if self.safety_sol.count > 0
+                    {
+                        for i in 0...self.safety_sol.count-1
+                        {
+                            targetController.safety_sol.append(self.safety_sol[i])
+                        }
                     }
                 }
-                //indicator.stopAnimating()
-                //})
             }
-            else if (btn.tag == 3)  //planButton
+            else if (btn.tag == 3)  //Intersections Button
             {
                 for i in 0...isections.count-1
                 {
@@ -933,7 +936,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             var lmarks_count : CInt = 0
             var isections_count : CInt = 0
 
-            let res = self.MySbplWrapper.initPlannerByOsm_wrapped(responseString, &lmarksPtr, &lmarks_count, &isectionsPtr, &isections_count)
+            var res = self.MySbplWrapper.initPlannerByOsm_wrapped(responseString, &lmarksPtr, &lmarks_count, &isectionsPtr, &isections_count)
 
             if (res)
             {
@@ -941,15 +944,24 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 print("Landmarks count = \(lmarks_count)")
                 
                 self.processLandmarks(lmarksPtr, lmarks_count: Int(lmarks_count), minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
-                self.MySbplWrapper.freeMemory_wrapped(&lmarksPtr)
+                res = self.MySbplWrapper.freeMemory_wrapped(&lmarksPtr)
+                if (!res)
+                {
+                    self.showAlert("SBPL Exception", alertMessage: "MySbplWrapper.freeMemory_wrapped failed.", actionTitle: "Close")
+                }
                 
                 print("Intersections count = \(isections_count)")
                 self.processIntersections(isectionsPtr, isections_count: Int(isections_count), minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
-                self.MySbplWrapper.freeMemory_wrapped(&isectionsPtr)
+                res = self.MySbplWrapper.freeMemory_wrapped(&isectionsPtr)
+                if (!res)
+                {
+                    self.showAlert("SBPL Exception", alertMessage: "MySbplWrapper.freeMemory_wrapped failed.", actionTitle: "Close")
+                }
             }
             else
             {
-                
+                print("SBPL Error: self.MySbplWrapper.initPlannerByOsm_wrapped falsed.")
+                self.showAlert("SBPL Error", alertMessage: "Could not initialize planner.", actionTitle: "Close")
             }
             
             completion(result: res)
@@ -1261,7 +1273,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             var envId1: CInt = 0
             var envId2: CInt = 0
             
-            _ = self.MySbplWrapper.getSolutionStepDetails_wrapped(currInd, succInd, &id1, &id2, &act1, &act2, &type1, &type2, &dir1, &dir2, &lat1, &lon1, &lat2, &lon2, &envId1, &envId2)
+            let res = self.MySbplWrapper.getSolutionStepDetails_wrapped(currInd, succInd, &id1, &id2, &act1, &act2, &type1, &type2, &dir1, &dir2, &lat1, &lon1, &lat2, &lon2, &envId1, &envId2)
+            if (!res)
+            {
+                showAlert("SBPL_Exception", alertMessage: "MySbplWrapper.getSolutionStepDetails_wrapped failed.", actionTitle: "Close")
+            }
             
             if (debug)
             {
@@ -1393,7 +1409,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     let step1 = populateFalseStep(&istart, iend: iend)
                     
                     let i1 = safety_sol.count
-                    if (istart + 1 > iend)
+                    if (istart + 1 < iend)
                     {
                         populateSafetyPlan(istart+1, iend: iend)
                         let i2 = safety_sol.count
@@ -2121,7 +2137,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             var roadLat: Double = 0.0
             var roadLon: Double = 0.0
             
-            self.MySbplWrapper.getLandmarkDetails_wrapped(pointId, &ind, &lat, &lon, &name, &address, &info, &street, &amenity, &roadId, &roadLat, &roadLon)
+            let res = self.MySbplWrapper.getLandmarkDetails_wrapped(pointId, &ind, &lat, &lon, &name, &address, &info, &street, &amenity, &roadId, &roadLat, &roadLon)
+            if (!res)
+            {
+                showAlert("SBPL_Exception", alertMessage: "MySbplWrapper.getLandmarkDetails_wrapped failed.", actionTitle: "Close")
+            }
 
             let name1 = name?.stringByReplacingOccurrencesOfString("_", withString: " ")
             let name2 = name1?.capitalizedString
@@ -2165,8 +2185,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             var ind: CInt = 0
             var location: NSString? = nil
             var count: CInt = 0
-            self.MySbplWrapper.getIntersectionDetails_wrapped(pointId, &ind, &lat, &lon, &location, &count)
+            let res = self.MySbplWrapper.getIntersectionDetails_wrapped(pointId, &ind, &lat, &lon, &location, &count)
             //print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(location!)")
+            if (!res)
+            {
+                showAlert("SBPL_Exception", alertMessage: "MySbplWrapper.getIntersectionDetails_wrapped failed", actionTitle: "Close")
+            }
             
             if (lat >= minlat && lat <= maxlat && lon >= minlon && lon <= maxlon)
             {

@@ -15,6 +15,7 @@ MySbpl::MySbpl(string iosDocDir)
     
     env0.dbg_params.dir.assign(iosDocDir);
     printTargetOS();
+    //throw new SBPL_Exception();
 }
 
 bool MySbpl::setParams(int debug_mode)
@@ -25,6 +26,7 @@ bool MySbpl::setParams(int debug_mode)
 
 bool MySbpl::initPlannerByOsm(string osmJsonStr, long long int** lmarks, int* lmarks_count, long long int** intersections, int*intersections_count)
 {
+    bool res = true;
     env0.dbg_params.max_landmark_road_distance = 50.0; //meters
 
     env0.dbg_params.roads_file_name = "myroads.txt";
@@ -35,9 +37,8 @@ bool MySbpl::initPlannerByOsm(string osmJsonStr, long long int** lmarks, int* lm
     env0.dbg_params.streets_file_name = "streets.txt";
     env0.dbg_params.isections_file_name = "isections.txt";
     env0.dbg_params.pois_file_name = "pois.txt";
-    
-    bool res = env0.InitializeEnvByJson(osmJsonStr, lmarks, lmarks_count, intersections, intersections_count);
-    
+
+    res = env0.InitializeEnvByJson(osmJsonStr, lmarks, lmarks_count, intersections, intersections_count);
     if (res)
     {
         //env.heuristicComputed = false;
@@ -45,7 +46,7 @@ bool MySbpl::initPlannerByOsm(string osmJsonStr, long long int** lmarks, int* lm
     }
     else
     {
-        SBPL_PRINTF("Error: env0.InitializeEnvByJson failed!");
+        SBPL_ERROR("Error: env0.InitializeEnvByJson failed!");
     }
     return res;
 }
