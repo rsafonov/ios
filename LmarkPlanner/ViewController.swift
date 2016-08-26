@@ -14,6 +14,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     
     // MARK: Properties
     
+    var debug: Bool = true
+    
     let circlePathLayer = CAShapeLayer()
     let circleRadius: CGFloat = 20.0
     
@@ -50,6 +52,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     var snp : MKMapSnapshot?
 
     var MySbplWrapper = CPPWrapper()
+    
     var start_set: Bool = false
     var goal_set: Bool = false
     
@@ -61,11 +64,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     var goal_type: Int = 0
     
     var config_changed: Bool = false
-    var debug: Bool = true
     var docDirectory: String = ""
     
     var locationManager = CLLocationManager()
     var showCurrentLocation: Bool  = false
+    
+    var countViewDidLoad: Int = 0
     
     struct Condition {
         let k: Int
@@ -146,8 +150,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         self.initEnv(currentLocation.coordinate)
     }
     
-    @IBAction func saveLandmarkDetail(segue:UIStoryboardSegue) {
-        
+    @IBAction func saveLandmarkDetail(segue:UIStoryboardSegue)
+    {
         //print("Done clicked")
         viewDidLoad()
         
@@ -211,7 +215,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             //}
         //}
     }
-
     
     /*
     func updatePinPosition(pin:LmarkAnnotationView) {
@@ -299,108 +302,112 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     
     // MARK: Planning Methods
     
-    func generateOptimalPlan()
+    func generateOptimalPlan(completion: (error:NSError!)->())
     {
-        if (start_set && goal_set)
+        if (self.start_set && self.goal_set)
         {
-            mapView.removeOverlays(mapView.overlays)
-            
-            var pathmin: NSString = ""
-            var minlen: Int = 100000
-            var itermin: Int = 0
-            var plan_found = false
-            var ret = false
-            
-            for i in 0...3
+            self.activityIndicatorView.startAnimating()
+        
+            let queue:dispatch_queue_t = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
+        
+            dispatch_async(queue,
             {
-                let cond = conditions[i]
-                ret = generateOnePlan(i+1, kmax: cond.k, start_dir: cond.start_dir, goal_dir: cond.goal_dir, minlen: &minlen, itermin: &itermin, pathmin: &pathmin)
-                if (!plan_found && ret)
+                self.mapView.removeOverlays(self.mapView.overlays)
+            
+                var minlen: Int = 100000
+                var itermin: Int = 0
+                var plan_found = false
+                var ret = false
+                var count: Int = 0
+            
+                for i in 0...3
                 {
-                    plan_found = true
+                    var planPtr : UnsafeMutablePointer<CInt> = nil
+                    let cond = self.conditions[i]
+                    ret = self.generateOnePlan(i+1, kmax: cond.k, start_dir: cond.start_dir, goal_dir: cond.goal_dir, mode: 0, minlen: &minlen, itermin: &itermin, count: &count, planPtr: &planPtr)
+                    if (!plan_found && ret)
+                    {
+                        plan_found = true
+                    }
                 }
-            }
  
-            if (!plan_found)
-            {
-                for i in 4...7
+                if (!plan_found)
                 {
-                    let cond = conditions[i]
-                    plan_found = generateOnePlan(i+1, kmax: cond.k, start_dir: cond.start_dir, goal_dir: cond.goal_dir, minlen: &minlen, itermin: &itermin, pathmin: &pathmin)
+                    for i in 4...7
+                    {
+                        var planPtr : UnsafeMutablePointer<CInt> = nil
+                        let cond = self.conditions[i]
+                        plan_found = self.generateOnePlan(i+1, kmax: cond.k, start_dir: cond.start_dir, goal_dir: cond.goal_dir, mode: 0, minlen: &minlen, itermin: &itermin, count: &count, planPtr: &planPtr)
+                    }
                 }
-            }
             
-            if (itermin > 0)
-            {
-                if (debug)
+                if (itermin > 0)
                 {
-                    CreateOrTruncateFile("plan", ext: "txt")
+                    if (self.debug)
+                    {
+                        self.CreateOrTruncateFile("plan", ext: "txt")
+                    }
+                
+                    let i = itermin-1
+                    let cond = self.conditions[i]
+                
+                    var planPtr : UnsafeMutablePointer<CInt> = nil
+                    plan_found = self.generateOnePlan(itermin, kmax: cond.k, start_dir: cond.start_dir, goal_dir: cond.goal_dir, mode: 1, minlen: &minlen, itermin: &itermin, count: &count, planPtr: &planPtr)
+                
+                    self.DisplayPath(planPtr, count: count)
+    
+                    self.MySbplWrapper.freePlan_wrapped(&planPtr)
+                
+                    completion(error:  nil)
                 }
-                
-                let i = itermin-1
-                let cond = conditions[i]
-                
-                plan_found = generateOnePlan(itermin, kmax: cond.k, start_dir: cond.start_dir, goal_dir: cond.goal_dir, minlen: &minlen, itermin: &itermin, pathmin: &pathmin)
-                DisplayPath(pathmin)
-            }
-            else
-            {
-                showAlert("", alertMessage: "Plan not found.", actionTitle: "Close")
-            }
+                else
+                {
+                    self.showAlert("Search", alertMessage: "Plan not found.", actionTitle: "Close")
+                    let error: NSError = NSError(domain: "SBPL Search", code: 0, userInfo: nil)
+                    completion(error: error)
+                }
+            })
         }
     }
     
-    func generateOnePlan(iter: Int, kmax: Int, start_dir: Int, goal_dir: Int, inout minlen: Int, inout itermin: Int, inout pathmin: NSString) -> Bool
+    func generateOnePlan(iter: Int, kmax: Int, start_dir: Int, goal_dir: Int, mode: Int, inout minlen: Int, inout itermin: Int, inout count: Int, inout planPtr: UnsafeMutablePointer<CInt>) -> Bool
     {
         var pathlen: CInt = 0
-        var path: NSString? = nil
-
+        var k0len: CInt = 0
+        var k1len: CInt = 0
+        
         print("\n******** iter = \(iter) start *******")
-        //print("start_pointId=\(start_pointId) start_roadId=\(start_roadId) start_type=\(start_type) start_dir=\(start_dir)")
-        //print("goal_pointId=\(goal_pointId) goal_roadId=\(goal_roadId) goal_type=\(goal_type) goal_dir=\(goal_dir)")
-    
-        let plan_found = self.MySbplWrapper.generatePlan_wrapped(CInt(kmax), start_pointId, start_roadId, CInt(start_type), CInt(start_dir), goal_pointId, goal_roadId, CInt(goal_type), CInt(goal_dir), &pathlen, &path)
+        
+        let plan_found = self.MySbplWrapper.generatePlan_wrapped(CInt(kmax), start_pointId, start_roadId, CInt(start_type), CInt(start_dir), goal_pointId, goal_roadId, CInt(goal_type), CInt(goal_dir), CInt(mode), &pathlen, &k0len, &k1len, &planPtr)
+
         if (plan_found)
         {
-            //print("path:\n \(path)")
+            count = Int(k0len) + Int(k1len)
+            //for i in 0..<count
+            //{
+            //    let k = Int(planPtr[i*3])
+            //    let i1 = planPtr[i*3+1]
+            //    let i2 = planPtr[i*3+2]
+            //    print("\(k) \(i1) \(i2)")
+            //}
             
-            var len0 = 0
-            let pathArr: Array = path!.componentsSeparatedByString("\n")
-            for step in pathArr
-            {
-                var stepdata: Array = step.componentsSeparatedByString(";")
-                if (stepdata.count < 3)
-                {
-                    continue
-                }
-                let k = Int(stepdata[0])
-                if (k == 0)
-                {
-                    len0 += 1
-                }
-            }
-            
-            //if (minlen > Int(pathlen))
-            if (minlen > len0)
+            if (minlen > Int(k0len))
             {
                 itermin = iter
-                minlen = Int(len0)  //Int(pathlen)
-                pathmin = path!.copy() as! NSString
-                //print("path:\n \(path)")
-                //print("pathmin:\n \(pathmin)")
+                minlen = Int(k0len)
             }
-    
-            //DisplayTempPath(path!, coords: &plan_coords, planColor: UIColor.brownColor())
-            print("iter = \(iter) len0 = \(len0) pathlen = \(pathlen) minlen = \(minlen) plan found")
+            
+            print("iter = \(iter) k0len = \(k0len) k1len = \(k1len) count = \(count) pathlen = \(pathlen) minlen = \(minlen) plan found")
         }
         else
         {
+            count = 0
             print("iter = \(iter) plan not found")
         }
         print("******** iter = \(iter) end *******\n")
         return plan_found
     }
-
+    
     func configureDetailView(annotationView: MKAnnotationView) {
         let snapshotView = UIView(frame: CGRect (x: 0, y: 0, width: 300, height: 300))
         let options = MKMapSnapshotOptions()
@@ -487,9 +494,21 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         conditions.append(Condition(k: 0, start_dir: 1, goal_dir: 0))
         conditions.append(Condition(k: 0, start_dir: 1, goal_dir: 1))
         
-        docDirectory = getDocumentsDirectory() as String
-        print("docDirectory:\n\(docDirectory)")
-        self.MySbplWrapper.setParams_wrapped(docDirectory)
+        //docDirectory = getDocumentsDirectory() as String
+        //print("docDirectory:\n\(docDirectory)")
+        
+        if (countViewDidLoad == 0)
+        {
+            var debug_mode = 0;
+            if (debug) {
+                debug_mode = 1;
+            }
+            //do {
+                self.MySbplWrapper.setParams_wrapped(CInt(debug_mode))
+            //} catch {
+            //    print("Error")
+            //}
+        }
         
         let coordinateRegion: MKCoordinateRegion?
 
@@ -537,6 +556,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         isectionsButton.tag = 3
         planButton.tag = 2
         settingsButton.tag = 4
+        
+        countViewDidLoad += 1
         
         //Gesture recognizer
         //let gst = UITapGestureRecognizer(target: self, action:#selector(ViewController.processGesture(_:)))
@@ -621,7 +642,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             var closestLocation: CLLocation?
             var smallestDistance: CLLocationDistance?
             var pointId: Int64? = -1
-            var roadId: Int64? = -1
+            //var roadId: Int64? = -1
             var index: Int = -1
             
             for isection in isections {
@@ -648,52 +669,44 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
 
                 //let ann = LmarkAnnotation(lmark: lmark!, pinImage: blueFlagPin!, photoImage: nil)
                 let ann = LmarkAnnotation(lmark: lmark!)
-
                 self.mapView.addAnnotation(ann)
+                
             }
         }
     }
     
+    /*
     func getURLImage(step: SolutionStep) -> UIImage?
     {
-        //dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
-        //{
-            let strlat = String(step.lat2)
-            let strlon = String(step.lon2)
-            let fov = String(90)
+        let strlat = String(step.lat2)
+        let strlon = String(step.lon2)
+        let fov = String(90)
         
-            //let imageurl = "http://maps.googleapis.com/maps/api/streetview?size=400x400&location=" + strlat + "," + strlon + "&heading=90&sensor=false"
+        //let imageurl = "http://maps.googleapis.com/maps/api/streetview?size=400x400&location=" + strlat + "," + strlon + "&heading=90&sensor=false"
+        let imageurl = "http://maps.googleapis.com/maps/api/streetview?size=400x400&location=" + strlat + "," + strlon + "&fov=" + fov + "&sensor=false&key=AIzaSyD3jESuue6j-P5ylGPUsqW7ZjTdY59HKy4"
         
-            let imageurl = "http://maps.googleapis.com/maps/api/streetview?size=400x400&location=" + strlat + "," + strlon + "&fov=" + fov + "&sensor=false&key=AIzaSyD3jESuue6j-P5ylGPUsqW7ZjTdY59HKy4"
-        
-            //let image =  UIImage(data: NSData(contentsOfURL: NSURL(string: imageurl)!)!)
-        
-        
-            if let url = NSURL(string: imageurl)
+        if let url = NSURL(string: imageurl)
+        {
+            if let data = NSData(contentsOfURL: url)
             {
-                if let data = NSData(contentsOfURL: url)
+                if let image = UIImage(data: data)
                 {
-                    if let image = UIImage(data: data)
-                    {
-                        return image
-                    }
-                }
-                else
-                {
-                    return nil
+                    return image
                 }
             }
             else
             {
                 return nil
             }
+        }
+        else
+        {
+            return nil
+        }
         
-            return nil//}
-       //})
-        
-        //let image_size = image?.size
-        //return image;
+        return nil
     }
+    */
     
     func takeSnapshot(mapView: MKMapView, coord: CLLocationCoordinate2D, eyeCoord: CLLocationCoordinate2D, filename: String, completion: ((result:UIImage?) -> Void)!)
     {
@@ -726,7 +739,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         let backgroundQueue = dispatch_get_global_queue(qualityOfServiceClass, 0)
         
         let snapshotter = MKMapSnapshotter(options: options)
-        //snapshotter.startWithCompletionHandler()
         
         snapshotter.startWithQueue(backgroundQueue, completionHandler:  { (snapshot: MKMapSnapshot?, error: NSError?) -> Void in
             
@@ -779,7 +791,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         let progress: UIProgressView = UIProgressView(progressViewStyle: .Default)
         self.view.addSubview(progress)
         progress.setProgress(50.0, animated: true)
-        
 
         if (segue.identifier == "ShowTable")
         {
@@ -804,18 +815,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             }
             else if (btn.tag == 2)  //solButton
             {
-                //let indicator: UIActivityIndicatorView = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.Gray)
-                //indicator.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
-                //indicator.center = view.center
-                //mapView.addSubview(indicator)
-                //indicator.bringSubviewToFront(view)
-                //UIApplication.sharedApplication().networkActivityIndicatorVisible = true
-                //indicator.startAnimating()
+                //dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
+                //{
                 
-                for i in 0...sol.count-1
+                for i in 0...self.sol.count-1
                 {
-                    if (sol[i].photoImage == nil)
-                    {
+                    //if (self.sol[i].photoImage == nil)
+                    //{
                         //var photoImage: UIImage?
                         //let fname = "myimage" + String(i)
                         //let coord = CLLocationCoordinate2D(latitude: sol[i].lat2, longitude: sol[i].lon2)
@@ -824,37 +830,19 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                         //self.takeSnapshot(self.mapView, coord:coord, eyeCoord: eyeCoord, filename: fname, completion: {(result) -> Void in
                         //    photoImage = result!
                         //})
-                
-                        let step = sol[i]
-                        let photoImage = getURLImage(step)
-                        //let sz = photoImage?.s
-
-                        sol[i].photoImage = photoImage
-                    }
-                    //if (sol[i].photoImage != nil && sol[i].photoImage?.size > 0)
-                    //{
-                        targetController.sol.append(sol[i])
-                    //}
-                }
-            
-                if safety_sol.count > 0
-                {
-                    for i in 0...safety_sol.count-1
-                    {
-                        if (safety_sol[i].photoImage == nil)
-                        {
-                            let step = safety_sol[i]
-                            let photoImage = getURLImage(step)
-                            safety_sol[i].photoImage = photoImage
-                        }
                         
-                        //if (safety_sol[i].photoImage != nil && !safety_sol[i].skip)
-                        //{
-                            targetController.safety_sol.append(safety_sol[i])
-                        //}
+                        targetController.sol.append(self.sol[i])
+                 }
+            
+                if self.safety_sol.count > 0
+                {
+                    for i in 0...self.safety_sol.count-1
+                    {
+                         targetController.safety_sol.append(self.safety_sol[i])
                     }
                 }
                 //indicator.stopAnimating()
+                //})
             }
             else if (btn.tag == 3)  //planButton
             {
@@ -892,35 +880,26 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     func overpassQlRequest(minlat: Double, minlon: Double, maxlat: Double, maxlon: Double, completion: ((result: Bool) -> Void)!)
     {
         let bbox = "\(minlat),\(minlon),\(maxlat),\(maxlon)"
-        //print("bbox = \(bbox)")
         
         let stringUrl = "https://overpass-api.de/api/interpreter?data=[out:json][timeout:25][bbox:\(bbox)];(way[\"highway\"](\(bbox));node[\"highway\"](\(bbox));way[\"amenity\"](\(bbox));node[\"amenity\"](\(bbox));way[\"leisure\"](\(bbox));node[\"leisure\"](\(bbox));way[\"tourism\"](\(bbox));node[\"tourism\"](\(bbox));way[\"building\"](\(bbox));node[\"building\"](\(bbox)););out body geom qt;"
-
-        //print("Original URL")
-        //print(stringUrl)
-        //print("\n")
         
         let myUrl = NSURL(string: stringUrl.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!)!
         
         let request = NSMutableURLRequest(URL:myUrl);
         request.HTTPMethod = "GET";
         
-        //print("Encoded URL")
-        //print(myUrl)
-        //print("\n")
-        
+        var statusCode: Int = -1
         let task = NSURLSession.sharedSession().dataTaskWithRequest(request)
-        { data, response, error in
+        {
+            data, response, error in
         
             if error != nil
             {
                 print("Error: \(error)\n Error!!!!\n")
-                //let dialog = UIAlertController(title: "Error!", message: error!.localizedDescription, preferredStyle: UIAlertControllerStyle.Alert)
+                self.showAlert("HTTP Session Error", alertMessage: error!.localizedDescription, actionTitle: "Close")
                 return
             }
             
-            var statusCode: Int = -1
-            var errorDesc = ""
             if let httpResponse = response as? NSHTTPURLResponse {
                 statusCode = httpResponse.statusCode
             }
@@ -930,11 +909,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             
             if statusCode != 200
             {
-                errorDesc = NSHTTPURLResponse.localizedStringForStatusCode((statusCode))
-                print("Error: \(String(statusCode)) \(errorDesc)")
-                
-                var msg = self.GetHttpErrorMessage(statusCode)
-                
+                let msg = self.GetHttpErrorMessage(statusCode)
                 self.showAlert("HTTP Error", alertMessage: msg, actionTitle: "Close")
                 return
             }
@@ -953,19 +928,24 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 }
             }
             
-            var s_lmarks: NSString? = nil
-            var s_isections: NSString? = nil
-            let res = self.MySbplWrapper.initPlannerByOsm_wrapped(responseString, &s_lmarks, &s_isections)
-            
+            var lmarksPtr = UnsafeMutablePointer<Int64>(nil)
+            var isectionsPtr = UnsafeMutablePointer<Int64>(nil)
+            var lmarks_count : CInt = 0
+            var isections_count : CInt = 0
+
+            let res = self.MySbplWrapper.initPlannerByOsm_wrapped(responseString, &lmarksPtr, &lmarks_count, &isectionsPtr, &isections_count)
+
             if (res)
             {
                 print("Planner initialized succesfully.")
-                print("Length of landmarks string = \(s_lmarks!.length)")
+                print("Landmarks count = \(lmarks_count)")
                 
-                self.processLandmarks(s_lmarks!, minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
+                self.processLandmarks(lmarksPtr, lmarks_count: Int(lmarks_count), minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
+                self.MySbplWrapper.freeMemory_wrapped(&lmarksPtr)
                 
-                print("Length of intersections string = \(s_isections!.length)")
-                self.processIntersections(s_isections!, minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
+                print("Intersections count = \(isections_count)")
+                self.processIntersections(isectionsPtr, isections_count: Int(isections_count), minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
+                self.MySbplWrapper.freeMemory_wrapped(&isectionsPtr)
             }
             else
             {
@@ -980,6 +960,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     
     func GetHttpErrorMessage(statusCode: Int) -> String
     {
+        let errorDesc = NSHTTPURLResponse.localizedStringForStatusCode((statusCode))
+        print("Error: \(String(statusCode)) \(errorDesc)")
+        
         var msg: String = ""
         if statusCode == 400 {
             msg = "400 Bad Request"
@@ -1012,6 +995,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             msg = String(statusCode) + " Connection failed"
         }
         print("\(msg)")
+        
+        msg = msg + ". " + errorDesc
         return msg
     }
     
@@ -1041,8 +1026,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         let minlon: Double = coord.longitude - span.longitudeDelta
         let maxlat: Double = coord.latitude + span.latitudeDelta
         let maxlon: Double = coord.longitude + span.longitudeDelta
-
-        //print("minlat=\(minlat) minlon=\(minlon) maxlat=\(maxlat) maxlon=\(maxlon)")
         
         //var thr: NSThread
         //var b: Bool
@@ -1068,19 +1051,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 var anns = [LmarkAnnotation]()
                 for lmark in self.lmarks
                 {
-                    //if (lmark.latitude >= minlat && lmark.latitude <= maxlat && lmark.longitude >= minlon && lmark.longitude <= maxlon)
-                    //{
-
-                        let ann = LmarkAnnotation(lmark: lmark)
-                        anns.append(ann)
-                    
-                    //}
+                    let ann = LmarkAnnotation(lmark: lmark)
+                    anns.append(ann)
                 }
-                //print("anns.count = \(anns.count)")
-            
-                //for ann in anns {
-                //    self.mapView.addAnnotation(ann)
-                //}
             
                 dispatch_async(dispatch_get_main_queue())
                 {
@@ -1093,14 +1066,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             }
             else
             {
-                //func errorAlertHandler(act:UIAlertAction!) {
-                //}
-                let ac = UIAlertController(title: "Error", message: "Init planner environment failed.", preferredStyle: .Alert)
-                ac.addAction(UIAlertAction(title: "Close", style: .Default, handler: nil))
-            
-                dispatch_async(dispatch_get_main_queue()) {
-                    self.presentViewController(ac, animated:true, completion: nil)
-                }
+                self.showAlert("Error", alertMessage: "Init planner environment failed!", actionTitle: "Close")
             }
         })
         
@@ -1112,11 +1078,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     
     func showAlert(alertTitle: String, alertMessage: String, actionTitle: String)
     {
-        let ac = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .Alert)
-        ac.addAction(UIAlertAction(title: actionTitle, style: .Default, handler: nil))
+        dispatch_async(dispatch_get_main_queue())
+        {
+            let ac = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .Alert)
+            ac.addAction(UIAlertAction(title: actionTitle, style: .Default, handler: nil))
     
-        dispatch_async(dispatch_get_main_queue()) {
             self.presentViewController(ac, animated:true, completion: nil)
+            self.activityIndicatorView.stopAnimating()
         }
     }
     
@@ -1136,42 +1104,33 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         
         search.startWithCompletionHandler({(response: MKLocalSearchResponse?, error: NSError?) in
         
-            if error != nil {
-                print("Error occured in search: \(error?.localizedDescription)")
-            } else if response?.mapItems.count == 0 {
+            if error != nil
+            {
+                print("Error occured in search: \(error!.localizedDescription)")
+                self.showAlert("Search Error", alertMessage: error!.localizedDescription, actionTitle: "Close")
+            }
+            else if response?.mapItems.count == 0
+            {
                 print("No matches found")
-            } else {
+                self.showAlert("Search Result", alertMessage: "No matches found", actionTitle: "Close")
+            }
+            else
+            {
                 //print("\(response?.mapItems.count) matches found")
                 
                 if mode == 1
                 {
                     let item1:MKMapItem = (response?.mapItems[0])!
-                    //let pinImage: UIImage?
-                    //let photoImage: UIImage?
                     let info1 = MKPointAnnotation()
                     info1.coordinate = item1.placemark.location!.coordinate
                     info1.title = "info1"
                     info1.subtitle = "subtitle"
                     self.mapView.addAnnotation(info1)
-                    //self.dirRequest.source = item1
                     let n = response?.mapItems.count
                     let item2:MKMapItem = (response?.mapItems[n!-1])!
                     self.addPinToMapView(item2.name!, latitude: item2.placemark.location!.coordinate.latitude, longitude:item2.placemark.location!.coordinate.longitude)
-                
-                    /*
-                    self.dirRequest.destination = item2
-                    self.dirRequest.requestsAlternateRoutes = false
-                    let directions = MKDirections(request: self.dirRequest)
-                    directions.calculateDirectionsWithCompletionHandler() { (response, error) in
-                            guard let response = response else {
-                                print("Directions error: \(error)")
-                                return
-                        }
-                    
-                        self.showRoute(response)
-                    }
-                    */
-                } else if mode == 2
+                }
+                else if mode == 2
                 {
                     var iim = 0;
                     for item in (response?.mapItems)!
@@ -1244,6 +1203,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     {
         let DocumentDirURL = try! NSFileManager.defaultManager().URLForDirectory(.DocumentDirectory, inDomain: .UserDomainMask, appropriateForURL: nil, create: true)
         let fileURL = DocumentDirURL.URLByAppendingPathComponent(filename).URLByAppendingPathExtension(ext)
+        
         var file: NSFileHandle? = NSFileHandle(forUpdatingAtPath: fileURL.path!)
         if file == nil
         {
@@ -1265,15 +1225,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         let fileData = txt.dataUsingEncoding(NSUTF8StringEncoding)
         file?.writeData(fileData!)
         file?.closeFile()
+        file = nil
         return true
     }
     
-    func DisplayPath(path: NSString)
+    func DisplayPath(pathArr: UnsafeMutablePointer<CInt>, count: Int)
     {
-        //print("path:\n \(path)")
-        
-        let pathArr: Array = path.componentsSeparatedByString("\n")
-    
         self.sol.removeAll()
         self.safety_sol.removeAll()
         
@@ -1283,19 +1240,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         plan.removeAll()
         safety_plan.removeAll()
         
-        for step in pathArr
+        for ii in  0..<count
         {
-            var stepdata: Array = step.componentsSeparatedByString(";")
-    
-            if (stepdata.count < 3)
-            {
-                //print("i=\(i) count=\(stepdata.count)")
-                continue
-            }
-            
-            let k = Int(stepdata[0])
-            let currInd = CInt(stepdata[1])
-            let succInd = CInt(stepdata[2])
+            let k = Int(pathArr[3*ii])
+            let currInd = pathArr[3*ii+1]
+            let succInd = pathArr[3*ii+2]
             
             var id1: Int64 = 0
             var id2: Int64 = 0
@@ -1312,23 +1261,20 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             var envId1: CInt = 0
             var envId2: CInt = 0
             
-            _ = self.MySbplWrapper.getSolutionStepDetails_wrapped(currInd!, succInd!, &id1, &id2, &act1, &act2, &type1, &type2, &dir1, &dir2, &lat1, &lon1, &lat2, &lon2, &envId1, &envId2)
-
-            //print("i=\(i) k=\(k!) | id \(id1) coord \(lat1) \(lon1) act \(act1) type \(type1) dir \(dir1) | id \(id2) coord \(lat2) \(lon2) act \(act2) type \(type2) dir \(dir2)")
-            
-            //print("\(k!):\(envId1):\(envId2)")
+            _ = self.MySbplWrapper.getSolutionStepDetails_wrapped(currInd, succInd, &id1, &id2, &act1, &act2, &type1, &type2, &dir1, &dir2, &lat1, &lon1, &lat2, &lon2, &envId1, &envId2)
             
             if (debug)
             {
-                //let txt = "i=\(i) k=\(k!) | env \(envId1) | id \(id1) coord \(lat1) \(lon1) act \(act1) type \(type1) dir \(dir1) | env \(envId2) | id \(id2) coord \(lat2) \(lon2) act \(act2) type \(type2) dir \(dir2)\n"
-                let txt = "\(i) | \(k!) |p \(currInd!) |e \(envId1) | \(id1) \(lat1) \(lon1) act \(act1) type \(type1) dir \(dir1) |p \(succInd!) |e \(envId2) | \(id2) \(lat2) \(lon2) act \(act2) type \(type2) dir \(dir2)\n"
-
-                AppendStringToFile(txt, filename: "plan", ext: "txt")
+                autoreleasepool {
+                let txt = "\(i) | \(k) |p \(currInd) |e \(envId1) | \(id1) \(lat1) \(lon1) act \(act1) type \(type1) dir \(dir1) |p \(succInd) |e \(envId2) | \(id2) \(lat2) \(lon2) act \(act2) type \(type2) dir \(dir2)\n"
+                
+                    AppendStringToFile(txt, filename: "plan", ext: "txt")
+                }
             }
             
-            let step = SolutionStep(seq: i, name: "", instructions: "", photoImage: nil, iconName: "", k: k!, id1: id1, lat1: lat1, lon1: lon1, act1: Int(act1), type1: Int(type1), id2: id2, lat2: lat2, lon2: lon2, act2: Int(act2), type2: Int(type2), dir1: Int(dir1), dir2: Int(dir2))
+            let step = SolutionStep(seq: i, name: "", instructions: "", photoImage: nil, iconName: "", k: k, id1: id1, lat1: lat1, lon1: lon1, act1: Int(act1), type1: Int(type1), id2: id2, lat2: lat2, lon2: lon2, act2: Int(act2), type2: Int(type2), dir1: Int(dir1), dir2: Int(dir2))
             step.orig_seq = i
-
+            
             if (k == 0)
             {
                 step.seq = j
@@ -1341,12 +1287,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 safety_plan.append(step)
                 l += 1
             }
+            
             i += 1
         }
         
         var ind = 0
         var match = false
-
+        
         if (safety_plan.count > 0)
         {
             for ii in 0...safety_plan.count-1
@@ -1365,7 +1312,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                         }
                     }
                 }
-         
+                
                 if (match)
                 {
                     if (safety_plan[ii].act2 == -1000)
@@ -1378,19 +1325,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             }
         }
         
-        //print(" ")
-        //for ii in 0...plan.count-1
-        //{
-        //    if (plan[ii].safety_ind_start >= 0 || plan[ii].safety_ind_end >= 0)
-        //    {
-        //        print("ii=\(ii) id1=\(plan[ii].id1 )start=\(plan[ii].safety_ind_start) end=\(plan[ii].safety_ind_end)")
-        //    }
-        //}
-        //print(" ")
-        
-        populatePlan()
-        //drawPlan(1, planColor: UIColor.brownColor(), path: safety_plan)
-        drawPlan(0, planColor: UIColor.blueColor(), path: plan)
+        if (plan.count > 0)
+        {
+            populatePlan()
+        }
     }
     
     func populatePlan()
@@ -1452,7 +1390,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     var istart = step.safety_ind_start
                     let iend = step.safety_ind_end
                     
-                    let step1 = populateFalseStep(&istart, iend: iend) //safety_plan[istart])
+                    let step1 = populateFalseStep(&istart, iend: iend)
                     
                     let i1 = safety_sol.count
                     if (istart + 1 > iend)
@@ -1469,7 +1407,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             else
             {
                 let ind = findIntersectionByID(step.id2)
-                let streets = isections[ind].location as String
+                let streets = isections[ind].location!
                 let streetsArr: Array = streets.componentsSeparatedByString(",")
 
                 if (step.id1 != step.id2 && streetsArr.count > 1)
@@ -1600,7 +1538,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         else
         {
             let ind = findIntersectionByID(step1.id2)
-            let streets = isections[ind].location as String
+            let streets = isections[ind].location!
             instr = instr + "intersection " + streets
         }
     
@@ -1640,12 +1578,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             else
             {
                 let ind1 = findIntersectionByID(step.id1)
-                let prevstreets = isections[ind1].location as String
+                let prevstreets = isections[ind1].location
                 //print("prevstreets = \(prevstreets)")
-                let streetsArr1: Array = prevstreets.componentsSeparatedByString(",")
+                let streetsArr1: Array = prevstreets!.componentsSeparatedByString(",")
     
                 let ind2 = findIntersectionByID(step.id2)
-                let nextstreets = isections[ind2].location as String
+                let nextstreets = isections[ind2].location!
                 //print("nextstreets = \(nextstreets)")
                 let streetsArr2: Array = nextstreets.componentsSeparatedByString(",")
     
@@ -1726,15 +1664,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     
                 if (turn || three_way)
                 {
-                        landmark_count = 0
+                    landmark_count = 0
                 }
             }
             else
             {
                 let ind = findIntersectionByID(step.id2)
-                let streets = isections[ind].location as String
+                let streets = isections[ind].location!
                 let streetsArr: Array = streets.componentsSeparatedByString(",")
-                
                 //print("Skipping intersection i=\(i) isection_count=\(isection_count) \(streets)")
                 if (step.id1 != step.id2 && streetsArr.count > 1)
                 {
@@ -1803,12 +1740,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         }
         //print("street = \(street)")
     
-        //instr = String(i) + ": " + "Follow " + street + " untill you see "
         instr = "Follow " + street + " untill you see "
-        instr = instr + lmarks[ind].name   //lmarkDescriptionForDisplay(id2)
-    
-        //instr = instr + " (" + String(id) + ")"
-    
+        instr = instr + lmarks[ind].name
         iconName = directionImages[Int(act) + 3]
     }
     
@@ -1816,11 +1749,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     {
         let id: Int64 = step.id2
         let ind = findIntersectionByID(id)
-        let streets = isections[ind].location as String
+        let streets = isections[ind].location!
         //print("currstreets = \(streets)")
         
         let streetsArr: Array = streets.componentsSeparatedByString(",")
-        
+
         if (nextstep == nil)
         {
             nextstreet = ""
@@ -1837,7 +1770,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         else if (nextstep!.type2 == 0)
         {
             let ind1 = findIntersectionByID(nextstep!.id2)
-            let nextstreets = isections[ind1].location as String
+            let nextstreets = isections[ind1].location!
             //print("nextstreets = \(nextstreets)")
             let streetsArr1: Array = nextstreets.componentsSeparatedByString(",")
             
@@ -1891,7 +1824,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         else if (type == 0)
         {
             let ind1 = findIntersectionByID(idd)
-            let prevstreets = isections[ind1].location as String
+            let prevstreets = isections[ind1].location!
             //print("prevstreets = \(prevstreets)")
             let streetsArr1: Array = prevstreets.componentsSeparatedByString(",")
             
@@ -1970,72 +1903,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         return isection_descr
     }
     
-    func DisplayTempPath(path: NSString, inout coords: [CLLocationCoordinate2D], planColor: UIColor)
-    {
-        let pathArr: Array = path.componentsSeparatedByString("\n")
-        
-        var i=0
-        let n = pathArr.count
-        //print("pathArr.count = \(pathArr.count)")
-        
-        for step in pathArr
-        {
-            var stepdata: Array = step.componentsSeparatedByString(";")
-            
-            //if (stepdata.count < 13)
-            if (stepdata.count < 3)
-            {
-                //print("i=\(i) count=\(stepdata.count)")
-                continue
-            }
-            
-            let k = Int(stepdata[0])
-            let id1 = Int64(stepdata[1])
-            let lat1 = Double(stepdata[2])
-            let lon1 = Double(stepdata[3])
-            let act1 = Int(stepdata[4])
-            let type1 = Int(stepdata[5])
-            let dir1 = Int(stepdata[6])
-            
-            let id2 = Int64(stepdata[7])
-            let lat2 = Double(stepdata[8])
-            let lon2 = Double(stepdata[9])
-            let act2 = Int(stepdata[10])
-            let type2 = Int(stepdata[11])
-            let dir2 = Int(stepdata[12])
-            
-            //print("i=\(i) k=\(k!) | id \(id1!) coord \(lat1!) \(lon1!) act \(act1!) type \(type1!) dir \(dir1!) | id \(id2!) coord \(lat2!) \(lon2!) act \(act2!) type \(type2!) dir \(dir2!)")
-            
-            //var count: Int = 0
-            if (i == 0)
-            {
-                coords.append(CLLocationCoordinate2D(latitude: lat1!, longitude: lon1!))
-            }
-            
-            if ((id1 == id2 && act1 == act2 && type1 == type2 && dir1 == dir2 && i < n-2)) // || (type2 == 0 && count < 2))
-            {
-                i += 1
-            //    print("Skipping")
-                continue
-            }
-            
-            i += 1
-            
-            if (k == 0)
-            {
-                coords.append(CLLocationCoordinate2D(latitude: lat2!, longitude: lon2!))
-            }
-            //else if (k == 1)
-            //{
-            //    safety_sol.append(step)
-            //}
-        }
-        
-        drawTempPlan(planColor, coords: coords)
-        //drawPlan(1, planColor: UIColor.brownColor())
-    }
-
-    
     func interimPoseDescription(i: Int, id: Int64, act: Int, type: Int, inout iconName: String, inout streetCount: Int, isection_count: Int) -> String
     {
         var ind: Int = -1
@@ -2063,7 +1930,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             ind = findIntersectionByID(id)
             streetCount = isections[ind].streetsCount
             
-            let streets = isections[ind].location as String
+            let streets = isections[ind].location! //as String
             let streetsArr: Array = streets.componentsSeparatedByString(",")
 
             var istr = 0
@@ -2073,7 +1940,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 istr += 1
             }
             
-            descr = "intersection " + (isections[ind].location as String)
+            descr = "intersection " + (isections[ind].location!) //as String)
             descr = descr + " at intersection # " + String(isection_count)
         }
         descr = descr + " (" + String(id) + ")"
@@ -2141,7 +2008,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         {
             //intersection
             ind = findIntersectionByID(id)
-            instr = "Start from intersection " + (isections[ind].location as String)
+            instr = "Start from intersection " + (isections[ind].location!) // as String)
         }
         
         //instr = instr + " (" + String(id) + ")"
@@ -2234,67 +2101,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         self.mapView.addOverlay(polyline)
     }
     
-    func drawPlan1(k: Int, planColor: UIColor)
+    func processLandmarks(lmarksPtr: UnsafeMutablePointer<Int64>, lmarks_count: Int, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double)
     {
-        let n = safety_sol.count
-        var coords = [CLLocationCoordinate2D]()
-        var i = 0
-        for step in safety_sol
-        {
-            if (step.k == k)
-            {
-                if (step.type1 == 0) //intersection
-                {
-                    coords.append(CLLocationCoordinate2DMake(step.lat1, step.lon1))
-                }
-                else //landmark
-                {
-                    let ind = findLandmarkByID(step.id1)
-                    let rlat = lmarks[ind].roadLatitude
-                    let rlon = lmarks[ind].roadLongitude
-                    coords.append(CLLocationCoordinate2DMake(rlat, rlon))
-                }
-                
-                if (i == n-1)
-                {
-                    if (step.type2 == 0)
-                    {
-                        coords.append(CLLocationCoordinate2DMake(step.lat2, step.lon2))
-                    }
-                    else
-                    {
-                        let ind2 = findLandmarkByID(step.id2)
-                        let rlat2 = lmarks[ind2].roadLatitude
-                        let rlon2 = lmarks[ind2].roadLongitude
-                        coords.append(CLLocationCoordinate2DMake(rlat2, rlon2))
-                    }
-                }
-            }
-            i += 1
-        }
-        
-        let polyline: MKPolyline = MKPolyline(coordinates: &coords, count: n+1)
-        self.polyline_color = planColor
-        self.mapView.addOverlay(polyline)
-    }
-    
-    func processLandmarks(s_lmarks: NSString, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double)
-    {
-        //print("\n--- lmarks ---\n");
-        
-        let lmarksArr: Array = s_lmarks.componentsSeparatedByString("\n")
-    
-        var i=0
         var j=0
-        for lmark in lmarksArr
+        for i in 0..<lmarks_count
         {
+            let lmark = lmarksPtr[i]
             let pointId = Int64(lmark)
-            if (pointId == nil)
-            {
-                continue
-            }
-            
-            i += 1
             
             var ind: CInt = 0
             var name: NSString? = nil
@@ -2308,11 +2121,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             var roadLat: Double = 0.0
             var roadLon: Double = 0.0
             
-            self.MySbplWrapper.getLandmarkDetails_wrapped(pointId!, &ind, &lat, &lon, &name, &address, &info, &street, &amenity, &roadId, &roadLat, &roadLon)
+            self.MySbplWrapper.getLandmarkDetails_wrapped(pointId, &ind, &lat, &lon, &name, &address, &info, &street, &amenity, &roadId, &roadLat, &roadLon)
 
             let name1 = name?.stringByReplacingOccurrencesOfString("_", withString: " ")
             let name2 = name1?.capitalizedString
-                
+            
             let info1 = info?.stringByReplacingOccurrencesOfString("_", withString: " ")
             let info2 = info1?.capitalizedString
             
@@ -2325,41 +2138,34 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             //print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(name2!) | \(address!) | \(info2!) | \(street2!) | \(amenity2!)")
             
             j += 1
-            self.AddLandmark(name2!, description: info2!, type: 1, address: String(address!), latitude: lat, longitude: lon, photoName: "", pointId: pointId!, roadId: roadId, street: street2!, amenity: amenity2!, roadLatitude: roadLat, roadLongitude: roadLon)
+            self.AddLandmark(name2!, description: info2!, type: 1, address: String(address!), latitude: lat, longitude: lon, photoName: "", pointId: pointId, roadId: roadId, street: street2!, amenity: amenity2!, roadLatitude: roadLat, roadLongitude: roadLon)
+            
+            name = nil
+            info = nil
+            street = nil
+            amenity = nil
             
             //print("i=\(i) \(pointId!) \(name2!) \(lat) \(lon)")
         }
         //print("Landmarks total: \(i) within bbox \(j)")
     }
 
-    func processIntersections(s_isections: NSString, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double)
+    func processIntersections(isectionsPtr: UnsafeMutablePointer<Int64>, isections_count: Int, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double)
     {
-        //print("--- isectionss ---\n");
-        //print("\(s_isections)");
-        //print("\n");
-        
-        //let blueFlagPin = UIImage(named:"BlackDot")
         var lat: Double = 0
         var lon: Double = 0
         
-        let isectionsArr: Array = s_isections.componentsSeparatedByString("\n")
-        
-        var i=0
         var j=0
-        for isection in isectionsArr
+        for i in 0..<isections_count
         {
-            i += 1
+            let isection = isectionsPtr[i]
             let pointId = Int64(isection)
-            if (pointId == nil)
-            {
-                continue
-            }
             
             //print("i=\(i) pointId=(\(pointId)")
             var ind: CInt = 0
             var location: NSString? = nil
             var count: CInt = 0
-            self.MySbplWrapper.getIntersectionDetails_wrapped(pointId!, &ind, &lat, &lon, &location, &count)
+            self.MySbplWrapper.getIntersectionDetails_wrapped(pointId, &ind, &lat, &lon, &location, &count)
             //print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(location!)")
             
             if (lat >= minlat && lat <= maxlat && lon >= minlon && lon <= maxlon)
@@ -2367,11 +2173,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 j += 1
             }
             
-            let isct = Intersection(id: pointId!, index: Int(j), latutude: lat, longitude: lon, location: location!, streetsCount: Int(count))
+            let isct = Intersection(id: pointId, index: Int(j), latutude: lat, longitude: lon, location: location! as String, streetsCount: Int(count))
             isections.append(isct)
             
-            let lmark = Lmark(name: isct.location as String, description: "", type: 0, address: "", latitude: isct.latitude, longitude: isct.longitude, photo: nil, pointId: pointId!, roadId: 0, street: "", amenity: "",  roadLatitude: 0.0, roadLongitude: 0.0);
+            let lmark = Lmark(name: isct.location!, description: "", type: 0, address: "", latitude: isct.latitude, longitude: isct.longitude, photo: nil, pointId: pointId, roadId: 0, street: "", amenity: "",  roadLatitude: 0.0, roadLongitude: 0.0);
             i_lmarks.append(lmark!)
+            
+            location = nil
         }
         //print("Intersections total: \(i) within bbox \(j+1)")
     }

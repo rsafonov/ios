@@ -57,14 +57,6 @@ class LandmarksTableViewController: UITableViewController {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
     
-    func loadSampleLandmarks() {
-        //let photo1 = UIImage(named: "CathedralOfLearning")
-        //let pin1 = UIImage(named: "Gyro")
-        
-        //let lmark1 = Lmark(name: "Cathedral Of Learning", description: "University of Pittsburgh", type: 1, address: "4301 Fifth Ave", latitude: 40.444378, longitude: -79.952799, photo: photo1!, pin: pin1!, pointId: 1, roadId: 1, street: "", amenity: "")
-            //lmarks.append(lmark1!)
-    }
-
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         
@@ -77,8 +69,8 @@ class LandmarksTableViewController: UITableViewController {
         return 1;
     }
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
+    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int
+    {
         if (mode == 1)
         {
             self.title = "Landmarks"
@@ -105,6 +97,37 @@ class LandmarksTableViewController: UITableViewController {
         }
         return 0
     }
+    
+    func getURLImage(step: SolutionStep) -> UIImage?
+    {
+        let strlat = String(step.lat2)
+        let strlon = String(step.lon2)
+        let fov = String(90)
+        
+        //let imageurl = "http://maps.googleapis.com/maps/api/streetview?size=400x400&location=" + strlat + "," + strlon + "&heading=90&sensor=false"
+        let imageurl = "http://maps.googleapis.com/maps/api/streetview?size=400x400&location=" + strlat + "," + strlon + "&fov=" + fov + "&sensor=false&key=AIzaSyD3jESuue6j-P5ylGPUsqW7ZjTdY59HKy4"
+        
+        if let url = NSURL(string: imageurl)
+        {
+            if let data = NSData(contentsOfURL: url)
+            {
+                if let image = UIImage(data: data)
+                {
+                    return image
+                }
+            }
+            else
+            {
+                return nil
+            }
+        }
+        else
+        {
+            return nil
+        }
+        
+        return nil
+    }
  
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell
     {
@@ -129,7 +152,11 @@ class LandmarksTableViewController: UITableViewController {
             {
                 let cellIdentifier = "StepTableViewCell"
                 let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! StepTableViewCell
-            
+                
+                if (step.photoImage == nil)
+                {
+                   step.photoImage = self.getURLImage(step)
+                }
                 cell.photoImageView.image = step.photoImage
                 cell.instructions.text = step.instructions
                 cell.dirImageView.image = UIImage(named: step.iconName)
@@ -141,6 +168,10 @@ class LandmarksTableViewController: UITableViewController {
                 let cellIdentifier = "FalseStepTableViewCell"
                 let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! FalseStepTableViewCell
                 
+                if (step.photoImage == nil)
+                {
+                    step.photoImage = self.getURLImage(step)
+                }
                 cell.photoImageView.image = step.photoImage
                 cell.instructions.text = step.instructions
                 return cell
@@ -155,7 +186,7 @@ class LandmarksTableViewController: UITableViewController {
         
             cell.nameLabel.text = "Intersection"
             cell.photoImageView.image = UIImage(named: "defaultPhoto")
-            cell.descrLabel.text = isection.location as String
+            cell.descrLabel.text = isection.location! as String
             cell.addressLabel.text = "address"
             return cell
         }

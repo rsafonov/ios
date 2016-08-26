@@ -6,78 +6,92 @@
 //  Copyright © 2016 Margarita Safonova. All rights reserved.
 //
 
+#import <Foundation/Foundation.h>
+
 #import "CPPWrapper.h"
 
 @implementation CPPWrapper
 
 #include "sbpltest.h"
 
-- (BOOL) setParams_wrapped: (NSString*) docDirectory
+- (BOOL) setParams_wrapped: (int) debug_mode
 {
-    self.buflen = 16384*10;
-    self.ob = new MySbpl();
+    NSURL *DocumentDirURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+    
+    const char* buf = [DocumentDirURL.path UTF8String];
+   
+    try {
+        self.ob = new MySbpl(buf);
+    }
+    catch(...)
+    {
+    }
+    
     MySbpl* sb = (MySbpl*)self.ob;
-    bool res = (MySbpl*) sb->setParams([docDirectory cStringUsingEncoding:NSUTF8StringEncoding]);
+    bool res = (MySbpl*) sb->setParams(debug_mode);
     return res;
 }
 
-- (BOOL) initPlannerByOsm_wrapped: (NSString*) osmJsonStr : (NSString **) lmarks :(NSString **) intersections
+- (BOOL) initPlannerByOsm_wrapped: (NSString*) osmJsonStr : (long long int **) lmarks : (int*) lmarks_count : (long long int **) intersections : (int*) intersections_count
 {
-    char c_lmarks[self.buflen];
-    char c_intersections[self.buflen];
-    
     MySbpl* sb = (MySbpl*)self.ob;
     
-    bool res =(MySbpl*) sb->initPlannerByOsm([osmJsonStr cStringUsingEncoding:NSUTF8StringEncoding], c_lmarks, c_intersections, self.buflen);
+    bool res =(MySbpl*) sb->initPlannerByOsm([osmJsonStr cStringUsingEncoding:NSUTF8StringEncoding], lmarks, lmarks_count, intersections, intersections_count);
     if (res)
     {
-        *lmarks = [NSString stringWithFormat:@"%s", c_lmarks];
-        *intersections = [NSString stringWithFormat:@"%s", c_intersections];
     }
     return res;
 }
 
-- (BOOL) generatePlan_wrapped: (int) k : (long long int) start_pointId : (long long int) start_roadId : (int) start_type : (int) start_dir : (long long int) goal_pointId : (long long int) goal_roadId : (int) goal_type : (int) goal_dir : (int *) pathlen : (NSString **) path
+- (BOOL) freePlan_wrapped: (int**) plan
 {
-    char c_path[self.buflen];
     MySbpl* sb = (MySbpl*)self.ob;
-    bool res =(MySbpl*) sb->generatePlan(k, start_pointId, start_roadId, start_type, start_dir, goal_pointId, goal_roadId, goal_type, goal_dir, pathlen, c_path);
-    if(res)
-    {
-        *path = [NSString stringWithFormat:@"%s", c_path];
-    }
+    bool res =(MySbpl*)sb->freePlan(plan);
+    return res;
+}
+
+- (BOOL) freeMemory_wrapped: (long long int**) ptr;
+{
+    MySbpl* sb = (MySbpl*)self.ob;
+    bool res =(MySbpl*)sb->freeMemory(ptr);
+    return res;
+}
+
+- (BOOL) generatePlan_wrapped: (int) k : (long long int) start_pointId : (long long int) start_roadId : (int) start_type : (int) start_dir : (long long int) goal_pointId : (long long int) goal_roadId : (int) goal_type : (int) goal_dir : (int) mode : (int *) pathlen : (int *) k0len : (int *) k1len : (int**) plan
+
+{
+    MySbpl* sb = (MySbpl*)self.ob;
+    bool res =(MySbpl*) sb->generatePlan(k, start_pointId, start_roadId, start_type, start_dir, goal_pointId, goal_roadId, goal_type, goal_dir, mode, pathlen, k0len, k1len, plan);
     return res;
 }
  
 - (BOOL) getIntersectionDetails_wrapped: (long long int) point_id : (int *) ind : (double *) lat : (double *) lon : (NSString **) location : (int *) streetsCount
 {
-    char c_loc[self.buflen];
+    string loc;
+    
     MySbpl* sb = (MySbpl*)self.ob;
-    bool res = (MySbpl*)sb->getIntresectionDetails(point_id, ind, lat, lon, c_loc, streetsCount);
+    bool res = (MySbpl*)sb->getIntresectionDetails(point_id, ind, lat, lon, loc, streetsCount);
     if(res)
     {
-        *location = [NSString stringWithFormat:@"%s", c_loc];
+        *location = [NSString stringWithFormat:@"%s", loc.c_str()];
     }
     return res;
 }
 
 - (BOOL) getLandmarkDetails_wrapped: (long long int) point_id : (int *) ind : (double *) lat : (double *) lon : (NSString **) name : (NSString **) address : (NSString **) info : (NSString **) street : (NSString **) amenity : (long long int*) road_id : (double *) roadLat : (double *) roadLon
 {
-    int len = self.buflen/5;
-    char c_name[len];
-    char c_address[len];
-    char c_info[len];
-    char c_street[len];
-    char c_amenity[len];
+    string sname, saddress, sinfo, sstreet, samenity;
+    
     MySbpl* sb = (MySbpl*)self.ob;
-    bool res = (MySbpl*)sb->getLandmarkDetails(point_id, ind, lat, lon, c_name, c_address, c_info, c_street, c_amenity, road_id, roadLat, roadLon);
+    bool res = (MySbpl*)sb->getLandmarkDetails(point_id, ind, lat, lon, sname, saddress, sinfo, sstreet, samenity, road_id, roadLat, roadLon);
     if(res)
     {
-        *name = [NSString stringWithFormat:@"%s", c_name];
-        *address = [NSString stringWithFormat:@"%s", c_address];
-        *info = [NSString stringWithFormat:@"%s", c_info];
-        *street = [NSString stringWithFormat:@"%s", c_street];
-        *amenity = [NSString stringWithFormat:@"%s", c_amenity];
+        
+        *name = [NSString stringWithFormat:@"%s", sname.c_str()];
+        *address = [NSString stringWithFormat:@"%s", saddress.c_str()];
+        *info = [NSString stringWithFormat:@"%s", sinfo.c_str()];
+        *street = [NSString stringWithFormat:@"%s", sstreet.c_str()];
+        *amenity = [NSString stringWithFormat:@"%s", samenity.c_str()];
     }
     return res;
 }

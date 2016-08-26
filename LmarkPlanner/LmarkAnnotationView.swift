@@ -11,9 +11,11 @@ import MapKit
 
 class LmarkAnnotationView: MKAnnotationView {
 
-    class var reuseIdentifier:String {
-        return "lmark"
-    }
+    //class var reuseIdentifier:String {
+    //    return "lmark"
+    //}
+    
+    //let reuseIdentifier = "lmark"
     
     var preventDeselection:Bool {
         return !hitOutside
@@ -23,16 +25,17 @@ class LmarkAnnotationView: MKAnnotationView {
     var count_selected: Int = 0
     var count_deselected: Int = 0
     var calloutView: CalloutView?
+
     
     var calloutAdded: Bool = false
     
     private var hitOutside:Bool = true
-    private let blueBallImage = UIImage(named: "BlueBall")
+    //private let blueBallImage = UIImage(named: "BlueBall")
     //private let pinkBallImage = UIImage(named: "PinkBall")
-    private let greenBallImage = UIImage(named: "GreenBall")
+    //private let greenBallImage = UIImage(named: "GreenBall")
     
     convenience init(annotation:MKAnnotation!) {
-        self.init(annotation: annotation, reuseIdentifier: LmarkAnnotationView.reuseIdentifier)
+        self.init(annotation: annotation, reuseIdentifier: "lmark") //LmarkAnnotationView.reuseIdentifier)
         canShowCallout = false;
     }
     
@@ -47,7 +50,7 @@ class LmarkAnnotationView: MKAnnotationView {
         if (selected)
         {
             count_selected += 1
-            //print("count_selected = \(count_selected)")
+            print("count_selected = \(count_selected)")
             
             superview?.bringSubviewToFront(self)
             
@@ -63,8 +66,10 @@ class LmarkAnnotationView: MKAnnotationView {
                 calloutView!.exclusiveTouch = true
             }
             
+            let blueBallImage = UIImage(named: "BlueBall")
             if (image == blueBallImage)
             {
+                let greenBallImage = UIImage(named: "GreenBall")
                 self.image = greenBallImage
                 parent?.greenViews.append(self)
             }
@@ -75,7 +80,7 @@ class LmarkAnnotationView: MKAnnotationView {
         else
         {
             count_deselected += 1
-            //print("count_deselected = \(count_deselected)")
+            print("count_deselected = \(count_deselected)")
             calloutView!.removeFromSuperview()
             calloutAdded = false
         }
@@ -173,13 +178,13 @@ class LmarkAnnotationView: MKAnnotationView {
         parent?.start_pointId = ann.lmark.pointId
         parent?.start_roadId = ann.lmark.roadId
         parent?.start_type = ann.lmark.type
-        parent!.start_set = true
-        parent!.generateOptimalPlan()
-        
+        parent?.start_set = true
         processStartViews()
         parent!.startViews.append(self)
         
         setPose("RedFlag")
+        callGeneratePlan()
+
     }
 
     func setGoalPose(ann: LmarkAnnotation)
@@ -199,7 +204,27 @@ class LmarkAnnotationView: MKAnnotationView {
         processGoalViews()
         parent!.goalViews.append(self)
         setPose("FinishFlag")
-        parent!.generateOptimalPlan()
+        callGeneratePlan()
+    }
+    
+    func callGeneratePlan()
+    {
+        parent!.generateOptimalPlan ( { (error:NSError!) -> () in
+
+            dispatch_async(dispatch_get_main_queue(), {
+
+                self.parent!.activityIndicatorView.stopAnimating()
+
+                if ((error == nil))
+                {
+                    print("generateOptimalPlan completed")
+                    if (self.parent!.plan.count > 0)
+                    {
+                        self.parent!.drawPlan(0, planColor: UIColor.blueColor(), path: self.parent!.plan)
+                    }
+                }
+            })
+        })
     }
 
     func setPose(poseImageName: String)
@@ -232,6 +257,7 @@ class LmarkAnnotationView: MKAnnotationView {
     {
         for view in parent!.startViews
         {
+            let blueBallImage = UIImage(named: "BlueBall")
             view.image = blueBallImage
         }
         parent?.startViews.removeAll()
@@ -241,6 +267,7 @@ class LmarkAnnotationView: MKAnnotationView {
     {
         for view in parent!.goalViews
         {
+            let blueBallImage = UIImage(named: "BlueBall")
             view.image = blueBallImage
         }
         parent?.goalViews.removeAll()
@@ -250,6 +277,7 @@ class LmarkAnnotationView: MKAnnotationView {
     {
         for view in parent!.greenViews
         {
+            let blueBallImage = UIImage(named: "BlueBall")
             view.image = blueBallImage
         }
         parent?.greenViews.removeAll()
@@ -280,13 +308,13 @@ class LmarkAnnotationView: MKAnnotationView {
         //{
         //    print("point: \(point)")
         //}
-        if (hitView != nil && calloutAdded)
+        if (hitView != nil && calloutAdded && !self.selected)
         {
             print("hitView != nil && calloutAdded")
             return nil
         }
         
-        if (hitView == nil && self.selected)
+        if ((hitView == nil || hitView != nil && calloutAdded) && self.selected)
         {
             let pointInCalloutView = self.convertPoint(point, toView: calloutView)
             hitView = calloutView?.hitTest(pointInCalloutView, withEvent: event)
