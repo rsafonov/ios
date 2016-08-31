@@ -312,6 +312,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         
             dispatch_async(queue,
             {
+                let semaphore = dispatch_semaphore_create(0)
+                
                 self.mapView.removeOverlays(self.mapView.overlays)
             
                 var minlen: Int = 100000
@@ -360,6 +362,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     if (!res)
                     {
                         self.showAlert("SBPL_Exception", alertMessage: "MySbplWrapper.freePlan_wrapped", actionTitle: "Close")
+                        NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
                     }
                     completion(error:  nil)
                 }
@@ -943,25 +946,37 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 print("Planner initialized succesfully.")
                 print("Landmarks count = \(lmarks_count)")
                 
-                self.processLandmarks(lmarksPtr, lmarks_count: Int(lmarks_count), minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
+                res = self.processLandmarks(lmarksPtr, lmarks_count: Int(lmarks_count), minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
+                if (!res)
+                {
+                    NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
+                }
+                
                 res = self.MySbplWrapper.freeMemory_wrapped(&lmarksPtr)
                 if (!res)
                 {
                     self.showAlert("SBPL Exception", alertMessage: "MySbplWrapper.freeMemory_wrapped failed.", actionTitle: "Close")
+                    NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
                 }
                 
                 print("Intersections count = \(isections_count)")
-                self.processIntersections(isectionsPtr, isections_count: Int(isections_count), minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
+                res = self.processIntersections(isectionsPtr, isections_count: Int(isections_count), minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
+                if (!res)
+                {
+                    NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
+                }
+
                 res = self.MySbplWrapper.freeMemory_wrapped(&isectionsPtr)
                 if (!res)
                 {
                     self.showAlert("SBPL Exception", alertMessage: "MySbplWrapper.freeMemory_wrapped failed.", actionTitle: "Close")
+                    NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
                 }
             }
             else
             {
-                print("SBPL Error: self.MySbplWrapper.initPlannerByOsm_wrapped falsed.")
                 self.showAlert("SBPL Error", alertMessage: "Could not initialize planner.", actionTitle: "Close")
+                NSLog("SBPL ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
             }
             
             completion(result: res)
@@ -1079,6 +1094,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             else
             {
                 self.showAlert("Error", alertMessage: "Init planner environment failed!", actionTitle: "Close")
+                NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
             }
         })
         
@@ -1277,6 +1293,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             if (!res)
             {
                 showAlert("SBPL_Exception", alertMessage: "MySbplWrapper.getSolutionStepDetails_wrapped failed.", actionTitle: "Close")
+                NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
             }
             
             if (debug)
@@ -2117,8 +2134,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         self.mapView.addOverlay(polyline)
     }
     
-    func processLandmarks(lmarksPtr: UnsafeMutablePointer<Int64>, lmarks_count: Int, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double)
+    func processLandmarks(lmarksPtr: UnsafeMutablePointer<Int64>, lmarks_count: Int, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double) -> Bool
     {
+        var res = true
         var j=0
         for i in 0..<lmarks_count
         {
@@ -2137,10 +2155,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             var roadLat: Double = 0.0
             var roadLon: Double = 0.0
             
-            let res = self.MySbplWrapper.getLandmarkDetails_wrapped(pointId, &ind, &lat, &lon, &name, &address, &info, &street, &amenity, &roadId, &roadLat, &roadLon)
+            res = self.MySbplWrapper.getLandmarkDetails_wrapped(pointId, &ind, &lat, &lon, &name, &address, &info, &street, &amenity, &roadId, &roadLat, &roadLon)
             if (!res)
             {
-                showAlert("SBPL_Exception", alertMessage: "MySbplWrapper.getLandmarkDetails_wrapped failed.", actionTitle: "Close")
+                showAlert("SBPL_Exception", alertMessage: "getLandmarkDetails failed for pointId=\(pointId).", actionTitle: "Close")
+                NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)] pointId: \(pointId)")
+                //NSLog("\(NSThread.callStackSymbols())")
+                break;
             }
 
             let name1 = name?.stringByReplacingOccurrencesOfString("_", withString: " ")
@@ -2168,10 +2189,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             //print("i=\(i) \(pointId!) \(name2!) \(lat) \(lon)")
         }
         //print("Landmarks total: \(i) within bbox \(j)")
+        return res;
     }
 
-    func processIntersections(isectionsPtr: UnsafeMutablePointer<Int64>, isections_count: Int, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double)
+    func processIntersections(isectionsPtr: UnsafeMutablePointer<Int64>, isections_count: Int, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double) -> Bool
     {
+        var res = true
         var lat: Double = 0
         var lon: Double = 0
         
@@ -2185,11 +2208,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             var ind: CInt = 0
             var location: NSString? = nil
             var count: CInt = 0
-            let res = self.MySbplWrapper.getIntersectionDetails_wrapped(pointId, &ind, &lat, &lon, &location, &count)
+            res = self.MySbplWrapper.getIntersectionDetails_wrapped(pointId, &ind, &lat, &lon, &location, &count)
             //print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(location!)")
             if (!res)
             {
-                showAlert("SBPL_Exception", alertMessage: "MySbplWrapper.getIntersectionDetails_wrapped failed", actionTitle: "Close")
+                showAlert("SBPL_Exception", alertMessage: "getIntersectionDetails failed for pointId=\(pointId)", actionTitle: "Close")
+                NSLog("SBPL_Exception: [file: \(#file) function: \(#function) at line \(#line)] pointId: \(pointId)")
+                break
             }
             
             if (lat >= minlat && lat <= maxlat && lon >= minlon && lon <= maxlon)
@@ -2206,6 +2231,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             location = nil
         }
         //print("Intersections total: \(i) within bbox \(j+1)")
+        return res
     }
         
     @IBAction func zoomInMap(sender: AnyObject)

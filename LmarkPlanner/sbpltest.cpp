@@ -15,29 +15,31 @@ MySbpl::MySbpl(string iosDocDir)
     
     env0.dbg_params.dir.assign(iosDocDir);
     printTargetOS();
-    //throw new SBPL_Exception();
 }
 
 bool MySbpl::setParams(int debug_mode)
 {
     env0.dbg_params.mode = debug_mode;
+    
+    env0.dbg_params.max_landmark_road_distance = 50.0; //meters
+
+    env0.dbg_params.roads_file_name = env0.dbg_params.dir + "/myroads.txt";
+    env0.dbg_params.landmarks_file_name = env0.dbg_params.dir + "/mylandmarks.txt";
+    env0.dbg_params.amenities_file_name = env0.dbg_params.dir + "/amenities.txt";
+    env0.dbg_params.ways_file_name = env0.dbg_params.dir + "/ways.txt";
+    env0.dbg_params.roadinfo_file_name = env0.dbg_params.dir + "/roadinfo.txt";
+    env0.dbg_params.streets_file_name = env0.dbg_params.dir + "/streets.txt";
+    env0.dbg_params.isections_file_name = env0.dbg_params.dir + "/isections.txt";
+    env0.dbg_params.pois_file_name = env0.dbg_params.dir + "/pois.txt";
+    env0.dbg_params.expands_file_name = env0.dbg_params.dir + "/expands.txt";
+    env0.dbg_params.debug_file_name = env0.dbg_params.dir + "/debug.txt";
+    env0.dbg_params.heristics_file_name = env0.dbg_params.dir + "/heuristics.txt";
     return true;
 }
 
 bool MySbpl::initPlannerByOsm(string osmJsonStr, long long int** lmarks, int* lmarks_count, long long int** intersections, int*intersections_count)
 {
     bool res = true;
-    env0.dbg_params.max_landmark_road_distance = 50.0; //meters
-
-    env0.dbg_params.roads_file_name = "myroads.txt";
-    env0.dbg_params.landmarks_file_name = "mylandmarks.txt";
-    env0.dbg_params.amenities_file_name = "amenities.txt";
-    env0.dbg_params.ways_file_name = "ways.txt";
-    env0.dbg_params.roadinfo_file_name = "roadinfo.txt";
-    env0.dbg_params.streets_file_name = "streets.txt";
-    env0.dbg_params.isections_file_name = "isections.txt";
-    env0.dbg_params.pois_file_name = "pois.txt";
-
     res = env0.InitializeEnvByJson(osmJsonStr, lmarks, lmarks_count, intersections, intersections_count);
     if (res)
     {
@@ -55,24 +57,16 @@ bool MySbpl::getIntresectionDetails(long long int point_id, int* ind, double* la
 
 {
     bool res = env0.GetIntersectionDetails(point_id, ind, lat, lon, location, streetsCount);
-
-    if (res)
-    {
-        //printf("%s\n", location.c_str());
-    }
-    else
-        printf("Error: getIntersectionDetails failed!\n");
+    if (!res)
+        SBPL_ERROR("Error: getIntersectionDetails failed!\n");
     return res;
 }
 
 bool MySbpl::getLandmarkDetails(long long int point_id, int* ind, double* lat, double* lon, string& name, string& address, string& info, string& street, string& amenity, long long int* roadId, double* roadLat, double* roadLon)
 {
     bool res = env0.GetLandmarkDetails(point_id, ind, lat, lon, name, address, info, street, amenity, roadId, roadLat, roadLon);
-    if (res)
-    {
-    }
-    else
-        printf("Error: getLandmarkDetails failed!\n");
+    if (!res)
+        SBPL_ERROR("Error: getLandmarkDetails failed!\n");
     return res;
 }
 
@@ -80,40 +74,32 @@ bool MySbpl::getSolutionStepDetails(int currInd, int succInd, long long int* pid
     int* envId1, int* envId2)
 {
     bool res = env->GetSolutionStepDetails(currInd, succInd, pid1, pid2, act1, act2, type1, type2, dir1, dir2, lat1, lon1, lat2, lon2, envId1, envId2);
+    if (!res)
+        SBPL_ERROR("Error: getSolutionStepDetails failed!\n");
     return res;
 }
 
 bool MySbpl::freePlan(int** plan)
 {
     delete [] *plan;
-    
-    int rcount = (int)env0.roads_.size();
-    int lcount = (int)env0.landmarks_.size();
-    SBPL_PRINTF("freePlan: rcount = %d, lcount = %d", rcount, lcount);
-
     return true;
 }
 
 bool MySbpl::freeMemory(long long int** ptr)
 {
     delete [] *ptr;
-    
-    int rcount = (int)env0.roads_.size();
-    int lcount = (int)env0.landmarks_.size();
-    SBPL_PRINTF("freeMemory: rcount = %d, lcount = %d", rcount, lcount);
     return true;
 }
 
 bool MySbpl::generatePlan(int k, long long int start_pointId, long long int start_roadId, int start_type, int start_dir, long long int goal_pointId, long long int goal_roadId, int goal_type, int goal_dir, int mode, int* pathlen, int* k0len, int* k1len, int** plan)
 {
     std::vector<int*> ppcpSolutionIds;
-    
     string spath = "";
-    double computeTime = 10.00;
-    double policyTime = 100.00;
+    double computeTime = 1.0;   //10.00;
+    double policyTime = 2.0; //100.00;
     
     //env.Reset();
-    //MapEnv env;
+    //MapEnv env;//
     
     if (env != NULL)
     {
@@ -122,18 +108,8 @@ bool MySbpl::generatePlan(int k, long long int start_pointId, long long int star
     
     env = new MapEnv();
     env->InitializeEnvByEnv(&env0);
-    int rcount = (int)env0.roads_.size();
-    int lcount = (int)env0.landmarks_.size();
-    SBPL_PRINTF("generatePlan for env0: rcount = %d, lcount = %d", rcount, lcount);
-
-    rcount = (int)env->roads_.size();
-    lcount = (int)env->landmarks_.size();
-    SBPL_PRINTF("generatePlan for env: rcount = %d, lcount = %d", rcount, lcount);
-
     
-    //env->OpenDebugFiles(docDirectory);
-    printf("roads: %d roadIds: %d landmarks: %d landmarkIds %d\n", (int)env->roads_.size(), (int)env->roadIds_.size(), (int)env->landmarks_.size(), (int)env->landmarkIds_.size());
-    
+    SBPL_PRINTF("roads: %d roadIds: %d landmarks: %d landmarkIds %d", (int)env->roads_.size(), (int)env->roadIds_.size(), (int)env->landmarks_.size(), (int)env->landmarkIds_.size());
     
     EnvState start_state = env->CreateState(start_roadId, start_pointId, start_type, start_dir);
     env->setStartState(start_state);
@@ -152,11 +128,11 @@ bool MySbpl::generatePlan(int k, long long int start_pointId, long long int star
     bool ret = env->findOptimalPPCPPath(&ppcpSolutionIds);
     
     *pathlen = (int)ppcpSolutionIds.size();
-    printf("pathlen = %d ret = %d\n", *pathlen, ret);
+    SBPL_PRINTF("pathlen = %d ret = %d", *pathlen, ret);
     
     if (!ret || *pathlen <= 0)
     {
-        //printf("Error: Path not found!\n");
+        //SBPL_ERROR("Error: Path not found!");
         //fflush(stdout);
         return false;
     }

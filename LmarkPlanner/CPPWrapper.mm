@@ -28,11 +28,13 @@
     @catch(NSException *exception) {
         *error = [[NSError alloc] initWithDomain: exception.name  code:0 userInfo: exception.userInfo];
         printf("NSException\n");
+        NSLog(@"NSException: %s", __PRETTY_FUNCTION__);
         res = false;
     }
     @catch(...) {
         *error = [[NSError alloc] initWithDomain: @"Unknown exception"  code:0 userInfo:nil];
-        printf("SBPLException\n");
+        printf("SBPL_Exception\n");
+        NSLog(@"SBPL_Exception: %s", __PRETTY_FUNCTION__);
         res = false;
     }
     return res;
@@ -47,7 +49,8 @@
         sb = NULL;
     }
     @catch(...) {
-        SBPL_ERROR("SBPL_Exception: env0.InitializeEnvByJson failed.");
+        //SBPL_ERROR("SBPL_Exception: env0.InitializeEnvByJson failed.");
+        NSLog(@"SBPL_Exception:%s", __PRETTY_FUNCTION__);
         res = false;
     }
     return res;
@@ -62,7 +65,8 @@
         sb = NULL;
     }
     @catch(...) {
-        SBPL_ERROR("SBPL_Exception: sb->freePlan failed.");
+        //SBPL_ERROR("SBPL_Exception: sb->freePlan failed.");
+        NSLog(@"SBPL_Exception:%s", __PRETTY_FUNCTION__);
         res = false;
     }
     return res;
@@ -77,7 +81,8 @@
         sb = NULL;
     }
     @catch(...) {
-        SBPL_ERROR("SBPL_Exception: sb->freeMemory failed.");
+        //SBPL_ERROR("SBPL_Exception: sb->freeMemory failed.");
+        NSLog(@"SBPL_Exception:%s", __PRETTY_FUNCTION__);
         res = false;
     }
     return res;
@@ -92,7 +97,8 @@
         sb = NULL;
     }
     @catch(...) {
-        SBPL_ERROR("SBPL_Exception: sb->generatePlan failed.");
+        //SBPL_ERROR("SBPL_Exception: sb->generatePlan failed.");
+        NSLog(@"SBPL_Exception:%s", __PRETTY_FUNCTION__);
         res = false;
     }
     return res;
@@ -113,7 +119,8 @@
         sb = NULL;
     }
     @catch(...) {
-        SBPL_ERROR("SBPL_Exception: sb->getIntresectionDetails failed.");
+        //SBPL_ERROR("SBPL_Exception: sb->getIntresectionDetails failed.");
+        NSLog(@"SBPL_Exception:%s", __PRETTY_FUNCTION__);
         res = false;
     }
     return res;
@@ -138,7 +145,9 @@
         sb = NULL;
     }
     @catch(...) {
-        SBPL_ERROR("SBPL_Exception: sb->getLandmarkDetails failed.");
+        //SBPL_ERROR("SBPL_Exception: sb->getLandmarkDetails failed.");
+        NSLog(@"SBPL_Exception:%s", __PRETTY_FUNCTION__);
+        //NSLog(@"%@", [NSThread callStackSymbols]);
         res = false;
     }
     return res;
@@ -153,7 +162,8 @@
         sb = NULL;
     }
     @catch(...) {
-        SBPL_ERROR("SBPL_Exception: sb->getSolutionStepDetails failed.");
+        //SBPL_ERROR("SBPL_Exception: sb->getSolutionStepDetails failed.");
+        NSLog(@"SBPL_Exception:%s", __PRETTY_FUNCTION__);
         res = false;
     }
     return res;
