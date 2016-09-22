@@ -38,6 +38,7 @@ class LandmarksTableViewController: UITableViewController {
     var settings = [Setting]()
     var mode = Int()
     var delegate:sendDataBack?
+    var workOffline: Bool = false
     
     func sendSwitchValToPreviousVC(val: Bool) {
         self.delegate?.sendBoolValToPreviousVC(val)
