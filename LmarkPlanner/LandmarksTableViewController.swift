@@ -11,7 +11,7 @@ import MapKit
 
 protocol sendDataBack
 {
-    func sendBoolValToPreviousVC(val: Bool)
+    func sendBoolValToPreviousVC(val: Bool, tag: Int)
     func sendDoubleValsToPreviousVC(xval: Double, yval: Double)
 }
 
@@ -40,8 +40,8 @@ class LandmarksTableViewController: UITableViewController {
     var delegate:sendDataBack?
     var workOffline: Bool = false
     
-    func sendSwitchValToPreviousVC(val: Bool) {
-        self.delegate?.sendBoolValToPreviousVC(val)
+    func sendSwitchValToPreviousVC(val: Bool, tag: Int) {
+        self.delegate?.sendBoolValToPreviousVC(val, tag: tag)
     }
     
     func sendXYToPreviousVC(xval: Double, yval: Double) {
@@ -205,7 +205,7 @@ class LandmarksTableViewController: UITableViewController {
                 cell.SwitchPropName.text = setting.name
                 cell.SwitchPropValue.setOn(setting.bval!, animated: true)
                 cell.parentController = self
-                
+                cell.tag = setting.tag
                 return cell
             }
             else if setting.type == 2
@@ -218,6 +218,7 @@ class LandmarksTableViewController: UITableViewController {
                 cell.xVal.text = String(setting.xval!)
                 cell.yVal.text = String(setting.yval!)
                 cell.parentController = self
+                cell.tag = setting.tag
                 return cell
             }
 
@@ -236,7 +237,7 @@ class LandmarksTableViewController: UITableViewController {
         if let cell = currentCell as? SwitchSettingCell
         {
             let bval = cell.SwitchPropValue.on
-            self.sendSwitchValToPreviousVC(bval)
+            self.sendSwitchValToPreviousVC(bval, tag: 1)
         }
     }
     

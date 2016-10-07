@@ -13,7 +13,7 @@
 
 - (BOOL) setParams_wrapped: (int) debug_mode error: (__autoreleasing NSError **) error;
 
-- (BOOL) initPlannerByOsm_wrapped: (NSString*) osmJsonStr : (long long int **) lmarks : (int*) lmarks_count : (long long int **) intersections : (int*) intersections_count
+- (BOOL) initPlannerByOsm_wrapped: (NSString*) osmJsonStr : (NSString*) excludedLmarks : (long long int **) lmarks : (int*) lmarks_count : (long long int **) intersections : (int*) intersections_count
 ;
 
 - (BOOL) freePlan_wrapped: (int**) plan;

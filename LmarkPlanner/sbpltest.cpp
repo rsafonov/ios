@@ -37,10 +37,10 @@ bool MySbpl::setParams(int debug_mode)
     return true;
 }
 
-bool MySbpl::initPlannerByOsm(string osmJsonStr, long long int** lmarks, int* lmarks_count, long long int** intersections, int*intersections_count)
+bool MySbpl::initPlannerByOsm(string osmJsonStr, string excludedLmarks, long long int** lmarks, int* lmarks_count, long long int** intersections, int*intersections_count)
 {
     bool res = true;
-    res = env0.InitializeEnvByJson(osmJsonStr, lmarks, lmarks_count, intersections, intersections_count);
+    res = env0.InitializeEnvByJson(osmJsonStr, excludedLmarks, lmarks, lmarks_count, intersections, intersections_count);
     if (res)
     {
         //env.heuristicComputed = false;

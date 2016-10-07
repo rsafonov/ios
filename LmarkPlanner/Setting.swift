@@ -11,14 +11,16 @@ import MapKit
 
 class Setting {
     var name : String = ""
+    var tag: Int
     var type : Int = 0
     var ival : Int? = 0
     var bval : Bool? = true
     var xval : Double? = 0.0
     var yval : Double? = 0.0
     
-    init(name:String, type:Int, ival:Int?, bval:Bool?, xval:Double?, yval:Double?) {
+    init(name:String, tag: Int, type:Int, ival:Int?, bval:Bool?, xval:Double?, yval:Double?) {
         self.name = name
+        self.tag = tag
         self.type = type
         self.ival = ival
         self.bval = bval

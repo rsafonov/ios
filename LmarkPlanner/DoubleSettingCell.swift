@@ -37,26 +37,32 @@ class DoubleSettingCell: UITableViewCell {
         // Configure the view for the selected state
     }
     
-    func xValChanged(x_Val: UITextField) {
-        //print("x_Val = \(x_Val.text) yVal = \(yVal.text)")
-        var x: Double = 1000.0
-        var y: Double = 1000.0
-        
-        if (!(x_Val.text?.isEmpty)!)
-        {
-            x = Double(x_Val.text!)!
-        }
-        if (!(yVal.text?.isEmpty)!)
-        {
-            y = Double(yVal.text!)!
-        }
-        
+    func xValChanged(x_Val: UITextField)
+    {
+        let x = updateVal(x_Val.text!)
+        let y = updateVal(yVal.text!)
         parentController!.sendXYToPreviousVC(x, yval: y)
     }
     
-    func yValChanged(y_Val: UITextField) {
-        //print("xVal = \(xVal) y_Val = \(y_Val.text)")
-        parentController!.sendXYToPreviousVC(Double(xVal.text!)!, yval: Double(y_Val.text!)!)
+    func yValChanged(y_Val: UITextField)
+    {
+        let x = updateVal(xVal.text!)
+        let y = updateVal(y_Val.text!)
+        parentController!.sendXYToPreviousVC(x, yval: y)
+    }
+    
+    func updateVal(txt: String) -> Double
+    {
+        var val: Double? = 1500.0
+        if (!(txt.isEmpty))
+        {
+            val = Double(txt)
+            if  val == nil
+            {
+                val = 1500.0
+            }
+        }
+        return val!
     }
 }
 

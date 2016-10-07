@@ -40,7 +40,7 @@ class SwitchSettingCell: UITableViewCell {
         }
         */
         
-        parentController!.sendSwitchValToPreviousVC(switchState.on)
+        parentController!.sendSwitchValToPreviousVC(switchState.on, tag: tag)
     }
 }
 

@@ -40,12 +40,12 @@
     return res;
 }
 
-- (BOOL) initPlannerByOsm_wrapped: (NSString*) osmJsonStr : (long long int **) lmarks : (int*) lmarks_count : (long long int **) intersections : (int*) intersections_count
+- (BOOL) initPlannerByOsm_wrapped: (NSString*) osmJsonStr : (NSString*) excludedLmarks : (long long int **) lmarks : (int*) lmarks_count : (long long int **) intersections : (int*) intersections_count
 {
     bool res = true;
     @try {
         MySbpl* sb = (MySbpl*)self.ob;
-        res =(MySbpl*) sb->initPlannerByOsm([osmJsonStr cStringUsingEncoding:NSUTF8StringEncoding], lmarks, lmarks_count, intersections, intersections_count);
+        res =(MySbpl*) sb->initPlannerByOsm([osmJsonStr cStringUsingEncoding:NSUTF8StringEncoding], [excludedLmarks cStringUsingEncoding:NSUTF8StringEncoding], lmarks, lmarks_count, intersections, intersections_count);
         sb = NULL;
     }
     @catch(...) {

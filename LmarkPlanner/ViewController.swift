@@ -10,6 +10,8 @@ import UIKit
 import MapKit
 import CoreLocation
 
+//import GoogleMaps
+
 class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationManagerDelegate, sendDataBack {
     
     // MARK: Properties
@@ -81,37 +83,20 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     
     var conditions = [Condition]()
     
-    
     @IBOutlet var OnlineStatusImage: UIImageView!
-    
     @IBOutlet var activityIndicatorView: UIActivityIndicatorView!
-    
-    //@IBOutlet var mapTypeButton: UIBarButtonItem!
     @IBOutlet var lmarksButton: UIBarButtonItem!
-    //@IBOutlet var zoomInButton: UIBarButtonItem!
-    //@IBOutlet var osmButton: UIBarButtonItem!
-    //@IBOutlet var animateButton: UIBarButtonItem!
-    //@IBOutlet var showPlanButton: UIBarButtonItem!
     @IBOutlet var isectionsButton: UIBarButtonItem!
     @IBOutlet var planButton: UIBarButtonItem!
     @IBOutlet var settingsButton: UIBarButtonItem!
-    
     @IBOutlet var mapView: MKMapView!
     @IBOutlet var searchText: UITextField!
         
     // MARK: Methods
     
-    //@IBAction func showPlanSteps(sender: AnyObject) {
-    //    self.performSegueWithIdentifier("ShowTable", sender: sender)
-    //}
-    
     @IBAction func showSettings(sender: AnyObject) {
         self.performSegueWithIdentifier("ShowTable", sender: sender)
     }
-    
-    //@IBAction func showDirections(sender: AnyObject) {
-    //    self.performSegueWithIdentifier("ShowTable", sender: sender)
-    //}
     
     @IBAction func showIsections(sender: AnyObject) {
         self.performSegueWithIdentifier("ShowTable", sender: sender)
@@ -125,54 +110,26 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         }
     }
     
-    //@IBAction func editSettings(sender: AnyObject) {
-    //    //print("Settings button clicked")
-    //}
-    
-    /*
-    @IBAction func animateCamera(sender: AnyObject) {
-        
-        mapView.mapType = .SatelliteFlyover
-        pitch = 65
-        
-        let coordinate = CLLocationCoordinate2D(latitude: 40.444718, longitude: -79.947537)
-        
-        camera = MKMapCamera(lookingAtCenterCoordinate: coordinate,
-            fromDistance: distance,
-            pitch: pitch,
-            heading: heading)
-        
-        UIView.animateWithDuration(20.0, animations: {
-            self.camera!.heading += 180
-            self.camera!.pitch = 25
-            self.mapView.camera = self.camera!
-        })
-    }
-    */
-    
-    //@IBAction func cancelToLandmarksViewController(seque:UIStoryboardSegue) {
-    //}
-        
-    //@IBAction func searchOsm(sender: AnyObject) {
-    //    self.initEnv(currentLocation.coordinate)
-    //}
-    
     @IBAction func saveLandmarkDetail(segue:UIStoryboardSegue)
     {
         //print("Done clicked")
         viewDidLoad()
     }
     
-    //@IBAction func cancelToPlanViewController(seque:UIStoryboardSegue) {
-    //
-    //}
-    
-    //@IBAction func savePlanDetail(segue:UIStoryboardSegue) {
-    //
-    //}
-    
-    func sendBoolValToPreviousVC(bval: Bool) {
-        showCurrentLocation = bval
+    func sendBoolValToPreviousVC(bval: Bool, tag: Int) {
+        switch tag
+        {
+        case 1:
+            showCurrentLocation = bval
+        case 2:
+            workOffline = bval
+        case 3:
+            debug = bval
+        case 4:
+            saveFiles = bval
+        default:
+            print("Invalid tag value: \(tag)")
+        }
         config_changed  = true
     }
     
@@ -493,16 +450,28 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             {
                 var content: String
                 var loc: String
-
-                //let dir = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true).first
+                var excluded_lmarks_list: String
                 
                 let docdirpath = self.getDocumentsDirectoryPath()
                 let subdirpath = NSURL(fileURLWithPath: docdirpath).URLByAppendingPathComponent(subdirname)
 
                 let json_path = NSURL(fileURLWithPath: subdirpath.path!).URLByAppendingPathComponent("map.json")
                 let loc_path = NSURL(fileURLWithPath: subdirpath.path!).URLByAppendingPathComponent("coord.txt")
+                let excluded_lmarks_path = NSURL(fileURLWithPath: subdirpath.path!).URLByAppendingPathComponent("excluded_lmarks.txt")
 
                 print("json_path=\(json_path)")
+                
+                do {
+                    excluded_lmarks_list = try NSString(contentsOfURL: excluded_lmarks_path, encoding: NSUTF8StringEncoding) as String
+                } catch {
+                    let serr = "Error reading cashed file: \(excluded_lmarks_path.path!)"
+                    self.showAlert("Error", alertMessage: serr, actionTitle: "Close")
+                    NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
+                    return;
+                }
+                print(excluded_lmarks_list)
+                let excludedLmarksArr: Array = excluded_lmarks_list.componentsSeparatedByString(",")
+                print("Number of Excluded Lmarks: \(excludedLmarksArr.count)")
         
                 do {
                     loc = try NSString(contentsOfURL: loc_path, encoding: NSUTF8StringEncoding) as String
@@ -541,7 +510,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 }
                 //print(content)
                 
-                let res = self.ExtractLmarksAndIsections(content, minlat: minlat, minlon: minlon, maxlat: maxlat, maxlon: maxlon)
+                let res = self.ExtractLmarksAndIsections(content, excludedLmarks: excluded_lmarks_list, minlat: minlat, minlon: minlon, maxlat: maxlat, maxlon: maxlon)
                 if (res)
                 {
                     print("Before reading lmark images: number of lmarks = \(self.lmarks.count)")
@@ -609,9 +578,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         return true
     }
  
-    override func viewDidLoad() {
+    override func viewDidLoad()
+    {
         super.viewDidLoad()
-        
         if (workOffline)
         {
             OnlineStatusImage.image = UIImage(named: "ledred16")
@@ -620,38 +589,42 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         {
             OnlineStatusImage.image = UIImage(named: "ledgreen16")
         }
-        
         self.view.bringSubviewToFront(OnlineStatusImage)
         self.view.bringSubviewToFront(activityIndicatorView)
         
-        directionImages.append("ArrowCounterclockwise")
-        directionImages.append("ArrowLeftTurn")
-        directionImages.append("ArrowLeft")
-        directionImages.append("ArrowUp")
-        directionImages.append("ArrowRight")
-        directionImages.append("ArrowRightTurn")
-        directionImages.append("ArrowCounterclockwise")
-        
-        directionNames.append("Uuturn left")
-        directionNames.append("sharp turn left")
-        directionNames.append("turn left")
-        directionNames.append("go straight")
-        directionNames.append("turn right")
-        directionNames.append("sharp turn right")
-        directionNames.append("uturn right")
-        
-        conditions.append(Condition(k: 1, start_dir: 0, goal_dir: 0))
-        conditions.append(Condition(k: 1, start_dir: 0, goal_dir: 1))
-        conditions.append(Condition(k: 1, start_dir: 1, goal_dir: 0))
-        conditions.append(Condition(k: 1, start_dir: 1, goal_dir: 1))
-
-        conditions.append(Condition(k: 0, start_dir: 0, goal_dir: 0))
-        conditions.append(Condition(k: 0, start_dir: 0, goal_dir: 1))
-        conditions.append(Condition(k: 0, start_dir: 1, goal_dir: 0))
-        conditions.append(Condition(k: 0, start_dir: 1, goal_dir: 1))
-        
         if (countViewDidLoad == 0)
         {
+            directionImages.append("ArrowCounterclockwise")
+            directionImages.append("ArrowLeftTurn")
+            directionImages.append("ArrowLeft")
+            directionImages.append("ArrowUp")
+            directionImages.append("ArrowRight")
+            directionImages.append("ArrowRightTurn")
+            directionImages.append("ArrowCounterclockwise")
+        
+            directionNames.append("Uuturn left")
+            directionNames.append("sharp turn left")
+            directionNames.append("turn left")
+            directionNames.append("go straight")
+            directionNames.append("turn right")
+            directionNames.append("sharp turn right")
+            directionNames.append("uturn right")
+        
+            conditions.append(Condition(k: 1, start_dir: 0, goal_dir: 0))
+            conditions.append(Condition(k: 1, start_dir: 0, goal_dir: 1))
+            conditions.append(Condition(k: 1, start_dir: 1, goal_dir: 0))
+            conditions.append(Condition(k: 1, start_dir: 1, goal_dir: 1))
+
+            conditions.append(Condition(k: 0, start_dir: 0, goal_dir: 0))
+            conditions.append(Condition(k: 0, start_dir: 0, goal_dir: 1))
+            conditions.append(Condition(k: 0, start_dir: 1, goal_dir: 0))
+            conditions.append(Condition(k: 0, start_dir: 1, goal_dir: 1))
+            
+            lmarksButton.tag = 1
+            isectionsButton.tag = 3
+            planButton.tag = 2
+            settingsButton.tag = 4
+
             var debug_mode = 0;
             if (debug) {
                 debug_mode = 1;
@@ -681,9 +654,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         {
             self.locationManager.stopUpdatingLocation()
             self.mapView.showsUserLocation = false
-            //span = MKCoordinateSpanMake(0.022, 0.022)
             span = MKCoordinateSpanMake(0.011, 0.011)
-            //let coordinateRegion = MKCoordinateRegionMake(initialLocation.coordinate, span)
             coordinateRegion = MKCoordinateRegionMakeWithDistance(initialLocation.coordinate, xRegionSizeMeters, yRegionSizeMeters);
             mapView.setRegion(coordinateRegion!, animated: false)
             mapView.showsCompass = false
@@ -706,11 +677,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             safety_plan.removeAll()
             config_changed = false
         }
-        
-        lmarksButton.tag = 1
-        isectionsButton.tag = 3
-        planButton.tag = 2
-        settingsButton.tag = 4
         
         countViewDidLoad += 1
         
@@ -895,7 +861,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         let filename = "\(objname)_\(id)"
         let strlat = String(lat)
         let strlon = String(lon)
-        let fov = String(90)
+        //let fov = String(90)
+        let fov = String(120)
 
         let imageurl = "http://maps.googleapis.com/maps/api/streetview?size=400x400&location=" + strlat + "," + strlon + "&fov=" + fov + "&sensor=false&key=AIzaSyD3jESuue6j-P5ylGPUsqW7ZjTdY59HKy4"
         
@@ -1190,13 +1157,21 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             else if (btn.tag == 4)  //settingsButton
             {
                 //print("Settings button clicked")
-                let setting1 = Setting(name: "Show Current Location", type: 1, ival: nil, bval: showCurrentLocation, xval: nil, yval: nil)
-                targetController.settings.append(setting1)
+                var setting: Setting
+                setting = Setting(name: "Show Current Location", tag: 1, type: 1, ival: nil, bval: showCurrentLocation, xval: nil, yval: nil)
+                targetController.settings.append(setting)
                 
-                let setting2 = Setting(name: "Region Size in Meters", type: 2, ival: nil, bval: nil, xval: xRegionSizeMeters, yval: yRegionSizeMeters)
-                targetController.settings.append(setting2)
+                setting = Setting(name: "Work Offline", tag: 2, type: 1, ival: nil, bval: workOffline, xval: nil, yval: nil)
+                targetController.settings.append(setting)
                 
-                //print("RegionSizeMeters: \(xRegionSizeMeters) \(yRegionSizeMeters)")
+                setting = Setting(name: "Debug", tag: 3, type: 1, ival: nil, bval: debug, xval: nil, yval: nil)
+                targetController.settings.append(setting)
+                
+                setting = Setting(name: "Create Cash", tag: 4, type: 1, ival: nil, bval: saveFiles, xval: nil, yval: nil)
+                targetController.settings.append(setting)
+                
+                setting = Setting(name: "Region Size in Meters", tag: 5, type: 2, ival: nil, bval: nil, xval: xRegionSizeMeters, yval: yRegionSizeMeters)
+                targetController.settings.append(setting)
            }
         }
     }
@@ -1265,7 +1240,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 }
             }
             
-            let res = self.ExtractLmarksAndIsections(responseString!, minlat: minlat, minlon: minlon, maxlat: maxlat, maxlon: maxlon)
+            let excluded_lmarks_list = ""
+            let res = self.ExtractLmarksAndIsections(responseString!, excludedLmarks: excluded_lmarks_list, minlat: minlat, minlon: minlon, maxlat: maxlat, maxlon: maxlon)
             
             completion(result: res)
         }
@@ -1329,14 +1305,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         print("errors:  \(errcount)")
     }
     
-    func ExtractLmarksAndIsections(responseString: String, minlat: Double, minlon: Double, maxlat: Double, maxlon: Double) -> Bool
+    func ExtractLmarksAndIsections(responseString: String, excludedLmarks: String, minlat: Double, minlon: Double, maxlat: Double, maxlon: Double) -> Bool
     {
         var lmarksPtr = UnsafeMutablePointer<Int64>(nil)
         var isectionsPtr = UnsafeMutablePointer<Int64>(nil)
         var lmarks_count : CInt = 0
         var isections_count : CInt = 0
     
-        var res = self.MySbplWrapper.initPlannerByOsm_wrapped(responseString, &lmarksPtr, &lmarks_count, &isectionsPtr, &isections_count)
+        var res = self.MySbplWrapper.initPlannerByOsm_wrapped(responseString, excludedLmarks, &lmarksPtr, &lmarks_count, &isectionsPtr, &isections_count)
     
         if (res)
         {
@@ -1475,8 +1451,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     anns.append(ann)
                 }
                 self.mapView.addAnnotations(anns)
-                
-                
+
                 if (self.saveFiles)
                 {
                     let name = "osm"
@@ -1518,14 +1493,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     
     func searchInMap(search_query: String, lat: CLLocationDegrees, lon: CLLocationDegrees, span: MKCoordinateSpan, mode: Int)
     {
-        //let latmin: CLLocationDegrees = lat - span.latitudeDelta
-        //let latmax: CLLocationDegrees = lat + span.latitudeDelta
-        //let lonmin: CLLocationDegrees = lon - span.longitudeDelta
-        //let lonmax: CLLocationDegrees = lon + span.longitudeDelta
-        
         let request = MKLocalSearchRequest()
         request.naturalLanguageQuery = search_query
-        
         //let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
         //request.region = MKCoordinateRegion(center: coord, span: span)
         let search = MKLocalSearch(request: request)
@@ -1567,12 +1536,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                         //print("iim=\(iim) title: \(item.placemark.name)")
                         
                         self.initialLocation = item.placemark.location!
-                        //self.config_changed = true
-                        
                         let coordinateRegion = MKCoordinateRegionMake(self.initialLocation.coordinate, span)
                         self.mapView.setRegion(coordinateRegion, animated: false)
                         self.addPinToMapView(item.name!, latitude: self.initialLocation.coordinate.latitude, longitude: self.initialLocation.coordinate.longitude)
-                        
+
                         _ = self.initEnv(self.initialLocation.coordinate)
                         
                         break
