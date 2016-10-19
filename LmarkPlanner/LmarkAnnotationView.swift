@@ -209,7 +209,12 @@ class LmarkAnnotationView: MKAnnotationView {
     
     func callGeneratePlan()
     {
-        parent!.generateOptimalPlan ( { (error:NSError!) -> () in
+        let start = NSDate()
+        var end: NSDate?
+        
+            self.parent!.DebugInfo.text = "Searching...\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId)"
+
+            parent!.generateOptimalPlan ( { (error:NSError!) -> () in
 
             dispatch_async(dispatch_get_main_queue(), {
 
@@ -220,7 +225,20 @@ class LmarkAnnotationView: MKAnnotationView {
                     print("generateOptimalPlan completed")
                     if (self.parent!.plan.count > 0)
                     {
+                        end = NSDate()
+                        let duration = end!.timeIntervalSinceDate(start)
+                        print("Duration = \(duration)")
+                        
                         self.parent!.drawPlan(0, planColor: UIColor.blueColor(), path: self.parent!.plan)
+                        
+                        if (self.parent!.cond0 != nil)
+                        {
+                            self.parent!.DebugInfo.text = "k=\(self.parent!.cond0!.k) time=\(self.parent!.duration0)\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId):\(self.parent!.cond0!.start_dir)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId):\(self.parent!.cond0!.goal_dir)"
+                        }
+                        else
+                        {
+                            self.parent!.DebugInfo.text = "Plan not found.\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId)"
+                        }
                     }
                 }
             })

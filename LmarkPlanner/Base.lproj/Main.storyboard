@@ -30,8 +30,8 @@
                                 <rect key="frame" x="169" y="293" width="37" height="37"/>
                                 <color key="color" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                             </activityIndicatorView>
-                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2cf-tf-ffa">
-                                <rect key="frame" x="16" y="579" width="343" height="44"/>
+                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2cf-tf-ffa">
+                                <rect key="frame" x="16" y="579" width="200" height="44"/>
                                 <items>
                                     <barButtonItem image="Theatre64" id="uIw-yb-VRh">
                                         <connections>
@@ -65,6 +65,12 @@
                                     <outlet property="delegate" destination="BYZ-38-t0r" id="pRj-h5-k4n"/>
                                 </connections>
                             </mapView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Wh1-r4-Qm0">
+                                <rect key="frame" x="159" y="523" width="200" height="50"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -84,6 +90,7 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina47"/>
                     <connections>
+                        <outlet property="DebugInfo" destination="Wh1-r4-Qm0" id="sSx-V1-36I"/>
                         <outlet property="OnlineStatusImage" destination="fqM-Pe-vMp" id="TLx-zt-abW"/>
                         <outlet property="activityIndicatorView" destination="vvA-FY-dLU" id="YKs-lz-hy5"/>
                         <outlet property="isectionsButton" destination="db5-QF-UCC" id="di6-RK-pIj"/>

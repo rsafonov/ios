@@ -17,11 +17,10 @@ MySbpl::MySbpl(string iosDocDir)
     printTargetOS();
 }
 
-bool MySbpl::setParams(int debug_mode)
+bool MySbpl::setParams(int debug_mode, double policyTime, double computeTime)
 {
     env0.dbg_params.mode = debug_mode;
-    
-    env0.dbg_params.max_landmark_road_distance = 50.0; //meters
+    env0.dbg_params.max_landmark_road_distance = 200.0; //meters
 
     env0.dbg_params.roads_file_name = env0.dbg_params.dir + "/myroads.txt";
     env0.dbg_params.landmarks_file_name = env0.dbg_params.dir + "/mylandmarks.txt";
@@ -33,18 +32,30 @@ bool MySbpl::setParams(int debug_mode)
     env0.dbg_params.pois_file_name = env0.dbg_params.dir + "/pois.txt";
     env0.dbg_params.expands_file_name = env0.dbg_params.dir + "/expands.txt";
     env0.dbg_params.debug_file_name = env0.dbg_params.dir + "/debug.txt";
-    env0.dbg_params.heristics_file_name = env0.dbg_params.dir + "/heuristics.txt";
+    env0.dbg_params.heuristics_file_name = env0.dbg_params.dir + "/heuristics.txt";
+    
+    env0.setTimes(policyTime, computeTime);
+
+    //env0.ppcp.debug_file_name = env0.dbg_params.debug_file_name;
     return true;
 }
 
 bool MySbpl::initPlannerByOsm(string osmJsonStr, string excludedLmarks, long long int** lmarks, int* lmarks_count, long long int** intersections, int*intersections_count)
 {
-    bool res = true;
-    res = env0.InitializeEnvByJson(osmJsonStr, excludedLmarks, lmarks, lmarks_count, intersections, intersections_count);
+    bool res = env0.InitializeEnvByJson(osmJsonStr, excludedLmarks, lmarks, lmarks_count, intersections, intersections_count);
     if (res)
     {
         //env.heuristicComputed = false;
         SBPL_PRINTF("env0.InitializeEnvByJson succeeded!");
+        
+        double computeTime = 0.0;
+        double policyTime = 0.0;
+        env0.ppcp.getTimes(&policyTime, &computeTime);
+        
+        FILE* fdbg = fopen(env0.dbg_params.debug_file_name.c_str(), "a");
+        fprintf(fdbg, "computeTime: %f\n", computeTime);
+        fprintf(fdbg, "policyTime:  %f\n", policyTime);
+        fclose(fdbg);
     }
     else
     {
@@ -91,23 +102,28 @@ bool MySbpl::freeMemory(long long int** ptr)
     return true;
 }
 
-bool MySbpl::generatePlan(int k, long long int start_pointId, long long int start_roadId, int start_type, int start_dir, long long int goal_pointId, long long int goal_roadId, int goal_type, int goal_dir, int mode, int* pathlen, int* k0len, int* k1len, int** plan)
+bool MySbpl::generatePlan(int k, long long int start_pointId, long long int start_roadId, int start_type, int start_dir, long long int goal_pointId, long long int goal_roadId, int goal_type, int goal_dir, int mode, int iter, int* pathlen, int* k0len, int* k1len, double* duration, int** plan)
 {
     std::vector<int*> ppcpSolutionIds;
     string spath = "";
-    double computeTime = 1.0;   //10.00;
-    double policyTime = 2.0; //100.00;
+    double computeTime;
+    double policyTime;
+    bool plan_found = false;
     
-    //env.Reset();
-    //MapEnv env;//
+    clock_t start_time = clock();
     
-    if (env != NULL)
-    {
-        delete env;
-    }
-    
+    if (env != NULL) delete env;
+
     env = new MapEnv();
-    env->InitializeEnvByEnv(&env0);
+    env->InitializeEnvByEnv(&env0, iter);
+    //env->ppcp.debug_file_name = env0.dbg_params.debug_file_name;
+    
+    env0.ppcp.getTimes(&policyTime, &computeTime);
+    SBPL_PRINTF("policyTyme = %f computeTime = %f", policyTime, computeTime);
+    
+    //FILE* fdbg = fopen(env->dbg_params.debug_file_name.c_str(), "a");
+    //fprintf(fdbg, )
+
     
     SBPL_PRINTF("roads: %d roadIds: %d landmarks: %d landmarkIds %d", (int)env->roads_.size(), (int)env->roadIds_.size(), (int)env->landmarks_.size(), (int)env->landmarkIds_.size());
     
@@ -115,33 +131,25 @@ bool MySbpl::generatePlan(int k, long long int start_pointId, long long int star
     env->setStartState(start_state);
     EnvState goal_state = env->CreateState(goal_roadId, goal_pointId, goal_type, goal_dir);
     env->setGoalState(goal_state);
-
-    //if (!env.heuristicComputed)
-    //{
-        env->ComputeHeuristic();
-        //env.heuristicComputed = true;
-    //}
+    env->ComputeHeuristic();
     
-    //env.ppcp.ResetPlanner(&env, k, 0);
     env->setSafetyNetDegree(k);
     env->setTimes(policyTime, computeTime);
-    bool ret = env->findOptimalPPCPPath(&ppcpSolutionIds);
+    *duration = 0.0;
+    bool ret = env->findOptimalPPCPPath(&ppcpSolutionIds, duration);
     
     *pathlen = (int)ppcpSolutionIds.size();
-    SBPL_PRINTF("pathlen = %d ret = %d", *pathlen, ret);
+    SBPL_PRINTF("pathlen = %d ret = %d duration = %f", *pathlen, ret, *duration);
     
     if (!ret || *pathlen <= 0)
     {
         //SBPL_ERROR("Error: Path not found!");
         //fflush(stdout);
-        return false;
+        //return false;
     }
     else
     {
-        //spath = env->ConvertStatePathToLatLonPath(&ppcpSolutionIds);
-        //fflush(stdout);
-        //strcpy(path, spath.c_str());
-
+        plan_found = true;
         *k0len = 0;
         *k1len = 0;
         for (int i = 0; i < *pathlen; i++)
@@ -160,6 +168,7 @@ bool MySbpl::generatePlan(int k, long long int start_pointId, long long int star
                     (*k1len)++;
             }
         }
+        SBPL_PRINTF("k0len = %d k1len = %d", *k0len, *k1len);
 
         if (mode == 1)
         {
@@ -174,8 +183,6 @@ bool MySbpl::generatePlan(int k, long long int start_pointId, long long int star
             
                 PPCPState* curstate = env->ppcp.ppcpStates_[currInd];
                 PPCPState* succstate = env->ppcp.ppcpStates_[succInd];
-                
-                //printf("%d %d %d %d %d\n", i, curstate->k, currInd, succstate->k, succInd);
             
                 if (curstate->k == succstate->k)
                 {
@@ -195,5 +202,18 @@ bool MySbpl::generatePlan(int k, long long int start_pointId, long long int star
             delete ppcpSolutionIds[i];
         }
     }
-    return true;
+    
+    if (env->dbg_params.mode > 0 && mode == 0)
+    {
+        FILE* fdbg = fopen(env->dbg_params.debug_file_name.c_str(), "a");
+        
+        fprintf(fdbg, "k=%d Start: r %lld p %lld t %d d %d ", k, start_roadId, start_pointId, start_type, start_dir);
+        fprintf(fdbg, "Goal: r %lld p %lld t %d d %d ", goal_roadId, goal_pointId, goal_type, goal_dir);
+        fprintf(fdbg, "time %f res %d k0len %d k1len %d\n", *duration, plan_found, *k0len, *k1len);
+        fclose(fdbg);
+    }
+    
+    double duration0 = ( clock() - start_time) / (double) CLOCKS_PER_SEC;
+    SBPL_PRINTF("Execution time: %10.5f", duration0);
+    return plan_found;
 }

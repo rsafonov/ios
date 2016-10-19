@@ -12,13 +12,16 @@ import CoreLocation
 
 //import GoogleMaps
 
-class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationManagerDelegate, sendDataBack {
-    
+class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationManagerDelegate, sendDataBack
+{
     // MARK: Properties
     
     var debug: Bool = true
     var workOffline: Bool = true
     var saveFiles: Bool = true
+    
+    let computeTime: Double = 1.0
+    let policyTime: Double = 6.0
     
     //let circlePathLayer = CAShapeLayer()
     //let circleRadius: CGFloat = 20.0
@@ -75,6 +78,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     
     var countViewDidLoad: Int = 0
     
+    var success_count: Int = 0
+    var failure_count: Int = 0
+    
     struct Condition {
         let k: Int
         let start_dir: Int
@@ -82,6 +88,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     }
     
     var conditions = [Condition]()
+    
+    var cond0: Condition? = nil
+    var duration0: Double = 0.0
     
     @IBOutlet var OnlineStatusImage: UIImageView!
     @IBOutlet var activityIndicatorView: UIActivityIndicatorView!
@@ -91,7 +100,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     @IBOutlet var settingsButton: UIBarButtonItem!
     @IBOutlet var mapView: MKMapView!
     @IBOutlet var searchText: UITextField!
-        
+    @IBOutlet var DebugInfo: UILabel!
+    
     // MARK: Methods
     
     @IBAction func showSettings(sender: AnyObject) {
@@ -106,7 +116,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         if (sol.count > 0)
         {
             self.performSegueWithIdentifier("ShowTable", sender: sender)
-    
         }
     }
     
@@ -268,13 +277,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         if (self.start_set && self.goal_set)
         {
             self.activityIndicatorView.startAnimating()
-        
+                        
             let queue:dispatch_queue_t = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
         
             dispatch_async(queue,
             {
-                //let semaphore = dispatch_semaphore_create(0)
-                
                 self.mapView.removeOverlays(self.mapView.overlays)
             
                 var minlen: Int = 100000
@@ -287,7 +294,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 {
                     var planPtr : UnsafeMutablePointer<CInt> = nil
                     let cond = self.conditions[i]
-                    ret = self.generateOnePlan(i+1, kmax: cond.k, start_dir: cond.start_dir, goal_dir: cond.goal_dir, mode: 0, minlen: &minlen, itermin: &itermin, count: &count, planPtr: &planPtr)
+                    ret = self.generateOnePlan(i+1, kmax: cond.k, start_dir: cond.start_dir, goal_dir: cond.goal_dir, mode: 0, minlen: &minlen, itermin: &itermin, count: &count, duration0: &self.duration0, planPtr: &planPtr)
+                    if (ret)
+                    {
+                        self.success_count += 1
+                    }
+                    else
+                    {
+                        self.failure_count += 1
+                    }
+                    
                     if (!plan_found && ret)
                     {
                         plan_found = true
@@ -300,64 +316,69 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     {
                         var planPtr : UnsafeMutablePointer<CInt> = nil
                         let cond = self.conditions[i]
-                        plan_found = self.generateOnePlan(i+1, kmax: cond.k, start_dir: cond.start_dir, goal_dir: cond.goal_dir, mode: 0, minlen: &minlen, itermin: &itermin, count: &count, planPtr: &planPtr)
+                        plan_found = self.generateOnePlan(i+1, kmax: cond.k, start_dir: cond.start_dir, goal_dir: cond.goal_dir, mode: 0, minlen: &minlen, itermin: &itermin, count: &count, duration0: &self.duration0, planPtr: &planPtr)
                     }
                 }
             
                 if (itermin > 0)
                 {
+                    let i = itermin-1
+                    let plan_file_name = "plan\(i)"
+                    let plan_file_ext = "txt"
+                    
                     if (self.debug)
                     {
-                        self.CreateOrTruncateFile("plan", ext: "txt")
+                        self.CreateOrTruncateFile(plan_file_name, ext: plan_file_ext)
                     }
                 
-                    let i = itermin-1
                     let cond = self.conditions[i]
+                    self.cond0 = cond
                 
                     var planPtr : UnsafeMutablePointer<CInt> = nil
-                    plan_found = self.generateOnePlan(itermin, kmax: cond.k, start_dir: cond.start_dir, goal_dir: cond.goal_dir, mode: 1, minlen: &minlen, itermin: &itermin, count: &count, planPtr: &planPtr)
-                
-                    self.DisplayPath(planPtr, count: count)
-    
+                    plan_found = self.generateOnePlan(itermin, kmax: cond.k, start_dir: cond.start_dir, goal_dir: cond.goal_dir, mode: 1, minlen: &minlen, itermin: &itermin, count: &count, duration0: &self.duration0, planPtr: &planPtr)
+                    
+                    self.DisplayPath(planPtr, count: count, plan_file_name: plan_file_name, plan_file_ext: plan_file_ext)
+                    
                     let res = self.MySbplWrapper.freePlan_wrapped(&planPtr)
                     if (!res)
                     {
                         self.showAlert("SBPL_Exception", alertMessage: "MySbplWrapper.freePlan_wrapped", actionTitle: "Close")
                         NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
                     }
+                    
                     completion(error:  nil)
                 }
                 else
                 {
+                    self.cond0 = nil
                     self.showAlert("Search", alertMessage: "Plan not found.", actionTitle: "Close")
                     let error: NSError = NSError(domain: "SBPL Search", code: 0, userInfo: nil)
+                    
                     completion(error: error)
                 }
+                
+                print("success_count = \(self.success_count) failure_count = \(self.failure_count)")
             })
         }
     }
     
-    func generateOnePlan(iter: Int, kmax: Int, start_dir: Int, goal_dir: Int, mode: Int, inout minlen: Int, inout itermin: Int, inout count: Int, inout planPtr: UnsafeMutablePointer<CInt>) -> Bool
+    func generateOnePlan(iter: Int, kmax: Int, start_dir: Int, goal_dir: Int, mode: Int, inout minlen: Int, inout itermin: Int, inout count: Int, inout duration0: Double, inout planPtr: UnsafeMutablePointer<CInt>) -> Bool
     {
         var pathlen: CInt = 0
         var k0len: CInt = 0
         var k1len: CInt = 0
+        let i: CInt = CInt(iter) - 1
+        var duration: Double = 0.0
+        duration0 = 0.0
         
         print("\n******** iter = \(iter) start *******")
         
-        let plan_found = self.MySbplWrapper.generatePlan_wrapped(CInt(kmax), start_pointId, start_roadId, CInt(start_type), CInt(start_dir), goal_pointId, goal_roadId, CInt(goal_type), CInt(goal_dir), CInt(mode), &pathlen, &k0len, &k1len, &planPtr)
+        let plan_found = self.MySbplWrapper.generatePlan_wrapped(CInt(kmax), start_pointId, start_roadId, CInt(start_type), CInt(start_dir), goal_pointId, goal_roadId, CInt(goal_type), CInt(goal_dir), CInt(mode), i, &pathlen, &k0len, &k1len, &duration, &planPtr)
 
         if (plan_found)
         {
+            duration0 = duration
             count = Int(k0len) + Int(k1len)
-            //for i in 0..<count
-            //{
-            //    let k = Int(planPtr[i*3])
-            //    let i1 = planPtr[i*3+1]
-            //    let i2 = planPtr[i*3+2]
-            //    print("\(k) \(i1) \(i2)")
-            //}
-            
             if (minlen > Int(k0len))
             {
                 itermin = iter
@@ -631,7 +652,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             }
             
             do {
-                try self.MySbplWrapper.setParams_wrapped(CInt(debug_mode))
+                try self.MySbplWrapper.setParams_wrapped(CInt(debug_mode), policyTime, computeTime)
             } catch {
                 print("SBPL Error: Could not create environment")
                 showAlert("SBPL Error", alertMessage: "Could not create environment.", actionTitle: "Close")
@@ -1624,7 +1645,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         return true
     }
     
-    func DisplayPath(pathArr: UnsafeMutablePointer<CInt>, count: Int)
+    func DisplayPath(pathArr: UnsafeMutablePointer<CInt>, count: Int, plan_file_name: String, plan_file_ext: String)
     {
         self.sol.removeAll()
         self.safety_sol.removeAll()
@@ -1668,7 +1689,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 autoreleasepool {
                 let txt = "\(i) | \(k) |p \(currInd) |e \(envId1) | \(id1) \(lat1) \(lon1) act \(act1) type \(type1) dir \(dir1) |p \(succInd) |e \(envId2) | \(id2) \(lat2) \(lon2) act \(act2) type \(type2) dir \(dir2)\n"
                 
-                    AppendStringToFile(txt, filename: "plan", ext: "txt")
+                    AppendStringToFile(txt, filename: plan_file_name, ext: plan_file_ext)
                 }
             }
             

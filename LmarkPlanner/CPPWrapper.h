@@ -11,7 +11,7 @@
 
 @interface CPPWrapper : NSObject
 
-- (BOOL) setParams_wrapped: (int) debug_mode error: (__autoreleasing NSError **) error;
+- (BOOL) setParams_wrapped: (int) debug_mode : (double) policyTime : (double) computeTime error: (__autoreleasing NSError **) error;
 
 - (BOOL) initPlannerByOsm_wrapped: (NSString*) osmJsonStr : (NSString*) excludedLmarks : (long long int **) lmarks : (int*) lmarks_count : (long long int **) intersections : (int*) intersections_count
 ;
@@ -19,7 +19,7 @@
 - (BOOL) freePlan_wrapped: (int**) plan;
 - (BOOL) freeMemory_wrapped: (long long int**) ptr;
 
-- (BOOL) generatePlan_wrapped: (int) k : (long long int) start_pointId : (long long int) start_roadId : (int) start_type : (int) start_dir : (long long int) goal_pointId : (long long int) goal_roadId : (int) goal_type : (int) goal_dir : (int) mode : (int *) pathlen : (int *) k0len : (int *) k1len : (int**) plan;
+- (BOOL) generatePlan_wrapped: (int) k : (long long int) start_pointId : (long long int) start_roadId : (int) start_type : (int) start_dir : (long long int) goal_pointId : (long long int) goal_roadId : (int) goal_type : (int) goal_dir : (int) mode : (int) iter :(int *) pathlen : (int *) k0len : (int *) k1len : (double*) duration : (int**) plan;
 
 - (BOOL) getIntersectionDetails_wrapped: (long long int) point_id : (int *) ind : (double *) lat : (double *) lon : (NSString **) location : (int *) streetsCount;
 - (BOOL) getLandmarkDetails_wrapped: (long long int) point_id : (int *) ind : (double *) lat : (double *) lon : (NSString **) name : (NSString **) address : (NSString **) info : (NSString **) street : (NSString **) amenity : (long long int*) road_id : (double *) roadLat : (double *) roadLon;

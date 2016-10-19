@@ -13,7 +13,7 @@
 
 #include "sbpltest.h"
 
-- (BOOL) setParams_wrapped: (int) debug_mode error: (__autoreleasing NSError **) error
+- (BOOL) setParams_wrapped: (int) debug_mode : (double) policyTime : (double) computeTime error: (__autoreleasing NSError **) error
 {
     bool res = true;
     @try {
@@ -22,7 +22,7 @@
    
         self.ob = new MySbpl(buf);
         MySbpl* sb = (MySbpl*)self.ob;
-        res = (MySbpl*) sb->setParams(debug_mode);
+        res = (MySbpl*) sb->setParams(debug_mode, policyTime, computeTime);
         sb = NULL;
     }
     @catch(NSException *exception) {
@@ -49,7 +49,6 @@
         sb = NULL;
     }
     @catch(...) {
-        //SBPL_ERROR("SBPL_Exception: env0.InitializeEnvByJson failed.");
         NSLog(@"SBPL_Exception:%s", __PRETTY_FUNCTION__);
         res = false;
     }
@@ -88,12 +87,12 @@
     return res;
 }
 
-- (BOOL) generatePlan_wrapped: (int) k : (long long int) start_pointId : (long long int) start_roadId : (int) start_type : (int) start_dir : (long long int) goal_pointId : (long long int) goal_roadId : (int) goal_type : (int) goal_dir : (int) mode : (int *) pathlen : (int *) k0len : (int *) k1len : (int**) plan
+- (BOOL) generatePlan_wrapped: (int) k : (long long int) start_pointId : (long long int) start_roadId : (int) start_type : (int) start_dir : (long long int) goal_pointId : (long long int) goal_roadId : (int) goal_type : (int) goal_dir : (int) mode : (int) iter : (int *) pathlen : (int *) k0len : (int *) k1len : (double*) duration : (int**) plan
 {
     bool res = true;
     @try {
         MySbpl* sb = (MySbpl*)self.ob;
-        res =(MySbpl*) sb->generatePlan(k, start_pointId, start_roadId, start_type, start_dir, goal_pointId, goal_roadId, goal_type, goal_dir, mode, pathlen, k0len, k1len, plan);
+        res =(MySbpl*) sb->generatePlan(k, start_pointId, start_roadId, start_type, start_dir, goal_pointId, goal_roadId, goal_type, goal_dir, mode, iter,pathlen, k0len, k1len, duration, plan);
         sb = NULL;
     }
     @catch(...) {
