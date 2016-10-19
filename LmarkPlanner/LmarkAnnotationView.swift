@@ -25,7 +25,6 @@ class LmarkAnnotationView: MKAnnotationView {
     var count_selected: Int = 0
     var count_deselected: Int = 0
     var calloutView: CalloutView?
-
     
     var calloutAdded: Bool = false
     
@@ -219,26 +218,47 @@ class LmarkAnnotationView: MKAnnotationView {
             dispatch_async(dispatch_get_main_queue(), {
 
                 self.parent!.activityIndicatorView.stopAnimating()
+                
+                end = NSDate()
+                let duration = end!.timeIntervalSinceDate(start)
+                print("Duration = \(duration)")
 
                 if ((error == nil))
                 {
                     print("generateOptimalPlan completed")
+                    
+                    if (self.parent!.safety_plan.count > 0)
+                    {
+                        self.parent!.drawPlan(1, planColor: UIColor.brownColor(), lineWidth: 3, path: self.parent!.safety_plan)
+                    }
+                    
                     if (self.parent!.plan.count > 0)
                     {
-                        end = NSDate()
-                        let duration = end!.timeIntervalSinceDate(start)
-                        print("Duration = \(duration)")
+                        self.parent!.drawPlan(0, planColor: UIColor.blueColor(), lineWidth: 4, path: self.parent!.plan)
                         
-                        self.parent!.drawPlan(0, planColor: UIColor.blueColor(), path: self.parent!.plan)
+                        for step in self.parent!.plan
+                        {
+                            if (step.k == 0)
+                            {
+                                if (step.type1 == 0) //intersection
+                                {
+                                    //coords.append(CLLocationCoordinate2DMake(step.lat1, step.lon1))
+                                }
+                                else //landmark
+                                {
+                                    self.image = UIImage(named: "RedMarker")
+                                }
+                            }
+                        }
+                    }
                         
-                        if (self.parent!.cond0 != nil)
-                        {
-                            self.parent!.DebugInfo.text = "k=\(self.parent!.cond0!.k) time=\(self.parent!.duration0)\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId):\(self.parent!.cond0!.start_dir)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId):\(self.parent!.cond0!.goal_dir)"
-                        }
-                        else
-                        {
-                            self.parent!.DebugInfo.text = "Plan not found.\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId)"
-                        }
+                    if (self.parent!.cond0 != nil)
+                    {
+                        self.parent!.DebugInfo.text = "k=\(self.parent!.cond0!.k) time=\(self.parent!.duration0)\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId):\(self.parent!.cond0!.start_dir)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId):\(self.parent!.cond0!.goal_dir)"
+                    }
+                    else
+                    {
+                        self.parent!.DebugInfo.text = "Plan not found.\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId)"
                     }
                 }
             })

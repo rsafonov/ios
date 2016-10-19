@@ -56,6 +56,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     var camera: MKMapCamera?
     
     var polyline_color = UIColor()
+    var polyline_width: CGFloat  = 4.0
+    var polyline_dashPattern: [NSNumber] = [3,5]
     var snp : MKMapSnapshot?
 
     var MySbplWrapper = CPPWrapper()
@@ -161,9 +163,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             return MKTileOverlayRenderer(tileOverlay: tileOverlay)
         } else if overlay.isKindOfClass(MKPolyline){
             let renderer = MKPolylineRenderer(overlay: overlay)
-            renderer.strokeColor = polyline_color //UIColor.blueColor()
-            renderer.lineWidth = 4.0
-            renderer.lineDashPattern = [3,5]
+            renderer.strokeColor = polyline_color
+            renderer.lineWidth = polyline_width
+            renderer.lineDashPattern = polyline_dashPattern
             return renderer
         }
         return nil
@@ -264,7 +266,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             else  {
                 annView = MKAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
             }
-            annView?.image = UIImage(named: "Target")
+            
+            print("annotation.title = \(annotation.title!)")
+            
+            //if (annotation.title! == "BlackDot")
+            //{
+            //    annView?.image = UIImage(named: "BlackMarker")
+            //}
+            //else
+            //{
+                annView?.image = UIImage(named: "Target")
+            //}
             return annView
         }
         return nil
@@ -2475,6 +2487,27 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         return ind
     }
     
+    func findLmarkAnnotationViewByLmarkID(id: Int64) -> Int
+    {
+        var ind  = -1
+        var i = 0
+        for ann in mapView.annotations
+        {
+            if ann is LmarkAnnotation
+            {
+                if ((ann as! LmarkAnnotation).lmark.pointId == id)
+                {
+                    let view = self.mapView.viewForAnnotation(ann)
+                    (view as! LmarkAnnotationView).image = UIImage(named: "RedMarker")
+                    ind = i
+                    break
+                }
+            }
+            i += 1
+        }
+        return ind
+    }
+    
     func drawTempPlan(planColor: UIColor, coords: [CLLocationCoordinate2D])
     {
         let n = coords.count
@@ -2485,7 +2518,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         self.mapView.addOverlay(polyline)
     }
     
-    func drawPlan(k: Int, planColor: UIColor, path: [SolutionStep])
+    func drawPlan(k: Int, planColor: UIColor, lineWidth: CGFloat, path: [SolutionStep])
     {
         let n = path.count
         var coords = [CLLocationCoordinate2D]()
@@ -2497,6 +2530,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 if (step.type1 == 0) //intersection
                 {
                     coords.append(CLLocationCoordinate2DMake(step.lat1, step.lon1))
+                    
+                    //let ind = findIntersectionByID(step.id1)
+                    //let isection = isections[ind]
+                    //self.addPinToMapView("BlackMarker", latitude: step.lat1, longitude:step.lon1)
                 }
                 else //landmark
                 {
@@ -2504,6 +2541,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     let rlat = lmarks[ind].roadLatitude
                     let rlon = lmarks[ind].roadLongitude
                     coords.append(CLLocationCoordinate2DMake(rlat, rlon))
+                    
+                    if (i > 0 && step.id1 != goal_pointId)
+                    {
+                        findLmarkAnnotationViewByLmarkID(step.id1)
+                    }
                 }
                 
                 if (i == n-1)
@@ -2526,6 +2568,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         
         let polyline: MKPolyline = MKPolyline(coordinates: &coords, count: n+1)
         self.polyline_color = planColor
+        self.polyline_width = lineWidth
         self.mapView.addOverlay(polyline)
     }
     
