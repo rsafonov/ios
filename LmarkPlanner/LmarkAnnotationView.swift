@@ -211,54 +211,76 @@ class LmarkAnnotationView: MKAnnotationView {
         let start = NSDate()
         var end: NSDate?
         
+        if (self.parent!.debug)
+        {
             self.parent!.DebugInfo.text = "Searching...\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId)"
+        }
 
-            parent!.generateOptimalPlan ( { (error:NSError!) -> () in
+        parent!.generateOptimalPlan ( { (error:NSError!) -> () in
 
             dispatch_async(dispatch_get_main_queue(), {
 
                 self.parent!.activityIndicatorView.stopAnimating()
                 
-                end = NSDate()
-                let duration = end!.timeIntervalSinceDate(start)
-                print("Duration = \(duration)")
+                if (self.parent!.debug)
+                {
+                    end = NSDate()
+                    let duration = end!.timeIntervalSinceDate(start)
+                    print("Duration = \(duration)")
+                }
 
                 if ((error == nil))
                 {
                     print("generateOptimalPlan completed")
+                    print("safety plan count = \(self.parent!.safety_plan.count) goal_pointId = \(self.parent!.goal_pointId)")
                     
                     if (self.parent!.safety_plan.count > 0)
                     {
-                        self.parent!.drawPlan(1, planColor: UIColor.brownColor(), lineWidth: 3, path: self.parent!.safety_plan)
+                        if (self.parent!.debug)
+                        {
+                            var safety_plan_part = [SolutionStep]()
+                            var i = 0
+                            var j = 0
+                            for step in self.parent!.safety_plan
+                            {
+                                safety_plan_part.append(step)
+                                if (step.id2 != self.parent!.goal_pointId)
+                                {
+                                    j += 1
+                                }
+                                else
+                                {
+                                    //print("portion count = \(safety_plan_part.count)")
+                                    self.parent!.drawPlan(1, planColor: UIColor.brownColor(), lineWidth: 3, path: safety_plan_part)
+                                
+                                    safety_plan_part.removeAll()
+                                    j=0
+                                }
+                                i += 1
+                            }
+                        }
                     }
                     
                     if (self.parent!.plan.count > 0)
                     {
                         self.parent!.drawPlan(0, planColor: UIColor.blueColor(), lineWidth: 4, path: self.parent!.plan)
+                    }
                         
-                        for step in self.parent!.plan
+                    if (self.parent!.debug)
+                    {
+                        if (self.parent!.cond0 != nil)
                         {
-                            if (step.k == 0)
-                            {
-                                if (step.type1 == 0) //intersection
-                                {
-                                    //coords.append(CLLocationCoordinate2DMake(step.lat1, step.lon1))
-                                }
-                                else //landmark
-                                {
-                                    self.image = UIImage(named: "RedMarker")
-                                }
-                            }
+                            self.parent!.DebugInfo.text = "k=\(self.parent!.cond0!.k) time=\(self.parent!.duration0)\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId):\(self.parent!.cond0!.start_dir)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId):\(self.parent!.cond0!.goal_dir)"
                         }
-                    }
-                        
-                    if (self.parent!.cond0 != nil)
-                    {
-                        self.parent!.DebugInfo.text = "k=\(self.parent!.cond0!.k) time=\(self.parent!.duration0)\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId):\(self.parent!.cond0!.start_dir)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId):\(self.parent!.cond0!.goal_dir)"
-                    }
-                    else
-                    {
-                        self.parent!.DebugInfo.text = "Plan not found.\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId)"
+                        else
+                        {
+                            self.parent!.DebugInfo.text = "Plan not found.\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId)"
+                        }
+                    
+                        if (self.parent!.searchText.text == "osm")
+                        {
+                            self.parent!.searchText.text = "cathedral of learning"
+                        }
                     }
                 }
             })

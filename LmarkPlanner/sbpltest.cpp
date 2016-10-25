@@ -35,14 +35,12 @@ bool MySbpl::setParams(int debug_mode, double policyTime, double computeTime)
     env0.dbg_params.heuristics_file_name = env0.dbg_params.dir + "/heuristics.txt";
     
     env0.setTimes(policyTime, computeTime);
-
-    //env0.ppcp.debug_file_name = env0.dbg_params.debug_file_name;
     return true;
 }
 
-bool MySbpl::initPlannerByOsm(string osmJsonStr, string excludedLmarks, long long int** lmarks, int* lmarks_count, long long int** intersections, int*intersections_count)
+bool MySbpl::initPlannerByOsm(string osmJsonStr, string excludedLmarks, string excludedIsections, long long int** lmarks, int* lmarks_count, long long int** intersections, int* intersections_count)
 {
-    bool res = env0.InitializeEnvByJson(osmJsonStr, excludedLmarks, lmarks, lmarks_count, intersections, intersections_count);
+    bool res = env0.InitializeEnvByJson(osmJsonStr, excludedLmarks, excludedIsections, lmarks, lmarks_count, intersections, intersections_count);
     if (res)
     {
         //env.heuristicComputed = false;

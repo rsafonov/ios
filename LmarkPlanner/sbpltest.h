@@ -29,7 +29,7 @@ class MySbpl
         MySbpl(string docDirectory);
     
         bool setParams(int debug_mode, double policyTime, double computeTime);
-        bool initPlannerByOsm(string osmJsonStr, string excludedLmarks, long long int** lmarks, int* lmarks_count, long long int** intersections, int*intersections_count);
+        bool initPlannerByOsm(string osmJsonStr, string excludedLmarks, string excludedIsections, long long int** lmarks, int* lmarks_count, long long int** intersections, int*intersections_count);
     
         bool freePlan(int** plan);
     

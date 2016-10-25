@@ -12,10 +12,11 @@ import MapKit
 protocol sendDataBack
 {
     func sendBoolValToPreviousVC(val: Bool, tag: Int)
-    func sendDoubleValsToPreviousVC(xval: Double, yval: Double)
+    func sendDoubleValsToPreviousVC(xval: Double, yval: Double, tag: Int)
 }
 
-class LandmarksTableViewController: UITableViewController {
+class LandmarksTableViewController: UITableViewController
+{
     
     // MARK: Properties
     
@@ -44,8 +45,8 @@ class LandmarksTableViewController: UITableViewController {
         self.delegate?.sendBoolValToPreviousVC(val, tag: tag)
     }
     
-    func sendXYToPreviousVC(xval: Double, yval: Double) {
-        self.delegate!.sendDoubleValsToPreviousVC(xval, yval: yval)
+    func sendXYToPreviousVC(xval: Double, yval: Double, tag: Int) {
+        self.delegate!.sendDoubleValsToPreviousVC(xval, yval: yval, tag: tag)
     }
     
     override func viewDidLoad() {
@@ -56,6 +57,28 @@ class LandmarksTableViewController: UITableViewController {
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        
+        //self.planningTimesCell?.xVal.delegate = self
+        //self.planningTimesCell?.yVal.delegate = self
+        //self.regionSizeCell?.xVal.delegate = self
+        //self.regionSizeCell?.yVal.delegate = self
+        
+        //This gesture recognizer helps to dismiss keyboard when the user tapc outside of the text field.
+        let gestureRecognizer: UIGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(LandmarksTableViewController.hideKeyboard))
+        gestureRecognizer.cancelsTouchesInView = false
+        self.tableView.addGestureRecognizer(gestureRecognizer)
+    }
+    
+    func hideKeyboard()
+    {
+        self.view.endEditing(true)
+    }
+    
+    //This function helps to dismiss keyboard when Return button is clicked.
+    func textFieldShouldReturn(textField: UITextField) -> Bool
+    {
+        textField.resignFirstResponder()
+        return true
     }
     
     override func didReceiveMemoryWarning() {
@@ -213,8 +236,9 @@ class LandmarksTableViewController: UITableViewController {
                 let cellIdentifier = "DoubleSettingCell"
                 let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier, forIndexPath: indexPath) as! DoubleSettingCell
                 
-                cell.xName.text = setting.name + " x = "
-                cell.yName.text = setting.name + " y = "
+                cell.Title.text = setting.name
+                cell.xName.text = setting.xname
+                cell.yName.text = setting.yname
                 cell.xVal.text = String(setting.xval!)
                 cell.yVal.text = String(setting.yval!)
                 cell.parentController = self
@@ -269,6 +293,11 @@ class LandmarksTableViewController: UITableViewController {
         tableView.reloadData()
         self.title = "New Directions"
         BackButton.enabled = true
+    }
+    
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        view.endEditing(true)
+        super.touchesBegan(touches, withEvent: event)
     }
 
     /*

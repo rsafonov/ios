@@ -13,11 +13,10 @@ class DoubleSettingCell: UITableViewCell {
     
     //MARK: Properties
     
+    @IBOutlet var Title: UILabel!
     @IBOutlet var xName: UILabel!
     @IBOutlet var yName: UILabel!
-    
     @IBOutlet var xVal: UITextField!
-
     @IBOutlet var yVal: UITextField!
     
     var parentController: LandmarksTableViewController?
@@ -28,7 +27,6 @@ class DoubleSettingCell: UITableViewCell {
         xVal.addTarget(self, action: #selector(DoubleSettingCell.xValChanged(_:)), forControlEvents: UIControlEvents.EditingDidEnd)
         
         yVal.addTarget(self, action: #selector(DoubleSettingCell.yValChanged(_:)), forControlEvents: UIControlEvents.EditingDidEnd)
-        
     }
     
     override func setSelected(selected: Bool, animated: Bool) {
@@ -39,28 +37,67 @@ class DoubleSettingCell: UITableViewCell {
     
     func xValChanged(x_Val: UITextField)
     {
-        let x = updateVal(x_Val.text!)
-        let y = updateVal(yVal.text!)
-        parentController!.sendXYToPreviousVC(x, yval: y)
+        var x: Double = 0.0
+        var y: Double = 0.0
+        
+        if (tag == 5)
+        {
+            x = updateVal(x_Val.text!, defaultVal: 1500.0)
+            y = updateVal(yVal.text!, defaultVal: 1500.0)
+        }
+        else if (tag == 6)
+        {
+            x = updateVal(x_Val.text!, defaultVal: 1.0)
+            y = updateVal(yVal.text!, defaultVal: 6.0)
+        }
+        parentController!.sendXYToPreviousVC(x, yval: y, tag: tag)
     }
     
     func yValChanged(y_Val: UITextField)
     {
-        let x = updateVal(xVal.text!)
-        let y = updateVal(y_Val.text!)
-        parentController!.sendXYToPreviousVC(x, yval: y)
+        var x: Double = 0.0
+        var y: Double = 0.0
+
+        if (tag == 5)
+        {
+            x = updateVal(xVal.text!, defaultVal: 1500.0)
+            y = updateVal(y_Val.text!, defaultVal: 1500.0)
+        }
+        else if (tag == 6)
+        {
+            x = updateVal(xVal.text!, defaultVal: 1.0)
+            y = updateVal(y_Val.text!, defaultVal: 6.0)
+        }
+        parentController!.sendXYToPreviousVC(x, yval: y, tag: tag)
     }
     
-    func updateVal(txt: String) -> Double
+    func updateVal(txt: String, defaultVal: Double) -> Double
     {
-        var val: Double? = 1500.0
+        //var val1: Double = 0.0
+        //var val2: Double = 0.0
+        var val: Double?
+        
+        /*
+        if (tag == 5)
+        {
+            val1 = 1500.0
+            val2 = 1500.0
+        }
+        else if tag == 6
+        {
+            val1 = 1.0
+            val2 = 6.0
+        }
+        */
+        
         if (!(txt.isEmpty))
         {
             val = Double(txt)
-            if  val == nil
-            {
-                val = 1500.0
-            }
+        }
+        
+        if  txt.isEmpty || val == nil
+        {
+            val = defaultVal
         }
         return val!
     }

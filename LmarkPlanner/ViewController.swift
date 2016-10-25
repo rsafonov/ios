@@ -20,11 +20,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     var workOffline: Bool = true
     var saveFiles: Bool = true
     
-    let computeTime: Double = 1.0
-    let policyTime: Double = 6.0
-    
-    //let circlePathLayer = CAShapeLayer()
-    //let circleRadius: CGFloat = 20.0
+    var computeTime: Double = 1.0
+    var policyTime: Double = 6.0
     
     var lmarks = [Lmark]()
     var i_lmarks = [Lmark]()
@@ -33,6 +30,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     var startViews = [LmarkAnnotationView]()
     var goalViews = [LmarkAnnotationView]()
     var greenViews = [LmarkAnnotationView]()
+    var redMarkerViews = [LmarkAnnotationView]()
     
     var directionImages = [String]()
     var directionNames = [String]()
@@ -53,7 +51,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     var distance: CLLocationDistance = 650
     var pitch: CGFloat = 0   //65
     var heading = 0.0
-    var camera: MKMapCamera?
+    //var camera: MKMapCamera?
     
     var polyline_color = UIColor()
     var polyline_width: CGFloat  = 4.0
@@ -127,6 +125,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         viewDidLoad()
     }
     
+    // MARK: SendDataBack Protocol
+    
     func sendBoolValToPreviousVC(bval: Bool, tag: Int) {
         switch tag
         {
@@ -144,11 +144,173 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         config_changed  = true
     }
     
-    func sendDoubleValsToPreviousVC(xval: Double, yval: Double) {
-        xRegionSizeMeters = xval
-        yRegionSizeMeters = yval
+    func sendDoubleValsToPreviousVC(xval: Double, yval: Double, tag: Int) {
+        
+        switch tag
+        {
+        case 5:
+            xRegionSizeMeters = xval
+            yRegionSizeMeters = yval
+        case 6:
+            computeTime = xval
+            policyTime = yval
+        default:
+            print("Invalid tag value: \(tag)")
+        }
         config_changed = true
     }
+    
+    // MARK: ViewController methods
+    
+    override func viewDidLoad()
+    {
+        super.viewDidLoad()
+        if (workOffline)
+        {
+            OnlineStatusImage.image = UIImage(named: "ledred16")
+        }
+        else
+        {
+            OnlineStatusImage.image = UIImage(named: "ledgreen16")
+        }
+        self.view.bringSubviewToFront(OnlineStatusImage)
+        self.view.bringSubviewToFront(activityIndicatorView)
+        
+        if (countViewDidLoad == 0)
+        {
+            directionImages.append("ArrowCounterclockwise")
+            directionImages.append("ArrowLeftTurn")
+            directionImages.append("ArrowLeft")
+            directionImages.append("ArrowUp")
+            directionImages.append("ArrowRight")
+            directionImages.append("ArrowRightTurn")
+            directionImages.append("ArrowCounterclockwise")
+            
+            directionNames.append("Uuturn left")
+            directionNames.append("sharp turn left")
+            directionNames.append("turn left")
+            directionNames.append("go straight")
+            directionNames.append("turn right")
+            directionNames.append("sharp turn right")
+            directionNames.append("uturn right")
+            
+            conditions.append(Condition(k: 1, start_dir: 0, goal_dir: 0))
+            conditions.append(Condition(k: 1, start_dir: 0, goal_dir: 1))
+            conditions.append(Condition(k: 1, start_dir: 1, goal_dir: 0))
+            conditions.append(Condition(k: 1, start_dir: 1, goal_dir: 1))
+            
+            conditions.append(Condition(k: 0, start_dir: 0, goal_dir: 0))
+            conditions.append(Condition(k: 0, start_dir: 0, goal_dir: 1))
+            conditions.append(Condition(k: 0, start_dir: 1, goal_dir: 0))
+            conditions.append(Condition(k: 0, start_dir: 1, goal_dir: 1))
+            
+            lmarksButton.tag = 1
+            isectionsButton.tag = 3
+            planButton.tag = 2
+            settingsButton.tag = 4
+        }
+        
+        if (countViewDidLoad == 0 || config_changed)
+        {
+            var debug_mode = 0;
+            if (debug) {
+                debug_mode = 1;
+            }
+            
+            do {
+                try self.MySbplWrapper.setParams_wrapped(CInt(debug_mode), policyTime, computeTime)
+            } catch {
+                print("SBPL Error: Could not create environment")
+                showAlert("SBPL Error", alertMessage: "Could not create environment.", actionTitle: "Close")
+            }
+        }
+        
+        let coordinateRegion: MKCoordinateRegion?
+        
+        self.locationManager.delegate = self
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        self.locationManager.requestWhenInUseAuthorization()
+        
+        //Show current location
+        if (showCurrentLocation)
+        {
+            self.locationManager.startUpdatingLocation()
+            self.mapView.showsUserLocation = true
+        }
+        else
+        {
+            self.locationManager.stopUpdatingLocation()
+            self.mapView.showsUserLocation = false
+            span = MKCoordinateSpanMake(0.011, 0.011)
+            coordinateRegion = MKCoordinateRegionMakeWithDistance(initialLocation.coordinate, xRegionSizeMeters, yRegionSizeMeters);
+            mapView.setRegion(coordinateRegion!, animated: false)
+            mapView.showsCompass = false
+            mapView.showsPointsOfInterest = false
+            mapView.showsScale = false
+            mapView.showsTraffic = false
+            mapView.rotateEnabled = false
+            mapView.pitchEnabled = false
+            span = coordinateRegion!.span
+            //print("span: latitudeDelta = \(span.latitudeDelta)  longitudeDelta = \(span.longitudeDelta)")
+        }
+        
+        if (config_changed)
+        {
+            mapView.removeOverlays(mapView.overlays)
+            mapView.removeAnnotations(mapView.annotations)
+            sol.removeAll()
+            safety_sol.removeAll()
+            plan.removeAll()
+            safety_plan.removeAll()
+            config_changed = false
+        }
+        
+        countViewDidLoad += 1
+        DebugInfo.text = ""
+        
+        //Gesture recognizer
+        //let gst = UITapGestureRecognizer(target: self, action:#selector(ViewController.processGesture(_:)))
+        //gst.delegate = self
+        //mapView.addGestureRecognizer(gst)
+        //gst.numberOfTapsRequired = 1
+        ////gst.minimumPressDuration = 2.0
+        
+        
+        //mapView.mapType = .SatelliteFlyover
+        //camera = MKMapCamera(lookingAtCenterCoordinate: coordinate,
+        //    fromDistance: distance,
+        //    pitch: pitch,
+        //    heading: heading)
+        //mapView.camera = camera!
+        
+        /*
+         //self.dirRequest.source = srcItem
+         //self.dirRequest.destination = dstItem
+         //self.dirRequest.requestsAlternateRoutes = false
+         
+         let directions = MKDirections(request: self.dirRequest)
+         directions.calculateDirectionsWithCompletionHandler() { (response, error) in
+         guard let response = response else {
+         print("Directions error: \(error)")
+         return
+         }
+         //self.showRoute(response)
+         }
+         */
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    //This should dismiss the keyboard when tapping outside of the text field that belongs to the current view in this view controller.
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        view.endEditing(true)
+        super.touchesBegan(touches, withEvent: event)
+    }
+    
+    // MARK: Annotation Delegate Methods
     
     func mapView(mapView: MKMapView!, rendererForOverlay overlay: MKOverlay!) ->MKOverlayRenderer! {
         if overlay.isKindOfClass(MKCircle) {
@@ -158,7 +320,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             return circleView
         } else if overlay.isKindOfClass(MKTileOverlay) {
             guard let tileOverlay = overlay as? MKTileOverlay else {
-                    return MKOverlayRenderer()
+                return MKOverlayRenderer()
             }
             return MKTileOverlayRenderer(tileOverlay: tileOverlay)
         } else if overlay.isKindOfClass(MKPolyline){
@@ -171,8 +333,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         return nil
     }
     
-    // MARK: Annotation Delegate Methods
-    
     func mapView(mapView: MKMapView!, didDeselectAnnotationView view: MKAnnotationView!) {
         guard let ann = view.annotation as? LmarkAnnotation else
         {
@@ -180,24 +340,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             return
         }
         print("didDeselectAnnotationView: \(ann.lmark.pointId) \(ann.lmark.name)")
-
-        //if let view1 = view as? LmarkAnnotationView {
-            //if view1.preventDeselection {
-            //    mapView.selectAnnotation(view.annotation!, animated: false)
-            //}
-        //}
     }
-    
-    /*
-    func updatePinPosition(pin:LmarkAnnotationView) {
-        let defaultShift:CGFloat = 80 //50
-        let pinPosition = CGPointMake(pin.frame.midX, pin.frame.maxY)
-        let y = pinPosition.y - defaultShift
-        let controlPoint = CGPointMake(pinPosition.x, y)
-        let controlPointCoordinate = mapView.convertPoint(controlPoint, toCoordinateFromView: mapView)
-        mapView.setCenterCoordinate(controlPointCoordinate, animated: true)
-    }
-    */
     
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView)
     {
@@ -282,6 +425,123 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         return nil
     }
     
+    // MARK: Processing OCM Landmarks and Interections
+    
+    func AddLandmark(name: String, description: String, type: Int, address: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees, photoName: String, pointId: Int64, roadId: Int64, street: String, amenity: String, roadLatitude: Double, roadLongitude: Double)
+    {
+        var photo: UIImage?
+        if !photoName.isEmpty
+        {
+            photo = UIImage(named:photoName)!
+        }
+        
+        let lmark = Lmark(name: name, description: description, type: type, address: address, latitude: latitude, longitude: longitude, photo: photo, pointId: pointId, roadId: roadId, street: street, amenity: amenity, roadLatitude: roadLatitude, roadLongitude: roadLongitude)!
+        lmarks.append(lmark)
+    }
+    
+    func processLandmarks(lmarksPtr: UnsafeMutablePointer<Int64>, lmarks_count: Int, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double) -> Bool
+    {
+        var res = true
+        var j=0
+        for i in 0..<lmarks_count
+        {
+            let lmark = lmarksPtr[i]
+            let pointId = Int64(lmark)
+            
+            var ind: CInt = 0
+            var name: NSString? = nil
+            var address: NSString? = nil
+            var info: NSString? = nil
+            var street: NSString? = nil
+            var amenity: NSString? = nil
+            var lat: Double = 0.0
+            var lon: Double = 0.0
+            var roadId:Int64 = -1
+            var roadLat: Double = 0.0
+            var roadLon: Double = 0.0
+            
+            res = self.MySbplWrapper.getLandmarkDetails_wrapped(pointId, &ind, &lat, &lon, &name, &address, &info, &street, &amenity, &roadId, &roadLat, &roadLon)
+            if (!res)
+            {
+                showAlert("SBPL_Exception", alertMessage: "getLandmarkDetails failed for pointId=\(pointId).", actionTitle: "Close")
+                NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)] pointId: \(pointId)")
+                //NSLog("\(NSThread.callStackSymbols())")
+                break;
+            }
+            
+            let name1 = name?.stringByReplacingOccurrencesOfString("_", withString: " ")
+            let name0 = name1?.stringByReplacingOccurrencesOfString("/", withString: " ").stringByReplacingOccurrencesOfString("  ", withString: " ")
+            let name2 = name0?.capitalizedString
+            
+            let info1 = info?.stringByReplacingOccurrencesOfString("_", withString: " ")
+            let info2 = info1?.capitalizedString
+            
+            let street1 = street?.stringByReplacingOccurrencesOfString("_", withString: " ")
+            let street2 = street1?.capitalizedString
+            
+            let amenity1 = amenity?.stringByReplacingOccurrencesOfString("_", withString: " ")
+            let amenity2 = amenity1?.capitalizedString
+            
+            //print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(name2!) | \(address!) | \(info2!) | \(street2!) | \(amenity2!)")
+            
+            j += 1
+            self.AddLandmark(name2!, description: info2!, type: 1, address: String(address!), latitude: lat, longitude: lon, photoName: "", pointId: pointId, roadId: roadId, street: street2!, amenity: amenity2!, roadLatitude: roadLat, roadLongitude: roadLon)
+            
+            name = nil
+            info = nil
+            street = nil
+            amenity = nil
+            
+            //print("i=\(i) \(pointId!) \(name2!) \(lat) \(lon)")
+        }
+        //print("Landmarks total: \(i) within bbox \(j)")
+        return res;
+    }
+    
+    func processIntersections(isectionsPtr: UnsafeMutablePointer<Int64>, isections_count: Int, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double) -> Bool
+    {
+        var res = true
+        var lat: Double = 0
+        var lon: Double = 0
+        
+        var j=0
+        for i in 0..<isections_count
+        {
+            let isection = isectionsPtr[i]
+            let pointId = Int64(isection)
+            
+            //print("i=\(i) pointId=(\(pointId)")
+            var ind: CInt = 0
+            var location: NSString? = nil
+            var count: CInt = 0
+            res = self.MySbplWrapper.getIntersectionDetails_wrapped(pointId, &ind, &lat, &lon, &location, &count)
+            //print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(location!)")
+            if (!res)
+            {
+                showAlert("SBPL_Exception", alertMessage: "getIntersectionDetails failed for pointId=\(pointId)", actionTitle: "Close")
+                NSLog("SBPL_Exception: [file: \(#file) function: \(#function) at line \(#line)] pointId: \(pointId)")
+                break
+            }
+            
+            if (lat >= minlat && lat <= maxlat && lon >= minlon && lon <= maxlon)
+            {
+                j += 1
+            }
+            
+            let location0 = location?.stringByReplacingOccurrencesOfString("/", withString: " ").stringByReplacingOccurrencesOfString("  ", withString: " ")
+            
+            let isct = Intersection(id: pointId, index: Int(j), latutude: lat, longitude: lon, location: location0! as String, streetsCount: Int(count))
+            isections.append(isct)
+            
+            let lmark = Lmark(name: isct.location!, description: "", type: 0, address: "", latitude: isct.latitude, longitude: isct.longitude, photo: nil, pointId: pointId, roadId: 0, street: "", amenity: "",  roadLatitude: 0.0, roadLongitude: 0.0);
+            i_lmarks.append(lmark!)
+            
+            location = nil
+        }
+        //print("Intersections total: \(i) within bbox \(j+1)")
+        return res
+    }
+    
     // MARK: Planning Methods
     
     func generateOptimalPlan(completion: (error:NSError!)->())
@@ -289,13 +549,22 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         if (self.start_set && self.goal_set)
         {
             self.activityIndicatorView.startAnimating()
-                        
+            
+            if (debug)
+            {
+                for view in self.redMarkerViews
+                {
+                    view.image = UIImage(named: "BlueBall")
+                }
+                //DebugInfo.text = ""
+            }
+            
             let queue:dispatch_queue_t = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
         
             dispatch_async(queue,
             {
                 self.mapView.removeOverlays(self.mapView.overlays)
-            
+                
                 var minlen: Int = 100000
                 var itermin: Int = 0
                 var plan_found = false
@@ -408,57 +677,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         return plan_found
     }
     
-    func configureDetailView(annotationView: MKAnnotationView) {
-        let snapshotView = UIView(frame: CGRect (x: 0, y: 0, width: 300, height: 300))
-        let options = MKMapSnapshotOptions()
-        options.size = CGSize(width: 300, height: 300)
-        options.mapType = .SatelliteFlyover
-        
-        let camera = MKMapCamera(lookingAtCenterCoordinate: annotationView.annotation!.coordinate, fromDistance: 500, pitch: 65, heading: 0)
-        options.camera = camera
-        
-        let snapshotter = MKMapSnapshotter(options: options)
-        
-        snapshotter.startWithCompletionHandler { (snapshot, error) -> Void
-            in
-            if let actualSnapshot = snapshot {
-                let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: 300, height: 300))
-                imageView.image = actualSnapshot.image
-                snapshotView.addSubview(imageView)
-            }
-        }
-        annotationView.detailCalloutAccessoryView = snapshotView
-        
-        /*
-        let width = 300
-        let height = 200
-        
-        let snapshotView = UIView()
-        let views = ["snapshotView": snapshotView]
-        snapshotView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:[snapshotView(300)]", options: [], metrics: nil, views: views))
-        snapshotView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[snapshotView(200)]", options: [], metrics: nil, views: views))
-        
-        let options = MKMapSnapshotOptions()
-        options.size = CGSize(width: width, height: height)
-        options.mapType = .SatelliteFlyover
-        options.camera = MKMapCamera(lookingAtCenterCoordinate: annotationView.annotation!.coordinate, fromDistance: 250, pitch: 65, heading: 0)
-        let snapshotter = MKMapSnapshotter(options: options)
-        snapshotter.startWithCompletionHandler( {snapshot, error in
-            if snapshot != nil {
-                let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: width, height: height))
-                imageView.image = snapshot!.image
-                snapshotView.addSubview(imageView)
-            }
-        })
-        annotationView.detailCalloutAccessoryView = snapshotView
-*/
-    }
-    
     func textFieldShouldReturn(textField: UITextField) -> Bool
     {
         mapView.removeAnnotations(mapView.annotations)
         mapView.removeOverlays(mapView.overlays)
         searchText.resignFirstResponder()
+        DebugInfo.text = ""
         
         if (searchText.text == nil || (searchText.text?.isEmpty)!)
         {
@@ -484,6 +708,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 var content: String
                 var loc: String
                 var excluded_lmarks_list: String
+                var excluded_isections_list: String
                 
                 let docdirpath = self.getDocumentsDirectoryPath()
                 let subdirpath = NSURL(fileURLWithPath: docdirpath).URLByAppendingPathComponent(subdirname)
@@ -491,6 +716,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 let json_path = NSURL(fileURLWithPath: subdirpath.path!).URLByAppendingPathComponent("map.json")
                 let loc_path = NSURL(fileURLWithPath: subdirpath.path!).URLByAppendingPathComponent("coord.txt")
                 let excluded_lmarks_path = NSURL(fileURLWithPath: subdirpath.path!).URLByAppendingPathComponent("excluded_lmarks.txt")
+                let excluded_isections_path = NSURL(fileURLWithPath: subdirpath.path!).URLByAppendingPathComponent("excluded_isections.txt")
 
                 print("json_path=\(json_path)")
                 
@@ -503,8 +729,24 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     return;
                 }
                 print(excluded_lmarks_list)
+                
                 let excludedLmarksArr: Array = excluded_lmarks_list.componentsSeparatedByString(",")
                 print("Number of Excluded Lmarks: \(excludedLmarksArr.count)")
+                
+                
+                do {
+                    excluded_isections_list = try NSString(contentsOfURL: excluded_isections_path, encoding: NSUTF8StringEncoding) as String
+                } catch {
+                    let serr = "Error reading cashed file: \(excluded_isections_path.path!)"
+                    self.showAlert("Error", alertMessage: serr, actionTitle: "Close")
+                    NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
+                    return;
+                }
+                print(excluded_isections_list)
+                
+                let excludedIsectionsArr: Array = excluded_isections_list.componentsSeparatedByString(",")
+                print("Number of Excluded Isections: \(excludedIsectionsArr.count)")
+
         
                 do {
                     loc = try NSString(contentsOfURL: loc_path, encoding: NSUTF8StringEncoding) as String
@@ -543,7 +785,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 }
                 //print(content)
                 
-                let res = self.ExtractLmarksAndIsections(content, excludedLmarks: excluded_lmarks_list, minlat: minlat, minlon: minlon, maxlat: maxlat, maxlon: maxlon)
+                self.start_set = false
+                self.goal_set = false
+                self.start_roadId = -1
+                self.goal_roadId = -1
+                self.start_pointId = -1
+                self.goal_pointId = -1
+                
+                self.lmarks.removeAll()
+                self.isections.removeAll()
+                
+                let res = self.ExtractLmarksAndIsections(content, excludedLmarks: excluded_lmarks_list, excludedIsections: excluded_isections_list, minlat: minlat, minlon: minlon, maxlat: maxlat, maxlon: maxlon)
                 if (res)
                 {
                     print("Before reading lmark images: number of lmarks = \(self.lmarks.count)")
@@ -591,7 +843,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     }
                     print("read:  \(readcount)")
                     print("errors:  \(errcount)")
-            
+                    
                     dispatch_async(dispatch_get_main_queue())
                     {
                         self.mapView.showAnnotations(anns, animated: false)
@@ -609,139 +861,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             }
         }
         return true
-    }
- 
-    override func viewDidLoad()
-    {
-        super.viewDidLoad()
-        if (workOffline)
-        {
-            OnlineStatusImage.image = UIImage(named: "ledred16")
-        }
-        else
-        {
-            OnlineStatusImage.image = UIImage(named: "ledgreen16")
-        }
-        self.view.bringSubviewToFront(OnlineStatusImage)
-        self.view.bringSubviewToFront(activityIndicatorView)
-        
-        if (countViewDidLoad == 0)
-        {
-            directionImages.append("ArrowCounterclockwise")
-            directionImages.append("ArrowLeftTurn")
-            directionImages.append("ArrowLeft")
-            directionImages.append("ArrowUp")
-            directionImages.append("ArrowRight")
-            directionImages.append("ArrowRightTurn")
-            directionImages.append("ArrowCounterclockwise")
-        
-            directionNames.append("Uuturn left")
-            directionNames.append("sharp turn left")
-            directionNames.append("turn left")
-            directionNames.append("go straight")
-            directionNames.append("turn right")
-            directionNames.append("sharp turn right")
-            directionNames.append("uturn right")
-        
-            conditions.append(Condition(k: 1, start_dir: 0, goal_dir: 0))
-            conditions.append(Condition(k: 1, start_dir: 0, goal_dir: 1))
-            conditions.append(Condition(k: 1, start_dir: 1, goal_dir: 0))
-            conditions.append(Condition(k: 1, start_dir: 1, goal_dir: 1))
-
-            conditions.append(Condition(k: 0, start_dir: 0, goal_dir: 0))
-            conditions.append(Condition(k: 0, start_dir: 0, goal_dir: 1))
-            conditions.append(Condition(k: 0, start_dir: 1, goal_dir: 0))
-            conditions.append(Condition(k: 0, start_dir: 1, goal_dir: 1))
-            
-            lmarksButton.tag = 1
-            isectionsButton.tag = 3
-            planButton.tag = 2
-            settingsButton.tag = 4
-
-            var debug_mode = 0;
-            if (debug) {
-                debug_mode = 1;
-            }
-            
-            do {
-                try self.MySbplWrapper.setParams_wrapped(CInt(debug_mode), policyTime, computeTime)
-            } catch {
-                print("SBPL Error: Could not create environment")
-                showAlert("SBPL Error", alertMessage: "Could not create environment.", actionTitle: "Close")
-            }
-        }
-        
-        let coordinateRegion: MKCoordinateRegion?
-
-        self.locationManager.delegate = self
-        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        self.locationManager.requestWhenInUseAuthorization()
-        
-        //Show current location
-        if (showCurrentLocation)
-        {
-            self.locationManager.startUpdatingLocation()
-            self.mapView.showsUserLocation = true
-        }
-        else
-        {
-            self.locationManager.stopUpdatingLocation()
-            self.mapView.showsUserLocation = false
-            span = MKCoordinateSpanMake(0.011, 0.011)
-            coordinateRegion = MKCoordinateRegionMakeWithDistance(initialLocation.coordinate, xRegionSizeMeters, yRegionSizeMeters);
-            mapView.setRegion(coordinateRegion!, animated: false)
-            mapView.showsCompass = false
-            mapView.showsPointsOfInterest = false
-            mapView.showsScale = false
-            mapView.showsTraffic = false
-            mapView.rotateEnabled = false
-            mapView.pitchEnabled = false
-            span = coordinateRegion!.span
-            //print("span: latitudeDelta = \(span.latitudeDelta)  longitudeDelta = \(span.longitudeDelta)")
-        }
-        
-        if (config_changed)
-        {
-            mapView.removeOverlays(mapView.overlays)
-            mapView.removeAnnotations(mapView.annotations)
-            sol.removeAll()
-            safety_sol.removeAll()
-            plan.removeAll()
-            safety_plan.removeAll()
-            config_changed = false
-        }
-        
-        countViewDidLoad += 1
-        
-        //Gesture recognizer
-        //let gst = UITapGestureRecognizer(target: self, action:#selector(ViewController.processGesture(_:)))
-        //gst.delegate = self
-        //mapView.addGestureRecognizer(gst)
-        //gst.numberOfTapsRequired = 1
-        ////gst.minimumPressDuration = 2.0
-        
-        
-        //mapView.mapType = .SatelliteFlyover
-        //camera = MKMapCamera(lookingAtCenterCoordinate: coordinate,
-        //    fromDistance: distance,
-        //    pitch: pitch,
-        //    heading: heading)
-        //mapView.camera = camera!
-        
-        /*
-        //self.dirRequest.source = srcItem
-        //self.dirRequest.destination = dstItem
-        //self.dirRequest.requestsAlternateRoutes = false
-        
-        let directions = MKDirections(request: self.dirRequest)
-        directions.calculateDirectionsWithCompletionHandler() { (response, error) in
-            guard let response = response else {
-                print("Directions error: \(error)")
-                return
-            }
-            //self.showRoute(response)
-        }
-         */
     }
     
     // MARK: Location Delegate Methods
@@ -765,6 +884,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         print("Errors: " + error.localizedDescription)
     }
     
+    /*
     func processGesture(gestureRecognizer: UITapGestureRecognizer)
     {
         if gestureRecognizer.state == UIGestureRecognizerState.Ended
@@ -828,101 +948,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             }
         }
     }
+    */
     
-    func readLmarkImage(dirname: String, subdirname: String, objname: String, id: Int64) -> UIImage?
-    {
-        let docdirpath = self.getDocumentsDirectoryPath()
-        let dirpath = self.getSubdirectoryPath(docdirpath, subdirname: dirname, create: false)
-        if (!dirpath.isEmpty)
-        {
-            let subdirpath = self.getSubdirectoryPath(dirpath, subdirname: subdirname, create: false)
-            if (!subdirpath.isEmpty)
-            {
-        
-        /*
-        let docdir = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.UserDomainMask, true).first
-        let fullpath = NSURL(fileURLWithPath: docdir!).URLByAppendingPathComponent("osm")
-        var isDir:ObjCBool = false
-        
-        if (!NSFileManager.defaultManager().fileExistsAtPath(fullpath.path!, isDirectory: &isDir))
-        {
-            print("sub directory osm does not exist")
-            return -1
-        }
-        else if (!isDir)
-        {
-            print("osm is not a directory")
-            return -1
-        }
-        */
-        
-                let filename = "\(objname)_\(id)"
-                let filepath = NSURL(fileURLWithPath: subdirpath).URLByAppendingPathComponent("\(filename).png")
-                var isDir:ObjCBool = false
-                if (!NSFileManager.defaultManager().fileExistsAtPath(filepath.path!, isDirectory: &isDir))
-                {
-                    print("file \(filepath.path) does not exist")
-                    return nil
-                }
-        
-                let image = UIImage(contentsOfFile: filepath.path!)
-                if (image == nil)
-                {
-                    print("Reading image from \(filepath.path!) failed.")
-                    print("\(objname) \(id)")
-                    print("image size=\(image?.size)")
-                    return nil
-                }
-                return image
-            }
-            else
-            {
-                print("Error: subdirectory \(subdirname) does not exists.")
-                return nil
-            }
-        }
-        else
-        {
-            print("Error: subdirectory \(dirname) does not exists.")
-            return nil
-        }
-    }
-    
-    func saveURLImage(dirname: String, subdirname: String, objname: String, id: Int64, lat: Double, lon: Double) -> Int
-    {
-        var res: Int = -1
-        let filename = "\(objname)_\(id)"
-        let strlat = String(lat)
-        let strlon = String(lon)
-        //let fov = String(90)
-        let fov = String(120)
-
-        let imageurl = "http://maps.googleapis.com/maps/api/streetview?size=400x400&location=" + strlat + "," + strlon + "&fov=" + fov + "&sensor=false&key=AIzaSyD3jESuue6j-P5ylGPUsqW7ZjTdY59HKy4"
-        
-        if let url = NSURL(string: imageurl)
-        {
-            if let data = NSData(contentsOfURL: url)
-            {
-                if UIImage(data: data) != nil
-                {
-                    res = WriteImageToFile(dirname, subdirname: subdirname, data: data, filename: filename)
-                }
-                else
-                {
-                    print ("UIImage(data: data) == nil for \(objname) coord: \(lat) \(lon)")
-                }
-            }
-            else
-            {
-                print ("data = NSData(contentsOfURL: url) failed for \(objname) coord: \(lat) \(lon)")
-            }
-        }
-        else
-        {
-            print ("url = NSURL(string: imageurl) failed for \(objname) coord: \(lat) \(lon)")
-        }
-        return res
-    }
+    // MARK: File System Access Methods
     
     func WriteImageToFile(dirname: String, subdirname: String, data: NSData, filename: String) -> Int
     {
@@ -951,60 +979,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             print("File \(filepath.path) already exists.")
             return -1
         }
-    }
-
-    func takeSnapshot(mapView: MKMapView, coord: CLLocationCoordinate2D, eyeCoord: CLLocationCoordinate2D, filename: String, completion: ((result:UIImage?) -> Void)!)
-    {
-        //let coordSpan = MKCoordinateSpan(latitudeDelta: 0.0000000001, longitudeDelta: 0.0000000001)
-        let options = MKMapSnapshotOptions()
-        //let region = MKCoordinateRegion(center: coord, span: coordSpan)
-        let region = MKCoordinateRegionMakeWithDistance(coord, 0.5, 0.5)
-        options.region = region
-        //options.size = mapView.frame.size;
-        options.scale = UIScreen.mainScreen().scale
-        //options.size = CGSize(width: 50, height: 50)
-        options.mapType = .SatelliteFlyover
-        options.showsPointsOfInterest = true
-        options.showsBuildings = true
-        
-        let eyeCoord1 = CLLocationCoordinate2D(latitude: coord.latitude+0.0000002, longitude: coord.longitude+0.0000001)
-        let eyeAlt = CLLocationDistance(3.0)
-        //let BellefiedHallCoord = CLLocationCoordinate2D(latitude: 40.4453588019383, longitude: -79.950951061835)
-        //let IntersCoord = CLLocationCoordinate2D(latitude: 40.443922, longitude: -79.950749)
-        
-        //let camera = MKMapCamera(lookingAtCenterCoordinate: IntersCoord, fromDistance: 20, pitch: 45, heading: 180)
-        let camera = MKMapCamera(lookingAtCenterCoordinate: coord, fromEyeCoordinate: eyeCoord1, eyeAltitude: eyeAlt)
-        
-        camera.altitude = 10.0
-        //camera.centerCoordinate = coord
-        options.camera = camera
-        
-        let semaphore = dispatch_semaphore_create(0)
-        let qualityOfServiceClass = QOS_CLASS_BACKGROUND
-        let backgroundQueue = dispatch_get_global_queue(qualityOfServiceClass, 0)
-        
-        let snapshotter = MKMapSnapshotter(options: options)
-        
-        snapshotter.startWithQueue(backgroundQueue, completionHandler:  { (snapshot: MKMapSnapshot?, error: NSError?) -> Void in
-            
-            guard (snapshot != nil) else {
-                print("Snapshot error:\(error)")
-                dispatch_semaphore_signal(semaphore)
-                return
-                //completion(result:nil)
-            }
-            completion(result: snapshot!.image)
-            
-            let data = UIImagePNGRepresentation(snapshot!.image)
-            let docdirpath = self.getDocumentsDirectoryPath()
-            let filepath = NSURL(fileURLWithPath: docdirpath).URLByAppendingPathComponent("\(filename).png")
-
-            data?.writeToFile(filepath.path!, atomically: true)
-            
-            dispatch_semaphore_signal(semaphore)
-        })
-        let delayTime = dispatch_time(DISPATCH_TIME_NOW, Int64(3*Double(NSEC_PER_SEC)))
-        dispatch_semaphore_wait(semaphore, delayTime)
     }
     
     func getDocumentsDirectoryPath() -> String {
@@ -1048,24 +1022,190 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         }
     }
     
-    func AddLandmark(name: String, description: String, type: Int, address: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees, photoName: String, pointId: Int64, roadId: Int64, street: String, amenity: String, roadLatitude: Double, roadLongitude: Double)
+    func saveDataToFiles(subdirname: String)
     {
-        var photo: UIImage?
-        if !photoName.isEmpty
-        {
-            photo = UIImage(named:photoName)!
+        let docdirpath = self.getDocumentsDirectoryPath()
+        let subdirpath = self.getSubdirectoryPath(docdirpath, subdirname: subdirname, create: true)
+        let filepath = NSURL(fileURLWithPath: subdirpath).URLByAppendingPathComponent("coord.txt")
+        print("filepath=\(filepath)")
+        
+        let sloc = "\(self.initialLocation.coordinate.latitude);\(self.initialLocation.coordinate.longitude)"
+        do {
+            try sloc.writeToFile(filepath.path!, atomically: true, encoding: NSUTF8StringEncoding)
+        } catch {
+            print("Error saving location string to file!")
         }
         
-        let lmark = Lmark(name: name, description: description, type: type, address: address, latitude: latitude, longitude: longitude, photo: photo, pointId: pointId, roadId: roadId, street: street, amenity: amenity, roadLatitude: roadLatitude, roadLongitude: roadLongitude)!
-        lmarks.append(lmark)
+        print("Before saving lmark images: number of lmarks = \(self.lmarks.count)")
+        
+        var savedcount = 0
+        var errcount = 0
+        
+        for lmark in self.lmarks
+        {
+            let ires = saveURLImage(subdirname, subdirname: "lmarks", objname: lmark.name, id: lmark.pointId, lat: lmark.latitude, lon: lmark.longitude)
+            
+            switch ires {
+            case 1:
+                savedcount += 1
+            default:
+                errcount += 1
+            }
+        }
+        print("saved:  \(savedcount)")
+        print("errors:  \(errcount)")
+        
+        print("Before saving isection images: number of isections = \(self.isections.count)")
+        
+        savedcount = 0
+        errcount = 0
+        
+        for isection in self.isections
+        {
+            if (isection.streetsCount > 1)
+            {
+                let ires = saveURLImage(subdirname, subdirname: "isections", objname: isection.location!, id: isection.id, lat: isection.latitude, lon: isection.longitude)
+                
+                switch ires {
+                case 1:
+                    savedcount += 1
+                default:
+                    errcount += 1
+                }
+            }
+        }
+        print("saved:  \(savedcount)")
+        print("errors:  \(errcount)")
     }
     
-    // MARK: Load sample data
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    func CreateOrTruncateFile(filename: String, ext: String) -> Bool
+    {
+        let DocumentDirURL = try! NSFileManager.defaultManager().URLForDirectory(.DocumentDirectory, inDomain: .UserDomainMask, appropriateForURL: nil, create: true)
+        let fileURL = DocumentDirURL.URLByAppendingPathComponent(filename).URLByAppendingPathExtension(ext)
+        let file: NSFileHandle? = NSFileHandle(forWritingAtPath: fileURL.path!)
+        if file == nil
+        {
+            if !(NSFileManager.defaultManager().createFileAtPath(fileURL.path!, contents: nil, attributes: nil))
+            {
+                NSLog("File open failed at \(fileURL.path)")
+                return false
+            }
+        }
+        else
+        {
+            file?.truncateFileAtOffset(0)
+        }
+        return true
     }
+    
+    func AppendStringToFile(txt: String, filename: String, ext: String) -> Bool
+    {
+        let DocumentDirURL = try! NSFileManager.defaultManager().URLForDirectory(.DocumentDirectory, inDomain: .UserDomainMask, appropriateForURL: nil, create: true)
+        let fileURL = DocumentDirURL.URLByAppendingPathComponent(filename).URLByAppendingPathExtension(ext)
+        
+        var file: NSFileHandle? = NSFileHandle(forUpdatingAtPath: fileURL.path!)
+        if file == nil
+        {
+            if (NSFileManager.defaultManager().createFileAtPath(fileURL.path!, contents: nil, attributes: nil))
+            {
+                file = NSFileHandle(forUpdatingAtPath: fileURL.path!)
+            }
+            else
+            {
+                NSLog("File open failed at \(fileURL.path)")
+                return false
+            }
+        }
+        else
+        {
+            file?.seekToEndOfFile()
+        }
+        
+        let fileData = txt.dataUsingEncoding(NSUTF8StringEncoding)
+        file?.writeData(fileData!)
+        file?.closeFile()
+        file = nil
+        return true
+    }
+    
+    func readLmarkImage(dirname: String, subdirname: String, objname: String, id: Int64) -> UIImage?
+    {
+        let docdirpath = self.getDocumentsDirectoryPath()
+        let dirpath = self.getSubdirectoryPath(docdirpath, subdirname: dirname, create: false)
+        if (!dirpath.isEmpty)
+        {
+            let subdirpath = self.getSubdirectoryPath(dirpath, subdirname: subdirname, create: false)
+            if (!subdirpath.isEmpty)
+            {
+                let filename = "\(objname)_\(id)"
+                let filepath = NSURL(fileURLWithPath: subdirpath).URLByAppendingPathComponent("\(filename).png")
+                var isDir:ObjCBool = false
+                if (!NSFileManager.defaultManager().fileExistsAtPath(filepath.path!, isDirectory: &isDir))
+                {
+                    print("file \(filepath.path) does not exist")
+                    return nil
+                }
+                
+                let image = UIImage(contentsOfFile: filepath.path!)
+                if (image == nil)
+                {
+                    print("Reading image from \(filepath.path!) failed.")
+                    print("\(objname) \(id)")
+                    print("image size=\(image?.size)")
+                    return nil
+                }
+                return image
+            }
+            else
+            {
+                print("Error: subdirectory \(subdirname) does not exists.")
+                return nil
+            }
+        }
+        else
+        {
+            print("Error: subdirectory \(dirname) does not exists.")
+            return nil
+        }
+    }
+    
+    func saveURLImage(dirname: String, subdirname: String, objname: String, id: Int64, lat: Double, lon: Double) -> Int
+    {
+        var res: Int = -1
+        let filename = "\(objname)_\(id)"
+        let strlat = String(lat)
+        let strlon = String(lon)
+        //let fov = String(90)
+        let fov = String(120)
+        
+        let imageurl = "http://maps.googleapis.com/maps/api/streetview?size=400x400&location=" + strlat + "," + strlon + "&fov=" + fov + "&sensor=false&key=AIzaSyD3jESuue6j-P5ylGPUsqW7ZjTdY59HKy4"
+        
+        if let url = NSURL(string: imageurl)
+        {
+            if let data = NSData(contentsOfURL: url)
+            {
+                if UIImage(data: data) != nil
+                {
+                    res = WriteImageToFile(dirname, subdirname: subdirname, data: data, filename: filename)
+                }
+                else
+                {
+                    print ("UIImage(data: data) == nil for \(objname) coord: \(lat) \(lon)")
+                }
+            }
+            else
+            {
+                print ("data = NSData(contentsOfURL: url) failed for \(objname) coord: \(lat) \(lon)")
+            }
+        }
+        else
+        {
+            print ("url = NSURL(string: imageurl) failed for \(objname) coord: \(lat) \(lon)")
+        }
+        return res
+    }
+    
+    // MARK: Segue to Table Views
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?)
     {
@@ -1078,10 +1218,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         {
             let btn = sender as! UIBarButtonItem;
             //print("btn: \(btn.title) tag=\(btn.tag)")
-        
+    
             let destNavController = segue.destinationViewController as! UINavigationController
             let targetController = destNavController.topViewController as! LandmarksTableViewController
-        
+    
             targetController.delegate = self
             //targetController.parentViewController
             targetController.tableView.bounces = true
@@ -1102,9 +1242,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 {
                     for i in 0...self.sol.count-1
                     {
-                        let step = self.sol[i]
+                        var step = self.sol[i]
                         if (workOffline)
                         {
+                            assignImageToStep(i, step: &step)
+                            /*
                             var id: Int64
                             var type: Int
                             if (i == 0)
@@ -1135,6 +1277,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                                 }
 
                             }
+                            */
                         }
                         targetController.sol.append(step)
                     }
@@ -1143,9 +1286,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     {
                         for i in 0...self.safety_sol.count-1
                         {
-                            let step = self.safety_sol[i]
+                            var step = self.safety_sol[i]
                             if (workOffline)
                             {
+                                assignImageToStep(i, step: &step)
+                                /*
                                 var id: Int64
                                 var type: Int
                                 if (i == 0)
@@ -1174,6 +1319,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                                         step.photoImage = isections[ind].photo
                                     }
                                 }
+                                */
                             }
                             targetController.safety_sol.append(step)
                         }
@@ -1191,24 +1337,28 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             {
                 //print("Settings button clicked")
                 var setting: Setting
-                setting = Setting(name: "Show Current Location", tag: 1, type: 1, ival: nil, bval: showCurrentLocation, xval: nil, yval: nil)
+                setting = Setting(name: "Show Current Location", tag: 1, type: 1, ival: nil, xname: "", yname: "", bval: showCurrentLocation, xval: nil, yval: nil)
                 targetController.settings.append(setting)
                 
-                setting = Setting(name: "Work Offline", tag: 2, type: 1, ival: nil, bval: workOffline, xval: nil, yval: nil)
+                setting = Setting(name: "Work Offline", tag: 2, type: 1, ival: nil, xname: "", yname: "", bval: workOffline, xval: nil, yval: nil)
                 targetController.settings.append(setting)
                 
-                setting = Setting(name: "Debug", tag: 3, type: 1, ival: nil, bval: debug, xval: nil, yval: nil)
+                setting = Setting(name: "Debug", tag: 3, type: 1, ival: nil, xname: "", yname: "", bval: debug, xval: nil, yval: nil)
                 targetController.settings.append(setting)
                 
-                setting = Setting(name: "Create Cash", tag: 4, type: 1, ival: nil, bval: saveFiles, xval: nil, yval: nil)
+                setting = Setting(name: "Create Cash", tag: 4, type: 1, ival: nil, xname: "", yname: "", bval: saveFiles, xval: nil, yval: nil)
                 targetController.settings.append(setting)
                 
-                setting = Setting(name: "Region Size in Meters", tag: 5, type: 2, ival: nil, bval: nil, xval: xRegionSizeMeters, yval: yRegionSizeMeters)
+                setting = Setting(name: "Region Size in Meters", tag: 5, type: 2, ival: nil, xname: "Width", yname: "Height", bval: nil, xval: xRegionSizeMeters, yval: yRegionSizeMeters)
+                targetController.settings.append(setting)
+                
+                setting = Setting(name: "Planning Times", tag: 6, type: 2, ival: nil, xname: "Compute Time", yname: "Policy Time", bval: nil, xval: computeTime, yval: policyTime)
                 targetController.settings.append(setting)
            }
         }
     }
     
+    /*
     func displayRegion(lat: Double, lon: Double, span: Double)
     {
         let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
@@ -1220,6 +1370,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         mapView.setRegion(rgn, animated: true)
         
     }
+    */
+    
+    // MARK: OSM Processing Methods
     
     func overpassQlRequest(minlat: Double, minlon: Double, maxlat: Double, maxlon: Double, completion: ((result: Bool) -> Void)!)
     {
@@ -1274,7 +1427,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             }
             
             let excluded_lmarks_list = ""
-            let res = self.ExtractLmarksAndIsections(responseString!, excludedLmarks: excluded_lmarks_list, minlat: minlat, minlon: minlon, maxlat: maxlat, maxlon: maxlon)
+            let excluded_isections_list = ""
+            let res = self.ExtractLmarksAndIsections(responseString!, excludedLmarks: excluded_lmarks_list, excludedIsections: excluded_isections_list, minlat: minlat, minlon: minlon, maxlat: maxlat, maxlon: maxlon)
             
             completion(result: res)
         }
@@ -1282,76 +1436,23 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         task.resume()
     }
     
-    func saveDataToFiles(subdirname: String)
-    {
-        let docdirpath = self.getDocumentsDirectoryPath()
-        let subdirpath = self.getSubdirectoryPath(docdirpath, subdirname: subdirname, create: true)
-        let filepath = NSURL(fileURLWithPath: subdirpath).URLByAppendingPathComponent("coord.txt")
-        print("filepath=\(filepath)")
-        
-        let sloc = "\(self.initialLocation.coordinate.latitude);\(self.initialLocation.coordinate.longitude)"
-        do {
-            try sloc.writeToFile(filepath.path!, atomically: true, encoding: NSUTF8StringEncoding)
-        } catch {
-            print("Error saving location string to file!")
-        }
-        
-        print("Before saving lmark images: number of lmarks = \(self.lmarks.count)")
-        
-        var savedcount = 0
-        var errcount = 0
-
-        for lmark in self.lmarks
-        {
-            let ires = saveURLImage(subdirname, subdirname: "lmarks", objname: lmark.name, id: lmark.pointId, lat: lmark.latitude, lon: lmark.longitude)
-        
-            switch ires {
-            case 1:
-                savedcount += 1
-            default:
-                errcount += 1
-            }
-        }
-        print("saved:  \(savedcount)")
-        print("errors:  \(errcount)")
-        
-        print("Before saving isection images: number of isections = \(self.isections.count)")
-        
-        savedcount = 0
-        errcount = 0
-        
-        for isection in self.isections
-        {
-            if (isection.streetsCount > 1)
-            {
-                let ires = saveURLImage(subdirname, subdirname: "isections", objname: isection.location!, id: isection.id, lat: isection.latitude, lon: isection.longitude)
-            
-                switch ires {
-                case 1:
-                    savedcount += 1
-                default:
-                    errcount += 1
-                }
-            }
-        }
-        print("saved:  \(savedcount)")
-        print("errors:  \(errcount)")
-    }
-    
-    func ExtractLmarksAndIsections(responseString: String, excludedLmarks: String, minlat: Double, minlon: Double, maxlat: Double, maxlon: Double) -> Bool
+    func ExtractLmarksAndIsections(responseString: String, excludedLmarks: String, excludedIsections: String, minlat: Double, minlon: Double, maxlat: Double, maxlon: Double) -> Bool
     {
         var lmarksPtr = UnsafeMutablePointer<Int64>(nil)
         var isectionsPtr = UnsafeMutablePointer<Int64>(nil)
         var lmarks_count : CInt = 0
         var isections_count : CInt = 0
     
-        var res = self.MySbplWrapper.initPlannerByOsm_wrapped(responseString, excludedLmarks, &lmarksPtr, &lmarks_count, &isectionsPtr, &isections_count)
+        var res = self.MySbplWrapper.initPlannerByOsm_wrapped(responseString, excludedLmarks, excludedIsections, &lmarksPtr, &lmarks_count, &isectionsPtr, &isections_count)
     
         if (res)
         {
             print("Planner initialized succesfully.")
             print("Landmarks count = \(lmarks_count)")
     
+            print("self.lmarks.count = \(self.lmarks.count)")
+            print("self.isections.count = \(self.isections.count)")
+            
             res = self.processLandmarks(lmarksPtr, lmarks_count: Int(lmarks_count), minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
             if (!res)
             {
@@ -1427,13 +1528,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         
         msg = msg + ". " + errorDesc
         return msg
-    }
-    
-    func overlayOsm() {
-        let template = "http://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        let overlay = MKTileOverlay(URLTemplate: template)
-        overlay.canReplaceMapContent = true
-        mapView.addOverlay(overlay, level: .AboveRoads)
     }
     
     func initEnv(coord: CLLocationCoordinate2D) -> Bool
@@ -1512,18 +1606,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         return res
     }
     
-    func showAlert(alertTitle: String, alertMessage: String, actionTitle: String)
-    {
-        dispatch_async(dispatch_get_main_queue())
-        {
-            let ac = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .Alert)
-            ac.addAction(UIAlertAction(title: actionTitle, style: .Default, handler: nil))
-    
-            self.presentViewController(ac, animated:true, completion: nil)
-            self.activityIndicatorView.stopAnimating()
-        }
-    }
-    
     func searchInMap(search_query: String, lat: CLLocationDegrees, lon: CLLocationDegrees, span: MKCoordinateSpan, mode: Int)
     {
         let request = MKLocalSearchRequest()
@@ -1590,71 +1672,40 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         })
     }
     
-    func showRoute(response: MKDirectionsResponse) {
-        for route in response.routes {
-            mapView.addOverlay(route.polyline, level: MKOverlayLevel.AboveRoads)
+    // MARK: Generate Plan and Directions
+    
+    func assignImageToStep(i: Int, inout step: SolutionStep)
+    {
+        var id: Int64
+        var type: Int
+        if (i == 0)
+        {
+            type = step.type1
+            id = step.id1
+        }
+        else
+        {
+            type = step.type2
+            id = step.id2
+        }
+        
+        if (type == 1)
+        {
+            let ind = findLandmarkByID(id)
+            if (ind >= 0 && lmarks[ind].photo != nil)
+            {
+                step.photoImage = lmarks[ind].photo
+            }
+        }
+        else
+        {
+            let ind = findIntersectionByID(id)
+            if (ind >= 0 && isections[ind].photo != nil)
+            {
+                step.photoImage = isections[ind].photo
+            }
             
-            //for step in route.steps {
-            //    print(step.instructions)
-            //}
         }
-    }
-    
-    func addPinToMapView(title: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
-            let pointAnnotation = MKPointAnnotation()
-            pointAnnotation.title = title
-            pointAnnotation.coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-            mapView.addAnnotation(pointAnnotation)
-    }
-    
-    func CreateOrTruncateFile(filename: String, ext: String) -> Bool
-    {
-        let DocumentDirURL = try! NSFileManager.defaultManager().URLForDirectory(.DocumentDirectory, inDomain: .UserDomainMask, appropriateForURL: nil, create: true)
-        let fileURL = DocumentDirURL.URLByAppendingPathComponent(filename).URLByAppendingPathExtension(ext)
-        let file: NSFileHandle? = NSFileHandle(forWritingAtPath: fileURL.path!)
-        if file == nil
-        {
-            if !(NSFileManager.defaultManager().createFileAtPath(fileURL.path!, contents: nil, attributes: nil))
-            {
-                NSLog("File open failed at \(fileURL.path)")
-                return false
-            }
-        }
-        else
-        {
-            file?.truncateFileAtOffset(0)
-        }
-        return true
-    }
-    
-    func AppendStringToFile(txt: String, filename: String, ext: String) -> Bool
-    {
-        let DocumentDirURL = try! NSFileManager.defaultManager().URLForDirectory(.DocumentDirectory, inDomain: .UserDomainMask, appropriateForURL: nil, create: true)
-        let fileURL = DocumentDirURL.URLByAppendingPathComponent(filename).URLByAppendingPathExtension(ext)
-        
-        var file: NSFileHandle? = NSFileHandle(forUpdatingAtPath: fileURL.path!)
-        if file == nil
-        {
-            if (NSFileManager.defaultManager().createFileAtPath(fileURL.path!, contents: nil, attributes: nil))
-            {
-                file = NSFileHandle(forUpdatingAtPath: fileURL.path!)
-            }
-            else
-            {
-                NSLog("File open failed at \(fileURL.path)")
-                return false
-            }
-        }
-        else
-        {
-            file?.seekToEndOfFile()
-        }
-        
-        let fileData = txt.dataUsingEncoding(NSUTF8StringEncoding)
-        file?.writeData(fileData!)
-        file?.closeFile()
-        file = nil
-        return true
     }
     
     func DisplayPath(pathArr: UnsafeMutablePointer<CInt>, count: Int, plan_file_name: String, plan_file_ext: String)
@@ -2455,6 +2506,116 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         return instr
     }
     
+    func replaceLmarkAnnotationViewImage(id: Int64) -> Int
+    {
+        var ind  = -1
+        var i = 0
+        for ann in mapView.annotations
+        {
+            if ann is LmarkAnnotation
+            {
+                let ann1: LmarkAnnotation = ann as! LmarkAnnotation
+                
+                if (ann1.lmark.pointId == id)
+                {
+                    print("id: \(id) lmark.name: \(ann1.lmark.name)")
+                
+                    let view = self.mapView.viewForAnnotation(ann1)
+                    let view1: LmarkAnnotationView = view as! LmarkAnnotationView
+                
+                    if (view?.image == UIImage(named: "FinishFlag"))
+                    {
+                        print("Finish Flag id=\(id)")
+                    }
+                    
+                    view1.image = UIImage(named: "RedMarker")
+                    
+                    redMarkerViews.append(view1)
+                    
+                    ind = i
+                    break
+                }
+            }
+            i += 1
+        }
+        return ind
+    }
+    
+    func drawTempPlan(planColor: UIColor, coords: [CLLocationCoordinate2D])
+    {
+        let n = coords.count
+        var tcoords = [CLLocationCoordinate2D]()
+        tcoords = coords
+        let polyline: MKPolyline = MKPolyline(coordinates: &tcoords, count: n)
+        self.polyline_color = planColor
+        self.mapView.addOverlay(polyline)
+    }
+    
+    func drawPlan(k: Int, planColor: UIColor, lineWidth: CGFloat, path: [SolutionStep])
+    {
+        let n = path.count
+        var coords = [CLLocationCoordinate2D]()
+        var i = 0
+        for step in path
+        {
+            if (step.k == k)
+            {
+                //print("i=\(i) type \(step.type1) id1 \(step.id1) id2 \(step.id2)")
+                
+                if (step.type1 == 0) //intersection
+                {
+                    coords.append(CLLocationCoordinate2DMake(step.lat1, step.lon1))
+                    
+                    //let ind = findIntersectionByID(step.id1)
+                    //let isection = isections[ind]
+                    //self.addPinToMapView("BlackMarker", latitude: step.lat1, longitude:step.lon1)
+                }
+                else //landmark
+                {
+                    let ind = findLandmarkByID(step.id1)
+                    let rlat = lmarks[ind].roadLatitude
+                    let rlon = lmarks[ind].roadLongitude
+                    coords.append(CLLocationCoordinate2DMake(rlat, rlon))
+                    
+                    if (step.id1 != start_pointId && step.id2 != goal_pointId)
+                    {
+                        replaceLmarkAnnotationViewImage(step.id1)
+                    }
+                }
+                
+                if (i == n-1)
+                {
+                    if (step.type2 == 0)
+                    {
+                        coords.append(CLLocationCoordinate2DMake(step.lat2, step.lon2))
+                    }
+                    else
+                    {
+                        let ind2 = findLandmarkByID(step.id2)
+                        let rlat2 = lmarks[ind2].roadLatitude
+                        let rlon2 = lmarks[ind2].roadLongitude
+                        coords.append(CLLocationCoordinate2DMake(rlat2, rlon2))
+                    }
+                }
+            }
+            i += 1
+        }
+        
+        let polyline: MKPolyline = MKPolyline(coordinates: &coords, count: n+1)
+        self.polyline_color = planColor
+        self.polyline_width = lineWidth
+        self.mapView.addOverlay(polyline)
+    }
+    
+    // MARK: Helper Methods
+    
+    func addPinToMapView(title: String, latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
+        let pointAnnotation = MKPointAnnotation()
+        pointAnnotation.title = title
+        pointAnnotation.coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        mapView.addAnnotation(pointAnnotation)
+    }
+    
     func findLandmarkByID(id: Int64) -> Int
     {
         var ind  = -1
@@ -2487,194 +2648,18 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         return ind
     }
     
-    func findLmarkAnnotationViewByLmarkID(id: Int64) -> Int
+    func showAlert(alertTitle: String, alertMessage: String, actionTitle: String)
     {
-        var ind  = -1
-        var i = 0
-        for ann in mapView.annotations
+        dispatch_async(dispatch_get_main_queue())
         {
-            if ann is LmarkAnnotation
-            {
-                if ((ann as! LmarkAnnotation).lmark.pointId == id)
-                {
-                    let view = self.mapView.viewForAnnotation(ann)
-                    (view as! LmarkAnnotationView).image = UIImage(named: "RedMarker")
-                    ind = i
-                    break
-                }
-            }
-            i += 1
+            let ac = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .Alert)
+            ac.addAction(UIAlertAction(title: actionTitle, style: .Default, handler: nil))
+            
+            self.presentViewController(ac, animated:true, completion: nil)
+            self.activityIndicatorView.stopAnimating()
         }
-        return ind
     }
     
-    func drawTempPlan(planColor: UIColor, coords: [CLLocationCoordinate2D])
-    {
-        let n = coords.count
-        var tcoords = [CLLocationCoordinate2D]()
-        tcoords = coords
-        let polyline: MKPolyline = MKPolyline(coordinates: &tcoords, count: n)
-        self.polyline_color = planColor
-        self.mapView.addOverlay(polyline)
-    }
-    
-    func drawPlan(k: Int, planColor: UIColor, lineWidth: CGFloat, path: [SolutionStep])
-    {
-        let n = path.count
-        var coords = [CLLocationCoordinate2D]()
-        var i = 0
-        for step in path
-        {
-            if (step.k == k)
-            {
-                if (step.type1 == 0) //intersection
-                {
-                    coords.append(CLLocationCoordinate2DMake(step.lat1, step.lon1))
-                    
-                    //let ind = findIntersectionByID(step.id1)
-                    //let isection = isections[ind]
-                    //self.addPinToMapView("BlackMarker", latitude: step.lat1, longitude:step.lon1)
-                }
-                else //landmark
-                {
-                    let ind = findLandmarkByID(step.id1)
-                    let rlat = lmarks[ind].roadLatitude
-                    let rlon = lmarks[ind].roadLongitude
-                    coords.append(CLLocationCoordinate2DMake(rlat, rlon))
-                    
-                    if (i > 0 && step.id1 != goal_pointId)
-                    {
-                        findLmarkAnnotationViewByLmarkID(step.id1)
-                    }
-                }
-                
-                if (i == n-1)
-                {
-                    if (step.type2 == 0)
-                    {
-                        coords.append(CLLocationCoordinate2DMake(step.lat2, step.lon2))
-                    }
-                    else
-                    {
-                        let ind2 = findLandmarkByID(step.id2)
-                        let rlat2 = lmarks[ind2].roadLatitude
-                        let rlon2 = lmarks[ind2].roadLongitude
-                        coords.append(CLLocationCoordinate2DMake(rlat2, rlon2))
-                    }
-                }
-            }
-            i += 1
-        }
-        
-        let polyline: MKPolyline = MKPolyline(coordinates: &coords, count: n+1)
-        self.polyline_color = planColor
-        self.polyline_width = lineWidth
-        self.mapView.addOverlay(polyline)
-    }
-    
-    func processLandmarks(lmarksPtr: UnsafeMutablePointer<Int64>, lmarks_count: Int, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double) -> Bool
-    {
-        var res = true
-        var j=0
-        for i in 0..<lmarks_count
-        {
-            let lmark = lmarksPtr[i]
-            let pointId = Int64(lmark)
-            
-            var ind: CInt = 0
-            var name: NSString? = nil
-            var address: NSString? = nil
-            var info: NSString? = nil
-            var street: NSString? = nil
-            var amenity: NSString? = nil
-            var lat: Double = 0.0
-            var lon: Double = 0.0
-            var roadId:Int64 = -1
-            var roadLat: Double = 0.0
-            var roadLon: Double = 0.0
-            
-            res = self.MySbplWrapper.getLandmarkDetails_wrapped(pointId, &ind, &lat, &lon, &name, &address, &info, &street, &amenity, &roadId, &roadLat, &roadLon)
-            if (!res)
-            {
-                showAlert("SBPL_Exception", alertMessage: "getLandmarkDetails failed for pointId=\(pointId).", actionTitle: "Close")
-                NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)] pointId: \(pointId)")
-                //NSLog("\(NSThread.callStackSymbols())")
-                break;
-            }
-
-            let name1 = name?.stringByReplacingOccurrencesOfString("_", withString: " ")
-            let name0 = name1?.stringByReplacingOccurrencesOfString("/", withString: " ").stringByReplacingOccurrencesOfString("  ", withString: " ")
-            let name2 = name0?.capitalizedString
-            
-            let info1 = info?.stringByReplacingOccurrencesOfString("_", withString: " ")
-            let info2 = info1?.capitalizedString
-            
-            let street1 = street?.stringByReplacingOccurrencesOfString("_", withString: " ")
-            let street2 = street1?.capitalizedString
-            
-            let amenity1 = amenity?.stringByReplacingOccurrencesOfString("_", withString: " ")
-            let amenity2 = amenity1?.capitalizedString
-            
-            //print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(name2!) | \(address!) | \(info2!) | \(street2!) | \(amenity2!)")
-            
-            j += 1
-            self.AddLandmark(name2!, description: info2!, type: 1, address: String(address!), latitude: lat, longitude: lon, photoName: "", pointId: pointId, roadId: roadId, street: street2!, amenity: amenity2!, roadLatitude: roadLat, roadLongitude: roadLon)
-            
-            name = nil
-            info = nil
-            street = nil
-            amenity = nil
-            
-            //print("i=\(i) \(pointId!) \(name2!) \(lat) \(lon)")
-        }
-        //print("Landmarks total: \(i) within bbox \(j)")
-        return res;
-    }
-
-    func processIntersections(isectionsPtr: UnsafeMutablePointer<Int64>, isections_count: Int, minlat: Double, maxlat: Double, minlon: Double, maxlon: Double) -> Bool
-    {
-        var res = true
-        var lat: Double = 0
-        var lon: Double = 0
-        
-        var j=0
-        for i in 0..<isections_count
-        {
-            let isection = isectionsPtr[i]
-            let pointId = Int64(isection)
-            
-            //print("i=\(i) pointId=(\(pointId)")
-            var ind: CInt = 0
-            var location: NSString? = nil
-            var count: CInt = 0
-            res = self.MySbplWrapper.getIntersectionDetails_wrapped(pointId, &ind, &lat, &lon, &location, &count)
-            //print("i=\(i) \(pointId!) \(ind) \(lat) \(lon) \(location!)")
-            if (!res)
-            {
-                showAlert("SBPL_Exception", alertMessage: "getIntersectionDetails failed for pointId=\(pointId)", actionTitle: "Close")
-                NSLog("SBPL_Exception: [file: \(#file) function: \(#function) at line \(#line)] pointId: \(pointId)")
-                break
-            }
-            
-            if (lat >= minlat && lat <= maxlat && lon >= minlon && lon <= maxlon)
-            {
-                j += 1
-            }
-            
-            let location0 = location?.stringByReplacingOccurrencesOfString("/", withString: " ").stringByReplacingOccurrencesOfString("  ", withString: " ")
-            
-            let isct = Intersection(id: pointId, index: Int(j), latutude: lat, longitude: lon, location: location0! as String, streetsCount: Int(count))
-            isections.append(isct)
-            
-            let lmark = Lmark(name: isct.location!, description: "", type: 0, address: "", latitude: isct.latitude, longitude: isct.longitude, photo: nil, pointId: pointId, roadId: 0, street: "", amenity: "",  roadLatitude: 0.0, roadLongitude: 0.0);
-            i_lmarks.append(lmark!)
-            
-            location = nil
-        }
-        //print("Intersections total: \(i) within bbox \(j+1)")
-        return res
-    }
-        
     /*
     @IBAction func zoomInMap(sender: AnyObject)
     {
@@ -2734,5 +2719,130 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         
     }
     */
+    
+    /*
+     func takeSnapshot(mapView: MKMapView, coord: CLLocationCoordinate2D, eyeCoord: CLLocationCoordinate2D, filename: String, completion: ((result:UIImage?) -> Void)!)
+     {
+     //let coordSpan = MKCoordinateSpan(latitudeDelta: 0.0000000001, longitudeDelta: 0.0000000001)
+     let options = MKMapSnapshotOptions()
+     //let region = MKCoordinateRegion(center: coord, span: coordSpan)
+     let region = MKCoordinateRegionMakeWithDistance(coord, 0.5, 0.5)
+     options.region = region
+     //options.size = mapView.frame.size;
+     options.scale = UIScreen.mainScreen().scale
+     //options.size = CGSize(width: 50, height: 50)
+     options.mapType = .SatelliteFlyover
+     options.showsPointsOfInterest = true
+     options.showsBuildings = true
+     
+     let eyeCoord1 = CLLocationCoordinate2D(latitude: coord.latitude+0.0000002, longitude: coord.longitude+0.0000001)
+     let eyeAlt = CLLocationDistance(3.0)
+     //let BellefiedHallCoord = CLLocationCoordinate2D(latitude: 40.4453588019383, longitude: -79.950951061835)
+     //let IntersCoord = CLLocationCoordinate2D(latitude: 40.443922, longitude: -79.950749)
+     
+     //let camera = MKMapCamera(lookingAtCenterCoordinate: IntersCoord, fromDistance: 20, pitch: 45, heading: 180)
+     let camera = MKMapCamera(lookingAtCenterCoordinate: coord, fromEyeCoordinate: eyeCoord1, eyeAltitude: eyeAlt)
+     
+     camera.altitude = 10.0
+     //camera.centerCoordinate = coord
+     options.camera = camera
+     
+     let semaphore = dispatch_semaphore_create(0)
+     let qualityOfServiceClass = QOS_CLASS_BACKGROUND
+     let backgroundQueue = dispatch_get_global_queue(qualityOfServiceClass, 0)
+     
+     let snapshotter = MKMapSnapshotter(options: options)
+     
+     snapshotter.startWithQueue(backgroundQueue, completionHandler:  { (snapshot: MKMapSnapshot?, error: NSError?) -> Void in
+     
+     guard (snapshot != nil) else {
+     print("Snapshot error:\(error)")
+     dispatch_semaphore_signal(semaphore)
+     return
+     //completion(result:nil)
+     }
+     completion(result: snapshot!.image)
+     
+     let data = UIImagePNGRepresentation(snapshot!.image)
+     let docdirpath = self.getDocumentsDirectoryPath()
+     let filepath = NSURL(fileURLWithPath: docdirpath).URLByAppendingPathComponent("\(filename).png")
+     
+     data?.writeToFile(filepath.path!, atomically: true)
+     
+     dispatch_semaphore_signal(semaphore)
+     })
+     let delayTime = dispatch_time(DISPATCH_TIME_NOW, Int64(3*Double(NSEC_PER_SEC)))
+     dispatch_semaphore_wait(semaphore, delayTime)
+     }
+     */
+    
+    
+    /*
+     func showRoute(response: MKDirectionsResponse) {
+     for route in response.routes {
+     mapView.addOverlay(route.polyline, level: MKOverlayLevel.AboveRoads)
+     
+     //for step in route.steps {
+     //    print(step.instructions)
+     //}
+     }
+     }
+     */
+    
+    /*
+     func configureDetailView(annotationView: MKAnnotationView) {
+     let snapshotView = UIView(frame: CGRect (x: 0, y: 0, width: 300, height: 300))
+     let options = MKMapSnapshotOptions()
+     options.size = CGSize(width: 300, height: 300)
+     options.mapType = .SatelliteFlyover
+     
+     let camera = MKMapCamera(lookingAtCenterCoordinate: annotationView.annotation!.coordinate, fromDistance: 500, pitch: 65, heading: 0)
+     options.camera = camera
+     
+     let snapshotter = MKMapSnapshotter(options: options)
+     
+     snapshotter.startWithCompletionHandler { (snapshot, error) -> Void
+     in
+     if let actualSnapshot = snapshot {
+     let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: 300, height: 300))
+     imageView.image = actualSnapshot.image
+     snapshotView.addSubview(imageView)
+     }
+     }
+     annotationView.detailCalloutAccessoryView = snapshotView
+     */
+    /*
+     let width = 300
+     let height = 200
+     
+     let snapshotView = UIView()
+     let views = ["snapshotView": snapshotView]
+     snapshotView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:[snapshotView(300)]", options: [], metrics: nil, views: views))
+     snapshotView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:[snapshotView(200)]", options: [], metrics: nil, views: views))
+     
+     let options = MKMapSnapshotOptions()
+     options.size = CGSize(width: width, height: height)
+     options.mapType = .SatelliteFlyover
+     options.camera = MKMapCamera(lookingAtCenterCoordinate: annotationView.annotation!.coordinate, fromDistance: 250, pitch: 65, heading: 0)
+     let snapshotter = MKMapSnapshotter(options: options)
+     snapshotter.startWithCompletionHandler( {snapshot, error in
+     if snapshot != nil {
+     let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: width, height: height))
+     imageView.image = snapshot!.image
+     snapshotView.addSubview(imageView)
+     }
+     })
+     annotationView.detailCalloutAccessoryView = snapshotView
+     */
+    //}
+    
+    /*
+     func overlayOsm() {
+     let template = "http://tile.openstreetmap.org/{z}/{x}/{y}.png"
+     let overlay = MKTileOverlay(URLTemplate: template)
+     overlay.canReplaceMapContent = true
+     mapView.addOverlay(overlay, level: .AboveRoads)
+     }
+     */
 }
 
