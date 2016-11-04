@@ -18,9 +18,9 @@
     bool res = true;
     @try {
         NSURL *DocumentDirURL = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
-        const char* buf = [DocumentDirURL.path UTF8String];
+        const char* docdir = [DocumentDirURL.path UTF8String];
    
-        self.ob = new MySbpl(buf);
+        self.ob = new MySbpl(docdir);
         MySbpl* sb = (MySbpl*)self.ob;
         res = (MySbpl*) sb->setParams(debug_mode, policyTime, computeTime);
         sb = NULL;

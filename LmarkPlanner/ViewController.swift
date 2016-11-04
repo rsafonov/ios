@@ -92,6 +92,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     var cond0: Condition? = nil
     var duration0: Double = 0.0
     
+    var DebugInfoText: String = ""
+    
     @IBOutlet var OnlineStatusImage: UIImageView!
     @IBOutlet var activityIndicatorView: UIActivityIndicatorView!
     @IBOutlet var lmarksButton: UIBarButtonItem!
@@ -267,6 +269,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         
         countViewDidLoad += 1
         DebugInfo.text = ""
+        if (debug)
+        {
+            DebugInfo.text = DebugInfoText
+        }
         
         //Gesture recognizer
         //let gst = UITapGestureRecognizer(target: self, action:#selector(ViewController.processGesture(_:)))
@@ -410,7 +416,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 annView = MKAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
             }
             
-            print("annotation.title = \(annotation.title!)")
+            print("annotation.title = \(annotation!.title!)")
             
             //if (annotation.title! == "BlackDot")
             //{
@@ -718,7 +724,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 let excluded_lmarks_path = NSURL(fileURLWithPath: subdirpath.path!).URLByAppendingPathComponent("excluded_lmarks.txt")
                 let excluded_isections_path = NSURL(fileURLWithPath: subdirpath.path!).URLByAppendingPathComponent("excluded_isections.txt")
 
-                print("json_path=\(json_path)")
+                print("\njson_path=\(json_path)\n")
                 
                 do {
                     excluded_lmarks_list = try NSString(contentsOfURL: excluded_lmarks_path, encoding: NSUTF8StringEncoding) as String
@@ -728,11 +734,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
                     return;
                 }
-                print(excluded_lmarks_list)
                 
-                let excludedLmarksArr: Array = excluded_lmarks_list.componentsSeparatedByString(",")
-                print("Number of Excluded Lmarks: \(excludedLmarksArr.count)")
-                
+                if (excluded_lmarks_list.characters.count > 0)
+                {
+                    let excludedLmarksArr: Array = excluded_lmarks_list.componentsSeparatedByString(",")
+                    print("Number of Excluded Lmarks: \(excludedLmarksArr.count)")
+                    print("\(excluded_lmarks_list)\n")
+                }
+                else
+                {
+                    print("Number of Excluded Lmarks: 0")
+                }
                 
                 do {
                     excluded_isections_list = try NSString(contentsOfURL: excluded_isections_path, encoding: NSUTF8StringEncoding) as String
@@ -742,11 +754,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
                     return;
                 }
-                print(excluded_isections_list)
                 
-                let excludedIsectionsArr: Array = excluded_isections_list.componentsSeparatedByString(",")
-                print("Number of Excluded Isections: \(excludedIsectionsArr.count)")
-
+                if (excluded_isections_list.characters.count > 0)
+                {
+                    let excludedIsectionsArr: Array = excluded_isections_list.componentsSeparatedByString(",")
+                    print("Number of Excluded Isections: \(excludedIsectionsArr.count)")
+                    print("\(excluded_isections_list)\n")
+                }
+                else
+                {
+                    print("Number of Excluded Isections: 0")
+                }
         
                 do {
                     loc = try NSString(contentsOfURL: loc_path, encoding: NSUTF8StringEncoding) as String
@@ -756,10 +774,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
                     return;
                 }
-                print(loc)
-                
+                //print(loc)
                 let coordArr: Array = loc.componentsSeparatedByString(";")
-                print("lat=\(coordArr[0]) lon=\(coordArr[1])")
+                //print("lat=\(coordArr[0]) lon=\(coordArr[1])")
             
                 self.initialLocation = CLLocation(latitude: Double(coordArr[0])!, longitude: Double(coordArr[1])!)
                     
@@ -799,7 +816,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 if (res)
                 {
                     print("Before reading lmark images: number of lmarks = \(self.lmarks.count)")
-                    
                     var readcount = 0
                     var errcount = 0
                     
@@ -823,13 +839,75 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     
                     self.mapView.addAnnotations(anns)
                     
+                    print("Before reading intersection images: number of isections = \(self.isections.count)")
+                    
                     readcount = 0
                     errcount = 0
+                    var isections_with_one_street = 0
+                    var isections_with_two_streets = 0
+                    var isection_with_two_identical_streets = 0
+                    var isections_with_tree_streets = 0
+                    var isection_with_tree_identical_streets = 0
+                    var isections_with_more_than_tree_streets = 0
+                    //var objname = "";
+                    
                     for isection in self.isections
                     {
-                        if (isection.streetsCount > 1)
+                        var streets = isection.location!
+                        let streetsArr: Array = streets.componentsSeparatedByString(",")
+                        var skip: Bool = false
+                        
+                        if (isection.streetsCount == 1)
                         {
-                            let image = self.readLmarkImage(subdirname, subdirname: "isections", objname: isection.location!, id: isection.id)
+                            isections_with_one_street += 1
+                            skip = true
+                        }
+                        else if (isection.streetsCount == 2)
+                        {
+                            isections_with_two_streets += 1
+                            if (streetsArr[0] == streetsArr[1])
+                            {
+                                isection_with_two_identical_streets += 1
+                                skip = true
+                            }
+                        }
+                        else if (isection.streetsCount == 3)
+                        {
+                            isections_with_tree_streets += 1
+                            if (streetsArr[0] == streetsArr[1] &&
+                                streetsArr[0] == streetsArr[2])
+                            {
+                                isection_with_tree_identical_streets += 1
+                                skip = true
+                            }
+                        }
+                        else
+                        {
+                            isections_with_more_than_tree_streets += 1
+                        }
+                        
+                        if (!skip)
+                        {
+                            var tmp: String = streetsArr[0]
+                            for i in 1...isection.streetsCount-1
+                            {
+                                var found: Bool = false
+                                for j in 0...i-1
+                                {
+                                    if (streetsArr[j] == streetsArr[i])
+                                    {
+                                        found = true;
+                                    }
+                                }
+                                if (!found)
+                                {
+                                    tmp = tmp + "," + streetsArr[i]
+                                }
+                            }
+                            let streets0 = streets
+                            streets = tmp
+                            
+                            let image = self.readLmarkImage(subdirname, subdirname: "isections", objname: streets, id: isection.id)
                             if (image != nil)
                             {
                                 readcount += 1
@@ -838,11 +916,19 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                             else
                             {
                                 errcount += 1
+                                print("streets0: \(streets0)")
+                                print("streets : \(streets)")
                             }
                         }
                     }
                     print("read:  \(readcount)")
                     print("errors:  \(errcount)")
+                    print("isections with one street: \(isections_with_one_street)")
+                    print("isections with two streets: \(isections_with_two_streets)")
+                    print("isection with two identical streets: \(isection_with_two_identical_streets)")
+                    print("isections with tree streets: \(isections_with_tree_streets)")
+                    print("isection with tree identical streets: \(isection_with_tree_identical_streets)")
+                    print("isections with more than tree streets: \(isections_with_more_than_tree_streets)")
                     
                     dispatch_async(dispatch_get_main_queue())
                     {
@@ -852,12 +938,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                         self.activityIndicatorView.stopAnimating()
                     }
                 }
-                else
-                {
-                    self.showAlert("Error", alertMessage: "Init planner environment failed!", actionTitle: "Close")
-                    NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
-                    return
-                }
+                //else
+                //{
+                //    self.showAlert("Error", alertMessage: "Init planner environment failed!", actionTitle: "Close")
+                //    NSLog("ERROR: [file: \(#file) function: \(#function) at line \(#line)]")
+                //    return
+                //}
             }
         }
         return true
@@ -1142,7 +1228,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 var isDir:ObjCBool = false
                 if (!NSFileManager.defaultManager().fileExistsAtPath(filepath.path!, isDirectory: &isDir))
                 {
-                    print("file \(filepath.path) does not exist")
+                    print("file \(filepath.path!) does not exist")
                     return nil
                 }
                 
@@ -1448,10 +1534,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         if (res)
         {
             print("Planner initialized succesfully.")
-            print("Landmarks count = \(lmarks_count)")
-    
-            print("self.lmarks.count = \(self.lmarks.count)")
-            print("self.isections.count = \(self.isections.count)")
+            //print("Landmarks count = \(lmarks_count)")
+            //print("self.lmarks.count = \(self.lmarks.count)")
+            //print("self.isections.count = \(self.isections.count)")
             
             res = self.processLandmarks(lmarksPtr, lmarks_count: Int(lmarks_count), minlat: minlat, maxlat: maxlat, minlon: minlon, maxlon: maxlon)
             if (!res)
@@ -2518,7 +2603,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 
                 if (ann1.lmark.pointId == id)
                 {
-                    print("id: \(id) lmark.name: \(ann1.lmark.name)")
+                    //print("id: \(id) lmark.name: \(ann1.lmark.name)")
                 
                     let view = self.mapView.viewForAnnotation(ann1)
                     let view1: LmarkAnnotationView = view as! LmarkAnnotationView

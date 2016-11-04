@@ -213,7 +213,8 @@ class LmarkAnnotationView: MKAnnotationView {
         
         if (self.parent!.debug)
         {
-            self.parent!.DebugInfo.text = "Searching...\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId)"
+            self.parent!.DebugInfoText = "Searching...\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId)"
+            self.parent!.DebugInfo.text = self.parent!.DebugInfoText
         }
 
         parent!.generateOptimalPlan ( { (error:NSError!) -> () in
@@ -270,11 +271,15 @@ class LmarkAnnotationView: MKAnnotationView {
                     {
                         if (self.parent!.cond0 != nil)
                         {
-                            self.parent!.DebugInfo.text = "k=\(self.parent!.cond0!.k) time=\(self.parent!.duration0)\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId):\(self.parent!.cond0!.start_dir)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId):\(self.parent!.cond0!.goal_dir)"
+                            self.parent!.DebugInfoText = "k=\(self.parent!.cond0!.k) time=\(self.parent!.duration0)\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId):\(self.parent!.cond0!.start_dir)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId):\(self.parent!.cond0!.goal_dir)"
+                            
+                                self.parent!.DebugInfo.text = self.parent!.DebugInfoText
                         }
                         else
                         {
-                            self.parent!.DebugInfo.text = "Plan not found.\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId)"
+                            self.parent!.DebugInfoText = "Plan not found.\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId)"
+                            
+                            self.parent!.DebugInfo.text = self.parent!.DebugInfoText
                         }
                     
                         if (self.parent!.searchText.text == "osm")

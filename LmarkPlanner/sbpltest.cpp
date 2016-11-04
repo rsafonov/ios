@@ -11,10 +11,10 @@
 MySbpl::MySbpl(string iosDocDir)
 {
     SBPL_PRINTF("iOS Document Directory:");
-    SBPL_PRINTF("%s", iosDocDir.c_str());
+    SBPL_PRINTF("%s\n", iosDocDir.c_str());
     
     env0.dbg_params.dir.assign(iosDocDir);
-    printTargetOS();
+    //printTargetOS();
 }
 
 bool MySbpl::setParams(int debug_mode, double policyTime, double computeTime)
@@ -114,10 +114,9 @@ bool MySbpl::generatePlan(int k, long long int start_pointId, long long int star
 
     env = new MapEnv();
     env->InitializeEnvByEnv(&env0, iter);
-    //env->ppcp.debug_file_name = env0.dbg_params.debug_file_name;
     
     env0.ppcp.getTimes(&policyTime, &computeTime);
-    SBPL_PRINTF("policyTyme = %f computeTime = %f", policyTime, computeTime);
+    SBPL_PRINTF("policyTime = %f computeTime = %f", policyTime, computeTime);
     
     //FILE* fdbg = fopen(env->dbg_params.debug_file_name.c_str(), "a");
     //fprintf(fdbg, )
