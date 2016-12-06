@@ -1,0 +1,7 @@
+source 'http://github.com/CocoaPods/Specs.git'
+workspace '/Users/rsafonov/dev/SbplPlannerWS/SbplPlanner.xcworkspace'
+project '/Users/rsafonov/dev/LmarkPlanner/LmarkPlanner.xcodeproj'
+target 'LmarkPlanner' do
+    pod 'GoogleMaps'
+    pod 'GooglePlaces'
+end

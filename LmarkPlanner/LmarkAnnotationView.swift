@@ -230,7 +230,7 @@ class LmarkAnnotationView: MKAnnotationView {
                     print("Duration = \(duration)")
                 }
 
-                if ((error == nil))
+                if (error == nil)
                 {
                     print("generateOptimalPlan completed")
                     print("safety plan count = \(self.parent!.safety_plan.count) goal_pointId = \(self.parent!.goal_pointId)")

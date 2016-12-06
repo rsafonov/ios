@@ -18,7 +18,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     
     var debug: Bool = true
     var workOffline: Bool = true
-    var saveFiles: Bool = true
+    var saveFiles: Bool = false
     
     var computeTime: Double = 1.0
     var policyTime: Double = 6.0
@@ -167,6 +167,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
     override func viewDidLoad()
     {
         super.viewDidLoad()
+        
+        //searchText.autocorrectionType = UITextAutocorrectionType.Yes
+        
         if (workOffline)
         {
             OnlineStatusImage.image = UIImage(named: "ledred16")
@@ -560,9 +563,21 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
             {
                 for view in self.redMarkerViews
                 {
-                    view.image = UIImage(named: "BlueBall")
+                    let ann = view.annotation
+                    let ann1: LmarkAnnotation = ann as! LmarkAnnotation
+                    
+                    if (ann1.lmark.pointId == goal_pointId)
+                    {
+                        print("aaa")
+                    }
+                    
+                    if (ann1.lmark.pointId != goal_pointId)
+                    {
+                        view.image = UIImage(named: "BlueBall")
+                    }
                 }
                 //DebugInfo.text = ""
+                self.redMarkerViews.removeAll()
             }
             
             let queue:dispatch_queue_t = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
@@ -718,6 +733,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 
                 let docdirpath = self.getDocumentsDirectoryPath()
                 let subdirpath = NSURL(fileURLWithPath: docdirpath).URLByAppendingPathComponent(subdirname)
+
+                
+                let resdirpath = NSBundle.mainBundle().pathForResource("resources", ofType: "")
 
                 let json_path = NSURL(fileURLWithPath: subdirpath.path!).URLByAppendingPathComponent("map.json")
                 let loc_path = NSURL(fileURLWithPath: subdirpath.path!).URLByAppendingPathComponent("coord.txt")
@@ -2607,12 +2625,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                 
                     let view = self.mapView.viewForAnnotation(ann1)
                     let view1: LmarkAnnotationView = view as! LmarkAnnotationView
-                
-                    if (view?.image == UIImage(named: "FinishFlag"))
-                    {
-                        print("Finish Flag id=\(id)")
-                    }
-                    
                     view1.image = UIImage(named: "RedMarker")
                     
                     redMarkerViews.append(view1)
@@ -2626,18 +2638,23 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
         return ind
     }
     
-    func drawTempPlan(planColor: UIColor, coords: [CLLocationCoordinate2D])
-    {
-        let n = coords.count
-        var tcoords = [CLLocationCoordinate2D]()
-        tcoords = coords
-        let polyline: MKPolyline = MKPolyline(coordinates: &tcoords, count: n)
-        self.polyline_color = planColor
-        self.mapView.addOverlay(polyline)
-    }
+    //func drawTempPlan(planColor: UIColor, coords: [CLLocationCoordinate2D])
+    //{
+    //    let n = coords.count
+    //    var tcoords = [CLLocationCoordinate2D]()
+    //    tcoords = coords
+    //    let polyline: MKPolyline = MKPolyline(coordinates: &tcoords, count: n)
+    //    self.polyline_color = planColor
+    //    self.mapView.addOverlay(polyline)
+    //}
     
     func drawPlan(k: Int, planColor: UIColor, lineWidth: CGFloat, path: [SolutionStep])
     {
+        //if (debug)
+        //{
+        //    redMarkerViews.removeAll()
+        //}
+        
         let n = path.count
         var coords = [CLLocationCoordinate2D]()
         var i = 0
@@ -2662,7 +2679,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, CLLocationM
                     let rlon = lmarks[ind].roadLongitude
                     coords.append(CLLocationCoordinate2DMake(rlat, rlon))
                     
-                    if (step.id1 != start_pointId && step.id2 != goal_pointId)
+                    if (debug && step.id1 != start_pointId && step.id2 != goal_pointId)
                     {
                         replaceLmarkAnnotationViewImage(step.id1)
                     }
