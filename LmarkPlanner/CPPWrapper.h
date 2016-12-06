@@ -11,10 +11,12 @@
 
 @interface CPPWrapper : NSObject
 
-- (BOOL) setParams_wrapped: (int) debug_mode : (double) policyTime : (double) computeTime error: (__autoreleasing NSError **) error;
+- (BOOL) setParams_wrapped: (int) debug_mode : (int) offline_mode : (double) policyTime : (double) computeTime error: (__autoreleasing NSError **) error;
 
 - (BOOL) initPlannerByOsm_wrapped: (NSString*) osmJsonStr : (NSString*) excludedLmarks : (NSString*) excludedIsections : (long long int **) lmarks : (int*) lmarks_count : (long long int **) intersections : (int*) intersections_count
 ;
+
+- (BOOL) initPlannerByCache_wrapped: (NSString*) cacheDir : (NSString **) errmsg;
 
 - (BOOL) freePlan_wrapped: (int**) plan;
 - (BOOL) freeMemory_wrapped: (long long int**) ptr;

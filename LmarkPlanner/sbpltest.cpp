@@ -11,19 +11,22 @@
 MySbpl::MySbpl(string iosDocDir)
 {
     SBPL_PRINTF("iOS Document Directory:");
-    SBPL_PRINTF("%s\n", iosDocDir.c_str());
-    
+    SBPL_PRINTF("%s", iosDocDir.c_str());
+    SBPL_PRINTF(" ");
     env0.dbg_params.dir.assign(iosDocDir);
     //printTargetOS();
 }
 
-bool MySbpl::setParams(int debug_mode, double policyTime, double computeTime)
+bool MySbpl::setParams(int debug_mode, int offline_mode, double policyTime, double computeTime)
 {
-    env0.dbg_params.mode = debug_mode;
+    env0.dbg_params.debug_mode = debug_mode;
+    env0.dbg_params.offline_mode = offline_mode;
     env0.dbg_params.max_landmark_road_distance = 200.0; //meters
+    
+    env0.setTimes(policyTime, computeTime);
 
-    env0.dbg_params.roads_file_name = env0.dbg_params.dir + "/myroads.txt";
-    env0.dbg_params.landmarks_file_name = env0.dbg_params.dir + "/mylandmarks.txt";
+    env0.dbg_params.roads_file_name = env0.dbg_params.dir + "/roads.txt";
+    env0.dbg_params.landmarks_file_name = env0.dbg_params.dir + "/landmarks.txt";
     env0.dbg_params.amenities_file_name = env0.dbg_params.dir + "/amenities.txt";
     env0.dbg_params.ways_file_name = env0.dbg_params.dir + "/ways.txt";
     env0.dbg_params.roadinfo_file_name = env0.dbg_params.dir + "/roadinfo.txt";
@@ -33,17 +36,15 @@ bool MySbpl::setParams(int debug_mode, double policyTime, double computeTime)
     env0.dbg_params.expands_file_name = env0.dbg_params.dir + "/expands.txt";
     env0.dbg_params.debug_file_name = env0.dbg_params.dir + "/debug.txt";
     env0.dbg_params.heuristics_file_name = env0.dbg_params.dir + "/heuristics.txt";
-    
-    env0.setTimes(policyTime, computeTime);
+    env0.dbg_params.directions_file_name = env0.dbg_params.dir + "/directions.txt";
     return true;
 }
 
 bool MySbpl::initPlannerByOsm(string osmJsonStr, string excludedLmarks, string excludedIsections, long long int** lmarks, int* lmarks_count, long long int** intersections, int* intersections_count)
 {
     bool res = env0.InitializeEnvByJson(osmJsonStr, excludedLmarks, excludedIsections, lmarks, lmarks_count, intersections, intersections_count);
-    if (res)
+    if (res && env0.dbg_params.debug_mode > 0)
     {
-        //env.heuristicComputed = false;
         SBPL_PRINTF("env0.InitializeEnvByJson succeeded!");
         
         double computeTime = 0.0;
@@ -55,9 +56,28 @@ bool MySbpl::initPlannerByOsm(string osmJsonStr, string excludedLmarks, string e
         fprintf(fdbg, "policyTime:  %f\n", policyTime);
         fclose(fdbg);
     }
-    else
+    else if (!res)
     {
         SBPL_ERROR("Error: env0.InitializeEnvByJson failed!");
+    }
+    return res;
+}
+
+bool MySbpl::initPlannerByCache(string cache_dir, string& errmsg)
+{
+    bool res = env0.InitializeEnvByCache(cache_dir, errmsg);
+    if (res && env0.dbg_params.debug_mode > 0)
+    {
+        SBPL_PRINTF("env0.InitializeEnvByCache succeeded!");
+        
+        double computeTime = 0.0;
+        double policyTime = 0.0;
+        env0.ppcp.getTimes(&policyTime, &computeTime);
+        
+        FILE* fdbg = fopen(env0.dbg_params.debug_file_name.c_str(), "a");
+        fprintf(fdbg, "computeTime: %f\n", computeTime);
+        fprintf(fdbg, "policyTime:  %f\n", policyTime);
+        fclose(fdbg);
     }
     return res;
 }
@@ -107,8 +127,12 @@ bool MySbpl::generatePlan(int k, long long int start_pointId, long long int star
     double computeTime;
     double policyTime;
     bool plan_found = false;
+    clock_t start_time = 0;
     
-    clock_t start_time = clock();
+    if (env0.dbg_params.debug_mode > 0)
+    {
+        start_time = clock();
+    }
     
     if (env != NULL) delete env;
 
@@ -200,17 +224,20 @@ bool MySbpl::generatePlan(int k, long long int start_pointId, long long int star
         }
     }
     
-    if (env->dbg_params.mode > 0 && mode == 0)
+    if (env0.dbg_params.debug_mode > 0 && mode == 0)
     {
-        FILE* fdbg = fopen(env->dbg_params.debug_file_name.c_str(), "a");
+        if (mode == 0)
+        {
+            FILE* fdbg = fopen(env->dbg_params.debug_file_name.c_str(), "a");
         
-        fprintf(fdbg, "k=%d Start: r %lld p %lld t %d d %d ", k, start_roadId, start_pointId, start_type, start_dir);
-        fprintf(fdbg, "Goal: r %lld p %lld t %d d %d ", goal_roadId, goal_pointId, goal_type, goal_dir);
-        fprintf(fdbg, "time %f res %d k0len %d k1len %d\n", *duration, plan_found, *k0len, *k1len);
-        fclose(fdbg);
+            fprintf(fdbg, "k=%d Start: r %lld p %lld t %d d %d ", k, start_roadId, start_pointId, start_type, start_dir);
+            fprintf(fdbg, "Goal: r %lld p %lld t %d d %d ", goal_roadId, goal_pointId, goal_type, goal_dir);
+            fprintf(fdbg, "time %f res %d k0len %d k1len %d\n", *duration, plan_found, *k0len, *k1len);
+            fclose(fdbg);
+        }
+        
+        double duration0 = ( clock() - start_time) / (double) CLOCKS_PER_SEC;
+        SBPL_PRINTF("Execution time: %10.5f", duration0);
     }
-    
-    double duration0 = ( clock() - start_time) / (double) CLOCKS_PER_SEC;
-    SBPL_PRINTF("Execution time: %10.5f", duration0);
     return plan_found;
 }

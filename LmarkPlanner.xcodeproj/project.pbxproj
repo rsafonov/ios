@@ -19,6 +19,7 @@
 		00403A771C8A420100A715BE /* Lmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A751C8A420100A715BE /* Lmark.swift */; };
 		00403A791C8A6F2600A715BE /* StepTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A781C8A6F2600A715BE /* StepTableViewCell.swift */; };
 		00403A7B1C8E2FE200A715BE /* FalseStepTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00403A7A1C8E2FE200A715BE /* FalseStepTableViewCell.swift */; };
+		0044E1111DD3AA1300337DC2 /* offdata in Resources */ = {isa = PBXBuildFile; fileRef = 0044E1101DD3AA1300337DC2 /* offdata */; };
 		004F78BC1CCEC2C10045801F /* libsbpl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 004F78BB1CCEC2C10045801F /* libsbpl.a */; };
 		004F78BF1CCEC2F00045801F /* sbpltest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 004F78BE1CCEC2F00045801F /* sbpltest.cpp */; };
 		004F78C41CCEE6670045801F /* CPPWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 004F78C31CCEE6670045801F /* CPPWrapper.mm */; };
@@ -30,6 +31,7 @@
 		006AF0E11CFE614D00FC04A4 /* SuperButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006AF0E01CFE614D00FC04A4 /* SuperButton.swift */; };
 		006C75081D07855C0006C38E /* CalloutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006C75071D07855C0006C38E /* CalloutView.swift */; };
 		00B0F2B11C85324300C75449 /* images in Resources */ = {isa = PBXBuildFile; fileRef = 00B0F2B01C85324300C75449 /* images */; };
+		00C725DB1DE36BB000877845 /* SetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00C725DA1DE36BB000877845 /* SetButton.swift */; };
 		00EA1B951D08BA910031B7C7 /* LmarkAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00EA1B941D08BA910031B7C7 /* LmarkAnnotationView.swift */; };
 		00EA1B971D08E1BE0031B7C7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 00EA1B961D08E1BE0031B7C7 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -60,6 +62,7 @@
 		00403A751C8A420100A715BE /* Lmark.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Lmark.swift; sourceTree = "<group>"; };
 		00403A781C8A6F2600A715BE /* StepTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StepTableViewCell.swift; sourceTree = "<group>"; };
 		00403A7A1C8E2FE200A715BE /* FalseStepTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FalseStepTableViewCell.swift; sourceTree = "<group>"; };
+		0044E1101DD3AA1300337DC2 /* offdata */ = {isa = PBXFileReference; lastKnownFileType = folder; path = offdata; sourceTree = "<group>"; };
 		004F78BB1CCEC2C10045801F /* libsbpl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsbpl.a; path = "../SbplPlannerWS/Build/Products/Debug-iphonesimulator/libsbpl.a"; sourceTree = "<group>"; };
 		004F78BD1CCEC2EF0045801F /* LmarkPlanner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LmarkPlanner-Bridging-Header.h"; sourceTree = "<group>"; };
 		004F78BE1CCEC2F00045801F /* sbpltest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sbpltest.cpp; path = LmarkPlanner/sbpltest.cpp; sourceTree = "<group>"; };
@@ -74,6 +77,7 @@
 		006AF0E01CFE614D00FC04A4 /* SuperButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuperButton.swift; sourceTree = "<group>"; };
 		006C75071D07855C0006C38E /* CalloutView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CalloutView.swift; sourceTree = "<group>"; };
 		00B0F2B01C85324300C75449 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
+		00C725DA1DE36BB000877845 /* SetButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SetButton.swift; sourceTree = "<group>"; };
 		00EA1B941D08BA910031B7C7 /* LmarkAnnotationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LmarkAnnotationView.swift; sourceTree = "<group>"; };
 		00EA1B961D08E1BE0031B7C7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -138,6 +142,7 @@
 				004F78C81CF3B39F0045801F /* LmarkAnnotation.swift */,
 				00EA1B941D08BA910031B7C7 /* LmarkAnnotationView.swift */,
 				006C75071D07855C0006C38E /* CalloutView.swift */,
+				00C725DA1DE36BB000877845 /* SetButton.swift */,
 				0056E1411D2D7D5D00BF6FAF /* Setting.swift */,
 				0056E1451D2D9BC100BF6FAF /* DoubleSettingCell.swift */,
 				0056E1431D2D920F00BF6FAF /* SwitchSettingCell.swift */,
@@ -145,6 +150,7 @@
 				00403A731C87932E00A715BE /* Intersection.swift */,
 				004F78C61CEF9E3A0045801F /* SolutionStep.swift */,
 				001D2FD41C7E81E000D64169 /* Info.plist */,
+				0044E1101DD3AA1300337DC2 /* offdata */,
 				00B0F2B01C85324300C75449 /* images */,
 			);
 			path = LmarkPlanner;
@@ -246,6 +252,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0044E1111DD3AA1300337DC2 /* offdata in Resources */,
 				00B0F2B11C85324300C75449 /* images in Resources */,
 				001D2FCE1C7E81E000D64169 /* Main.storyboard in Resources */,
 				00EA1B971D08E1BE0031B7C7 /* Assets.xcassets in Resources */,
@@ -267,6 +274,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0056E1441D2D920F00BF6FAF /* SwitchSettingCell.swift in Sources */,
+				00C725DB1DE36BB000877845 /* SetButton.swift in Sources */,
 				004F78C71CEF9E3A0045801F /* SolutionStep.swift in Sources */,
 				001D2FCB1C7E81E000D64169 /* ViewController.swift in Sources */,
 				00403A7B1C8E2FE200A715BE /* FalseStepTableViewCell.swift in Sources */,
@@ -709,6 +717,7 @@
 				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "LmarkPlanner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "armv7 armv7s arm64";
 			};
 			name = Debug;
@@ -732,6 +741,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "LmarkPlanner-Bridging-Header.h";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "armv7 armv7s arm64";
 			};
 			name = Release;

@@ -14,7 +14,6 @@ class Intersection {
     var index: Int = 0
     var latitude = 0.0
     var longitude = 0.0
-    //var location : NSString = ""
     var location : String?
     var streetsCount : Int = 0
     var photo: UIImage?

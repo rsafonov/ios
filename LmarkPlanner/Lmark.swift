@@ -38,7 +38,6 @@ class Lmark {
         self.latitude = latitude
         self.longitude = longitude
         self.photo = photo
-        //self.pin = pin
         self.pointId = pointId
         self.roadId = roadId
         self.street = street

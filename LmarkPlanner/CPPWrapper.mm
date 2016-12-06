@@ -13,7 +13,7 @@
 
 #include "sbpltest.h"
 
-- (BOOL) setParams_wrapped: (int) debug_mode : (double) policyTime : (double) computeTime error: (__autoreleasing NSError **) error
+- (BOOL) setParams_wrapped: (int) debug_mode : (int) offline_mode : (double) policyTime : (double) computeTime error: (__autoreleasing NSError **) error
 {
     bool res = true;
     @try {
@@ -22,7 +22,7 @@
    
         self.ob = new MySbpl(docdir);
         MySbpl* sb = (MySbpl*)self.ob;
-        res = (MySbpl*) sb->setParams(debug_mode, policyTime, computeTime);
+        res = (MySbpl*) sb->setParams(debug_mode, offline_mode, policyTime, computeTime);
         sb = NULL;
     }
     @catch(NSException *exception) {
@@ -46,6 +46,24 @@
     @try {
         MySbpl* sb = (MySbpl*)self.ob;
         res =(MySbpl*) sb->initPlannerByOsm([osmJsonStr cStringUsingEncoding:NSUTF8StringEncoding], [excludedLmarks cStringUsingEncoding:NSUTF8StringEncoding], [excludedIsections cStringUsingEncoding:NSUTF8StringEncoding], lmarks, lmarks_count, intersections, intersections_count);
+        sb = NULL;
+    }
+    @catch(...) {
+        NSLog(@"SBPL_Exception:%s", __PRETTY_FUNCTION__);
+        res = false;
+    }
+    return res;
+}
+
+- (BOOL) initPlannerByCache_wrapped: (NSString*) cacheDir : (NSString **) errmsg
+{
+    bool res = true;
+    @try {
+        string msg;
+        MySbpl* sb = (MySbpl*)self.ob;
+        res =(MySbpl*) sb->initPlannerByCache([cacheDir cStringUsingEncoding:NSUTF8StringEncoding], msg);
+        
+        *errmsg = [NSString stringWithFormat:@"%s", msg.c_str()];
         sb = NULL;
     }
     @catch(...) {

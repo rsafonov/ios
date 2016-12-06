@@ -28,8 +28,9 @@ class MySbpl
     public:
         MySbpl(string docDirectory);
     
-        bool setParams(int debug_mode, double policyTime, double computeTime);
+        bool setParams(int debug_mode, int offline_mode, double policyTime, double computeTime);
         bool initPlannerByOsm(string osmJsonStr, string excludedLmarks, string excludedIsections, long long int** lmarks, int* lmarks_count, long long int** intersections, int*intersections_count);
+        bool initPlannerByCache(string cache_dir, string& errmsg);
     
         bool freePlan(int** plan);
     

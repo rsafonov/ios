@@ -20,6 +20,7 @@ class DoubleSettingCell: UITableViewCell {
     @IBOutlet var yVal: UITextField!
     
     var parentController: LandmarksTableViewController?
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         

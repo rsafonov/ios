@@ -29,9 +29,6 @@ class LmarkAnnotationView: MKAnnotationView {
     var calloutAdded: Bool = false
     
     private var hitOutside:Bool = true
-    //private let blueBallImage = UIImage(named: "BlueBall")
-    //private let pinkBallImage = UIImage(named: "PinkBall")
-    //private let greenBallImage = UIImage(named: "GreenBall")
     
     convenience init(annotation:MKAnnotation!) {
         self.init(annotation: annotation, reuseIdentifier: "lmark") //LmarkAnnotationView.reuseIdentifier)
@@ -49,7 +46,10 @@ class LmarkAnnotationView: MKAnnotationView {
         if (selected)
         {
             count_selected += 1
-            print("count_selected = \(count_selected)")
+            if (parent!.debug)
+            {
+                print("count_selected = \(count_selected)")
+            }
             
             superview?.bringSubviewToFront(self)
             
@@ -79,7 +79,10 @@ class LmarkAnnotationView: MKAnnotationView {
         else
         {
             count_deselected += 1
-            print("count_deselected = \(count_deselected)")
+            if (parent!.debug)
+            {
+                print("count_deselected = \(count_deselected)")
+            }
             calloutView!.removeFromSuperview()
             calloutAdded = false
         }
@@ -211,7 +214,7 @@ class LmarkAnnotationView: MKAnnotationView {
         let start = NSDate()
         var end: NSDate?
         
-        if (self.parent!.debug)
+        if (self.parent!.debug && parent!.start_set && parent!.goal_set)
         {
             self.parent!.DebugInfoText = "Searching...\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId)"
             self.parent!.DebugInfo.text = self.parent!.DebugInfoText
@@ -232,8 +235,11 @@ class LmarkAnnotationView: MKAnnotationView {
 
                 if (error == nil)
                 {
-                    print("generateOptimalPlan completed")
-                    print("safety plan count = \(self.parent!.safety_plan.count) goal_pointId = \(self.parent!.goal_pointId)")
+                    if (self.parent!.debug)
+                    {
+                        print("generateOptimalPlan completed")
+                        print("safety plan count = \(self.parent!.safety_plan.count) goal_pointId = \(self.parent!.goal_pointId)")
+                    }
                     
                     if (self.parent!.safety_plan.count > 0)
                     {
@@ -273,7 +279,7 @@ class LmarkAnnotationView: MKAnnotationView {
                         {
                             self.parent!.DebugInfoText = "k=\(self.parent!.cond0!.k) time=\(self.parent!.duration0)\nStart \(self.parent!.start_roadId):\(self.parent!.start_pointId):\(self.parent!.cond0!.start_dir)\nGoal  \(self.parent!.goal_roadId):\(self.parent!.goal_pointId):\(self.parent!.cond0!.goal_dir)"
                             
-                                self.parent!.DebugInfo.text = self.parent!.DebugInfoText
+                            self.parent!.DebugInfo.text = self.parent!.DebugInfoText
                         }
                         else
                         {
@@ -282,10 +288,10 @@ class LmarkAnnotationView: MKAnnotationView {
                             self.parent!.DebugInfo.text = self.parent!.DebugInfoText
                         }
                     
-                        if (self.parent!.searchText.text == "osm")
-                        {
-                            self.parent!.searchText.text = "cathedral of learning"
-                        }
+                        //if (self.parent!.searchText.text == "osm")
+                        //{
+                            self.parent!.searchText.text = self.parent!.initialLocationName  //"cathedral of learning"
+                        //}
                     }
                 }
             })
